@@ -1,4 +1,4 @@
-(asdf:defsystem #:autolith
+(asdf:defsystem #:antaios
   :description "A live, self-modifying Common Lisp agent."
   :author "Lukáš Hozda"
   :license "ISC"
@@ -231,11 +231,11 @@
                              (:file "acp/runtime")
                              (:file "startup/main")
                              (:file "startup/active-image"))))
-  :in-order-to ((asdf:test-op (asdf:test-op #:autolith/tests))))
+  :in-order-to ((asdf:test-op (asdf:test-op #:antaios/tests))))
 
-(asdf:defsystem #:autolith/release-server
-  :description "The Autolith installer and binary release service."
-  :depends-on (#:autolith
+(asdf:defsystem #:antaios/release-server
+  :description "The Antaios installer and binary release service."
+  :depends-on (#:antaios
                #:sb-bsd-sockets)
   :serial t
   :components ((:module "server"
@@ -246,10 +246,10 @@
                              (:file "release-archive")
                              (:file "release-main")))))
 
-(asdf:defsystem #:autolith/tests
-  :description "Tests for Autolith."
-  :depends-on (#:autolith
-               (:feature (:not :win32) #:autolith/release-server)
+(asdf:defsystem #:antaios/tests
+  :description "Tests for Antaios."
+  :depends-on (#:antaios
+               (:feature (:not :win32) #:antaios/release-server)
                #:fiveam)
   :serial t
   :components ((:module "tests"
@@ -359,5 +359,5 @@
                              (:file "test-suites"))))
   :perform (asdf:test-op (operation component)
              (declare (ignore operation component))
-             (uiop:symbol-call '#:autolith '#:run-tests)))
+             (uiop:symbol-call '#:antaios '#:run-tests)))
 

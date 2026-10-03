@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Scripted Agent Boundary --
 
@@ -174,7 +174,7 @@
 
 (defclass agent-test-concurrency-state ()
   ((lock
-    :initform (make-lock "Autolith agent test tool state")
+    :initform (make-lock "Antaios agent test tool state")
     :reader agent-test-concurrency-state-lock
     :documentation "The lock protecting mutable execution state.")
    (condition-variable
@@ -2096,7 +2096,7 @@
   (let* ((base-configuration (test-configuration))
          (root (test-configuration-root base-configuration))
          (project (merge-pathnames "project/" root))
-         (skill-root (merge-pathnames ".autolith/skills/" project))
+         (skill-root (merge-pathnames ".antaios/skills/" project))
          (configuration
            (progn
              (ensure-directories-exist
@@ -2332,7 +2332,7 @@
                       condition))))
            (test-assert
             (and failure
-                 (string= (autolith-error-message failure)
+                 (string= (antaios-error-message failure)
                           "Compaction produced no summary text.")
                  (string= (provider-error-response-id failure)
                           "compact-empty")
@@ -2612,7 +2612,7 @@
              (agent-test-result
               "parallel-done"
               (list (agent-test-message "done"))))))
-         (callback-lock (make-lock "Autolith observer callback test"))
+         (callback-lock (make-lock "Antaios observer callback test"))
          (callback-active-count 0)
          (callback-maximum-active-count 0)
          (observer

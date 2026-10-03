@@ -1,10 +1,10 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Papercut Tool Classes --
 
 (defclass papercut-tool (tool)
   ()
-  (:documentation "A tool for recording a user-visible report about an Autolith problem."))
+  (:documentation "A tool for recording a user-visible report about an Antaios problem."))
 
 (defclass papercut-report-tool (papercut-tool)
   ()

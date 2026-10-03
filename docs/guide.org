@@ -3,19 +3,19 @@
 
 * Intro
 
-Autolith is a terminal agent running in a live Common Lisp image. It works on
+Antaios is a terminal agent running in a live Common Lisp image. It works on
 Linux x86-64 and macOS. 
 
-You can launch autolith by typing its name into your favorite terminal:
+You can launch antaios by typing its name into your favorite terminal:
 
 #+BEGIN_SRC sh
-autolith
+antaios
 #+END_SRC
 
 If you haven't authenticated already, you can check out the [[file:../README.org][README]] for how
 to do that.
 
-Autolith's prompt window can also evuluate lisp forms directly:
+Antaios's prompt window can also evuluate lisp forms directly:
 
 
 #+BEGIN_SRC lisp
@@ -32,17 +32,17 @@ the clanker can, and the same machinery is exposed to you.
 Configure your ACP-compatible editor to launch:
 
 #+BEGIN_SRC sh
-autolith acp
+antaios acp
 #+END_SRC
 
-Authenticate the selected provider with =autolith auth= before starting the
+Authenticate the selected provider with =antaios auth= before starting the
 editor session. ACP uses UTF-8 JSON-RPC on stdin/stdout; diagnostics go to stderr.
-Use =autolith --pristine acp= to start from tracked definitions.
+Use =antaios --pristine acp= to start from tracked definitions.
 
-New sessions use the editor's absolute working directory and a durable Autolith
+New sessions use the editor's absolute working directory and a durable Antaios
 conversation ID. Load that ID to replay messages, visible reasoning, tool calls,
 and results. Text prompts, resource links, and embedded text resources are
-supported. File and process operations use the native Autolith tools.
+supported. File and process operations use the native Antaios tools.
 
 The default =ask= mode requests command and external-tool approval in the editor.
 An approval for the session covers the exact command and working directory, or
@@ -58,30 +58,31 @@ One primary prompt or session setup runs at a time in each ACP process.
 
 * Fullscreen terminal
 
-Autolith uses the ordinary inline terminal presentation by default. Opt into the
-application-owned fullscreen viewport for a session with:
-
-#+BEGIN_SRC sh
-autolith --fullscreen
-#+END_SRC
-
-Save the preference for future launches at the Autolith prompt:
+Antaios uses the application-owned fullscreen viewport by default. Return
+future launches to the ordinary inline terminal presentation at the Antaios
+prompt with:
 
 #+BEGIN_SRC lisp
-(preferences-set-fullscreen (application-configuration *active-application*) t)
+(setf (config :fullscreen-p) nil)
 #+END_SRC
+
+With that preference saved, the =--fullscreen= command-line option enables the
+viewport for one launch without changing it:
+
+#+BEGIN_SRC sh
+antaios --fullscreen
+#+END_SRC
+
+=(setf (config :fullscreen-p) t)= restores the fullscreen default.
 
 The fullscreen viewport keeps the transcript scrollable and pins the composer to
 the bottom. Use =PageUp= and =PageDown= for page movement, =Ctrl-PageUp= and
 =Ctrl-PageDown= to jump between the user and assistant messages while skipping
 the reasoning and tool activity in between, =Ctrl-Home= and =Ctrl-End= for the
 oldest and newest transcript positions, and the mouse wheel for incremental
-scrolling. The =--fullscreen= command-line option enables it for one launch
-without changing the saved preference.
-Pass =nil= to =preferences-set-fullscreen= to return future launches to inline mode.
-Because the viewport owns the mouse, hold =Shift= while dragging to select text
-with the terminal emulator. Fullscreen history lives in the application rather
-than the terminal emulator's native scrollback.
+scrolling. Because the viewport owns the mouse, hold =Shift= while dragging to
+select text with the terminal emulator. Fullscreen history lives in the
+application rather than the terminal emulator's native scrollback.
 
 Clicking a web address in the fullscreen transcript opens it in the default
 browser, and every fenced code block ends with a =⧉ copy= label that copies the
@@ -91,92 +92,94 @@ request, so a terminal reached over SSH or a localgroup relay copies on your own
 machine. Web addresses in every mode are emitted as OSC 8 hyperlinks, which
 terminals open with their usual modifier-click.
 
-  Fullscreen startup presents a brief Lisp-machine boot screen with a centered tip
-  and a rock mascot that adapts to short viewports, then the session banner and
-  transcript above the composer. Mouse wheel scrolling also works through a
-  controlling local-session attachment.
+Fullscreen startup presents a brief Lisp-machine boot screen with a centered
+tip, then the session banner and transcript above the composer. The banner is
+plain text: an =Antaios v<version>= title followed by model, workspace, and
+mode rows, plus a =recovered= row when the recovery launcher started the
+session. Mouse wheel scrolling also works through a controlling local-session
+attachment.
 
 The boot screen then waits for =Space= or =Enter= before opening the listener,
 rotating the startup tip every ten seconds while it waits. =Ctrl-C= on the
 waiting boot screen halts the session. Turn the wait off for future launches
 with =(setf (config :boot-screen-linger-p) nil)= or for one launch with
-=AUTOLITH_BOOT_LINGER=off=, and change the rotation with
-=(setf (config :boot-screen-tip-seconds) 30)= or =AUTOLITH_BOOT_TIP_SECONDS=.
+=ANTAIOS_BOOT_LINGER=off=, and change the rotation with
+=(setf (config :boot-screen-tip-seconds) 30)= or =ANTAIOS_BOOT_TIP_SECONDS=.
 
 ** Almighty theme
 
 #+BEGIN_SRC sh
-autolith --almighty
+antaios --almighty
 #+END_SRC
 
 forces the fullscreen viewport and presents the Almighty Lisp theme from
 [[https://almightylisp.com/][almightylisp.com]]: near-white text on the site's
-blue, yellow for everything emphasized, cyan for code and strings, and an
-ALMIGHTY LITH boot mark. Terminals that advertise true color through
-=COLORTERM= get the exact colors; others get the nearest indexed or basic
-ones. The theme sets the terminal's default colors only while the viewport is
+blue, yellow for everything emphasized, and cyan for code and strings.
+Terminals that advertise true color through =COLORTERM= get the exact colors;
+others get the nearest indexed or basic ones. The theme sets the terminal's
+default colors only while the viewport is
 active and restores them on exit. Save it for future launches with
-=(setf (config :terminal-theme) :almighty)=; =:autolith= restores the default
-presentation. Detached sessions carry the theme across handoff.
+=(setf (config :terminal-theme) :almighty)=; =:antaios= restores the default
+presentation. Detached sessions carry the theme across handoff. Antaios renders
+no text in bold in any theme; emphasis is carried by color.
 
 * Install, update, and uninstall
 
 ** Nix
 
-Nix is the simplest way to install Autolith:
+Nix is the simplest way to install Antaios:
 
 #+BEGIN_SRC sh
-nix run github:luciusmagn/autolith
+nix run github:gildrb/theseus
 #+END_SRC
 
-The first launch builds Lisp images Autolith needs to launch.
-These images live under =${XDG_DATA_HOME:-~/.local/share}/autolith/nix/images/=}.
+The first launch builds Lisp images Antaios needs to launch.
+These images live under =${XDG_DATA_HOME:-~/.local/share}/antaios/nix/images/=}.
 
-** Linux binary release
+** Packaged binary releases
 
-It is possible to install autolith on Linux x86_64 via a shell installer:
+Antaios has no hosted release service or curl installer. Packaged binary
+releases install only from a release service you host yourself (see
+[[file:release-service.org][Release service]]); name it before running the
+bundled installer:
 
 #+BEGIN_SRC sh
-curl -fsSL https://sh.lambda-symbolics.com/autolith | sh
+ANTAIOS_RELEASE_BASE_URL=https://releases.example/releases ./script/install
 #+END_SRC
 
 The installer verifies the release archive's SHA-256 before extraction. The
 checksum must identify that exact archive; malformed or missing checksums abort
-installation. The initial shell script is fetched over HTTPS.
+installation. Without =ANTAIOS_RELEASE_BASE_URL= it refuses to run. Linux
+binary releases require OpenSSL and Bubblewrap. Bubblewrap provides the
+filesystem and network isolation used for sandboxed command execution. The
+installer names the missing dependency instead of installing a release that
+cannot offer sandboxed or safe automatic execution. The launcher uses the
+installation layout, rather than an environment marker alone, to distinguish
+binary, Nix, and source starts.
 
-Read [[https://sh.lambda-symbolics.com/autolith][the installer]] before piping it to a shell, or use Nix if that
-tradeoff is unwelcome. Linux binary releases require OpenSSL and Bubblewrap.
-Bubblewrap provides the filesystem and network isolation used for sandboxed
-command execution. The installer names the missing dependency instead of
-installing a release that cannot offer sandboxed or safe automatic execution.
-The launcher uses the installation layout, rather than an environment marker
-alone, to distinguish binary, Nix, and source starts.
-
-Autolith automatically checks for updates at most once every 20 hours.
-To install the latest binary release and exit without starting a session:
+When =ANTAIOS_RELEASE_BASE_URL= or =ANTAIOS_RELEASE_LATEST_URL= names a release
+service, a packaged release checks it for updates at most once every 20 hours.
+Without one, Antaios never contacts a release service. To install the latest
+binary release and exit without starting a session:
 
 #+BEGIN_SRC sh
-autolith update
+antaios update
 #+END_SRC
 
 The command exits successfully when updated or already current, and returns a
-nonzero status if checking or installing fails. =autolith --update= is an
-equivalent update-and-exit alias. Run =autolith= afterward to start the new
-release. Both spellings accept =--help= or =-h=; extra arguments exit with status
-64 before checking for updates. Use your flake or Nix profile to update Nix
-installations; update the checkout and run =./script/bootstrap= for source
-installations. These installations explain their update mechanism without
-building or starting Lisp images.
+nonzero status if checking or installing fails or no release service is
+configured. =antaios --update= is an equivalent update-and-exit alias. Run
+=antaios= afterward to start the new release. Both spellings accept =--help= or
+=-h=; extra arguments exit with status 64 before checking for updates. Use your
+flake or Nix profile to update Nix installations; update the checkout and run
+=./script/bootstrap= for source installations. These installations explain
+their update mechanism without building or starting Lisp images.
 
 To update from a session and restart it with its original command arguments:
 
 #+BEGIN_SRC lisp
 (update)
 #+END_SRC
-
-Release archives are built and checked by the installer host. GitHub publishes
-release metadata after the host checksum is available. See
-[[file:release-service.org][Release service]].
 
 ** Source checkout
 
@@ -190,7 +193,7 @@ sbcl --no-sysinit --no-userinit --load /tmp/quicklisp.lisp \
 #+END_SRC
 
 On Linux, also install Bubblewrap with your distribution's package manager.
-Autolith uses its =bwrap= executable to isolate the host filesystem and network
+Antaios uses its =bwrap= executable to isolate the host filesystem and network
 for sandboxed commands and the sandboxed decisions made by automatic permission
 mode. Nix installations include it. Bubblewrap is not a macOS or BSD dependency.
 Without platform sandbox support, the =sandbox= choice is unavailable; explicit
@@ -206,7 +209,7 @@ With Quicklisp in =~/quicklisp=, bootstrap and check the checkout:
 The check runs FiveAM tests in isolated SBCL processes, defaulting to the available
 logical CPU count (one worker if detection fails), and verifies the pristine
 recovery image. Each run first saves an active image of the checked source, so
-cases that start a fresh Autolith boot that core instead of loading the system. List or select test suites and individual cases with:
+cases that start a fresh Antaios boot that core instead of loading the system. List or select test suites and individual cases with:
 
 #+BEGIN_SRC sh
 ./script/check --list
@@ -225,7 +228,7 @@ To put a checkout into =PATH=:
 
 #+BEGIN_SRC sh
 mkdir -p ~/.local/bin
-ln -sfn "$PWD/bin/autolith" ~/.local/bin/autolith
+ln -sfn "$PWD/bin/antaios" ~/.local/bin/antaios
 #+END_SRC
 
 This is assuming you have .local/bin/ in PATH.
@@ -233,10 +236,10 @@ This is assuming you have .local/bin/ in PATH.
 ** Windows
 
 For the Windows x86-64 development artifact, extract the archive into a writable
-folder and run =.\bin\autolith.cmd= from PowerShell. Use Windows 10 version 1903
+folder and run =.\bin\antaios.cmd= from PowerShell. Use Windows 10 version 1903
 or newer. The bundled SBCL executable has a UTF-8 process manifest for Unicode
 paths; system-wide locale changes and 8.3 filenames are unnecessary. The first
-launch builds per-user cores under =.autolith-images= beside the release.
+launch builds per-user cores under =.antaios-images= beside the release.
 
 To build the source checkout, install Git for Windows, Rust with the MSVC toolchain
 and Cargo, and Quicklisp under =%USERPROFILE%\quicklisp=. Put =clang= on
@@ -244,7 +247,7 @@ and Cargo, and Quicklisp under =%USERPROFILE%\quicklisp=. Put =clang= on
 used when present; otherwise the bootstrap downloads the official SBCL Windows
 binary pinned in =sbcl-windows-releases.sha256=, verifies its SHA-256, and
 unpacks it below the data root without registering it with Windows. OpenSSL 3
-comes from Git for Windows, from =AUTOLITH_OPENSSL_DIRECTORY=, or from a
+comes from Git for Windows, from =ANTAIOS_OPENSSL_DIRECTORY=, or from a
 =native\openssl= directory beside the sources.
 
 From PowerShell, bootstrap and check the checkout:
@@ -260,8 +263,8 @@ shell are recorded as skipped. To package a Windows archive, install the Windows
 SDK (including =mt.exe=) and run =script\package-windows-release.ps1 -Tag VERSION=.
 The POSIX release-server scripts are not built on Windows.
 
-Start a session with =bin\autolith.cmd= or =bin\autolith.ps1=; both take the
-arguments =bin/autolith= takes. Windows Terminal is the primary console;
+Start a session with =bin\antaios.cmd= or =bin\antaios.ps1=; both take the
+arguments =bin/antaios= takes. Windows Terminal is the primary console;
 legacy consoles without virtual-terminal input are refused with a message.
 
 Windows sandboxed commands use the bundled AppContainer helper. They can write
@@ -275,10 +278,10 @@ management REPL transport.
 
 ** Uninstall
 
-To remove Autolith and keep your data:
+To remove Antaios and keep your data:
 
 #+BEGIN_SRC sh
-autolith uninstall
+antaios uninstall
 #+END_SRC
 
 The launcher lists what it will remove, asks for confirmation, and exits without
@@ -296,17 +299,17 @@ yourself. Nix installations also need the package removed from the flake or
 profile. On Windows the launcher prints the folders to delete, because the
 runtime in use lives inside them.
 
-* Talk to Autolith
+* Talk to Antaios
 
 ** Prose, Lisp, and commands
 
 Ordinary text is a prompt to the primary agent. It is equivalent to:
 
 #+BEGIN_SRC lisp
-(prompt :to 'autolith "Review this change")
+(prompt :to 'antaios "Review this change")
 #+END_SRC
 
-=autolith= is reserved, case-insensitively, for the primary agent.
+=antaios= is reserved, case-insensitively, for the primary agent.
 
 As a shortcut, if you want to submit something to the main agent, you don't need to include the =:to= parameter:
 
@@ -378,7 +381,7 @@ at a safe request boundary; submitting a form does not start a model turn.
 
 When local Lisp or an interactive command signals a serious condition, the
 restart debugger keeps the signaling stack and its live restarts available. Use
-=Ask Autolith why this failed= to run an independent diagnosis while the failed
+=Ask Antaios why this failed= to run an independent diagnosis while the failed
 operation remains suspended. Diagnosis can offer up to three explicitly selected
 recoveries that invoke a live restart, run repair source first, retry the whole
 operation, return replacement values when supported, or abort the operation.
@@ -457,9 +460,9 @@ loosely, since rewritten repeats share fewer words.
 Use the same portable archive from the command line or an active session:
 
 #+BEGIN_SRC sh
-autolith data export all.sexp --all
-autolith data export project.sexp --workspace /home/al/code/project
-autolith data import project.sexp --workspace /home/al/src/project
+antaios data export all.sexp --all
+antaios data export project.sexp --workspace /home/al/code/project
+antaios data import project.sexp --workspace /home/al/src/project
 #+END_SRC
 
 #+BEGIN_SRC lisp
@@ -470,7 +473,7 @@ autolith data import project.sexp --workspace /home/al/src/project
 
 Export defaults to all workspaces and global data. A workspace export contains
 its conversations, memories, agendas, plans, papercuts, and associated session
-assets. The archive contains Autolith data rather than the repository files;
+assets. The archive contains Antaios data rather than the repository files;
 clone or copy the repository separately. Credentials, configuration, executable
 image state, and caches are excluded.
 
@@ -487,7 +490,7 @@ The CLI exits without starting a session: success is 0, invalid arguments are
 ** Session titles and resume
 
 A session gets an immediate local title from its first prompt or image. After the
-third actual user turn, Autolith may ask the active model for one concise
+third actual user turn, Antaios may ask the active model for one concise
 replacement and persist it with the conversation. The local title does not depend
 on provider generation.
 
@@ -509,11 +512,11 @@ durable child task results stay readable through =job.get=.
 Inspect a saved conversation without resuming or locking it with:
 
 #+BEGIN_SRC sh
-autolith replay ID
-autolith replay ID turn 12
-autolith replay ID date 2026-08-28
-autolith replay ID time 2026-08-28T10:30:00
-autolith replay ID sequence 1200
+antaios replay ID
+antaios replay ID turn 12
+antaios replay ID date 2026-08-28
+antaios replay ID time 2026-08-28T10:30:00
+antaios replay ID sequence 1200
 #+END_SRC
 
 On an interactive terminal, replay behaves like a small debugger over durable
@@ -524,15 +527,15 @@ conversation lease or repairing, appending, or resuming the conversation.
 
 ** Local sessions
 
-Every running Autolith session publishes a private authenticated local endpoint.
+Every running Antaios session publishes a private authenticated local endpoint.
 Its session ID is the active conversation ID, shared with =resume= and stable
 across detach, restart and checkpoint quiescence. Selecting another conversation
 with =new=, =resume= or =fork= moves the endpoint to that conversation ID while
 attached terminals continue using the same connection. Inspect endpoints with:
 
 #+BEGIN_SRC sh
-autolith localgroup status
-autolith localgroup status --sexp
+antaios localgroup status
+antaios localgroup status --sexp
 #+END_SRC
 
 =idle= means that the process is at input with no active work of any kind.
@@ -540,13 +543,13 @@ autolith localgroup status --sexp
 Control a sessions with the following commands:
 
 #+BEGIN_SRC sh
-autolith localgroup tell   SESSION-ID "message"
-autolith localgroup pause  SESSION-ID
-autolith localgroup attach SESSION-ID
-autolith localgroup attach SESSION-ID --read-only
-autolith localgroup attach SESSION-ID --take-over
-autolith localgroup detach SESSION-ID
-autolith localgroup kill   SESSION-ID
+antaios localgroup tell   SESSION-ID "message"
+antaios localgroup pause  SESSION-ID
+antaios localgroup attach SESSION-ID
+antaios localgroup attach SESSION-ID --read-only
+antaios localgroup attach SESSION-ID --take-over
+antaios localgroup detach SESSION-ID
+antaios localgroup kill   SESSION-ID
 #+END_SRC
 
 =tell= uses input to tell something to a session and resumes a paused session.
@@ -559,42 +562,42 @@ there always run directly in the terminal that started them: =/detach= and
 client-first starts report that the handoff is withheld, while the loopback
 endpoint and the =localgroup= commands work as elsewhere.
 
-Autolith stores configuration, durable data, process state, and replaceable
-caches below =${XDG_CONFIG_HOME:-~/.config}/autolith/=,
-=${XDG_DATA_HOME:-~/.local/share}/autolith/=,
-=${XDG_STATE_HOME:-~/.local/state}/autolith/=, and
-=${XDG_CACHE_HOME:-~/.cache}/autolith/=. XDG base-directory values must be
+Antaios stores configuration, durable data, process state, and replaceable
+caches below =${XDG_CONFIG_HOME:-~/.config}/antaios/=,
+=${XDG_DATA_HOME:-~/.local/share}/antaios/=,
+=${XDG_STATE_HOME:-~/.local/state}/antaios/=, and
+=${XDG_CACHE_HOME:-~/.cache}/antaios/=. XDG base-directory values must be
 nonempty absolute paths; invalid values use these defaults. Newly created
-Autolith roots have mode =0700=.
+Antaios roots have mode =0700=.
 
 On Windows the same four roots are, unless an absolute XDG variable overrides
-one, =%APPDATA%\autolith\=, =%LOCALAPPDATA%\autolith\data\=,
-=%LOCALAPPDATA%\autolith\state\=, and =%LOCALAPPDATA%\autolith\cache\=.
+one, =%APPDATA%\antaios\=, =%LOCALAPPDATA%\antaios\data\=,
+=%LOCALAPPDATA%\antaios\state\=, and =%LOCALAPPDATA%\antaios\cache\=.
 Private files and directories carry an access control list granting only the
 owner and SYSTEM, which is what mode =0600= and =0700= mean there; a file
-Autolith publishes read-only withholds write access through that list and
+Antaios publishes read-only withholds write access through that list and
 keeps the read-only attribute clear, so it can still be replaced and deleted.
 
 Conversation leases, Localgroup endpoint records, and recovery state live under
-=${XDG_STATE_HOME:-~/.local/state}/autolith/= rather than =XDG_RUNTIME_DIR=.
+=${XDG_STATE_HOME:-~/.local/state}/antaios/= rather than =XDG_RUNTIME_DIR=.
 They must survive logout so detached sessions, handoffs, and crash recovery can
-continue across login sessions. Autolith uses authenticated loopback TCP rather
+continue across login sessions. Antaios uses authenticated loopback TCP rather
 than filesystem sockets for its inference and Localgroup protocols, and cleans
 stale Localgroup records itself.
 
-* Configure Autolith
+* Configure Antaios
 
-Autolith loads the optional user file
-=${XDG_CONFIG_HOME:-~/.config}/autolith/init.lisp= after tracked code, a
+Antaios loads the optional user file
+=${XDG_CONFIG_HOME:-~/.config}/antaios/init.lisp= after tracked code, a
 selected private image commit, and any site or trusted directory
 configuration. It reloads on retained generation reconnect.
 
-The file is ordinary Common Lisp in package =AUTOLITH=, with your full
+The file is ordinary Common Lisp in package =ANTAIOS=, with your full
 privileges. It is not copied into private replay or the pristine recovery
 image.
 
 Packagers may supply one separate, read-only configuration tree with
-=--site-config-root DIRECTORY= or =AUTOLITH_SITE_CONFIG_ROOT=. The directory
+=--site-config-root DIRECTORY= or =ANTAIOS_SITE_CONFIG_ROOT=. The directory
 must already exist and be absolute. It may contain =init.lisp=, =mcp.sexp=,
 =skills/=, and =agents/=. Site configuration loads before user configuration,
 so it provides defaults without replacing the user's normal XDG tree. A site
@@ -604,7 +607,7 @@ security boundary.
 Executable initialization loads in this order:
 
 1. site =init.lisp=
-2. trusted directory =.autolith/init.lisp= files, outermost to nearest
+2. trusted directory =.antaios/init.lisp= files, outermost to nearest
 3. the user XDG =init.lisp=
 
 Missing files are ordinary. A present file that cannot be read or evaluated
@@ -613,7 +616,7 @@ is user-owned.
 
 ** Settings
 
-Every knob Autolith exposes is a named setting with a type, a description, a
+Every knob Antaios exposes is a named setting with a type, a description, a
 default, and, where the choices are finite, its options. =/settings= opens the
 settings page: a picker listing each setting with its current value and where
 that value came from. Choosing an adjustable setting opens its options;
@@ -635,7 +638,9 @@ settings, such as the immutable flag, the management endpoint, and the roots,
 come from the command line, the environment, or defaults at startup and stay
 fixed. Derived settings, such as the context window and provider endpoint,
 follow the model. The window uses a declared model value, else the catalog
-value, else the default.
+value, else the default. Fullscreen, cache miss notices, and Simple Technical
+English are on by default; =/settings NAME off= turns one off for future
+sessions.
 
 A durable value is chosen at startup from the first source that supplies it:
 an explicit command-line choice, the setting's environment variable, then the
@@ -655,7 +660,7 @@ versions 1 through 7 to 0.54 or later, run a 0.53 release once to write version 
 
 ** Language servers
 
-Install your language server, then configure it in =lsp.sexp= under Autolith's
+Install your language server, then configure it in =lsp.sexp= under Antaios's
 user configuration directory, alongside =init.lisp=. For example:
 
 #+BEGIN_SRC lisp
@@ -680,13 +685,13 @@ integer from 1 through 120 seconds, defaulting to 30.
   out of this file. Executables must already be installed; commands are resolved
   on =PATH=. Repository-local LSP configuration is not loaded.
 
-  Autolith exposes the =lsp= tools only when =lsp.sexp= defines at least one
+  Antaios exposes the =lsp= tools only when =lsp.sexp= defines at least one
   enabled server; without it the registry omits them. A malformed =lsp.sexp=
   keeps the tools registered so the configuration error surfaces when a tool
   runs. When at least one server is enabled, each provider request includes a
   context note naming those servers.
 
-Ask Autolith to use these tools:
+Ask Antaios to use these tools:
 
 - =lsp.status=: inspect configuration and running project/server pairs.
 - =lsp.query=: request =definition=, =references=, =hover=, =implementation=,
@@ -722,13 +727,13 @@ Server shutdown occurs when the tool runtime is retired.
 ** Active-image management endpoint
 
 The management REPL is a separate opt-in subsystem for trusted programs that
-must evaluate Common Lisp in the running =AUTOLITH= image. It does not use the
+must evaluate Common Lisp in the running =ANTAIOS= image. It does not use the
 localgroup protocol, Swank, or Slynk. It is disabled unless
-=AUTOLITH_MANAGEMENT_REPL= is set to =on=.
+=ANTAIOS_MANAGEMENT_REPL= is set to =on=.
 
 Every connection authenticates with a fresh random nonce and HMAC-SHA-256. The
 client never sends the reusable token. Put a nonempty token in a regular file
-owned by the current uid with mode =0600=. Autolith opens that file without
+owned by the current uid with mode =0600=. Antaios opens that file without
 following symbolic links only while checking a proof, wipes the token octets,
 and retains only the token-file pathname.
 
@@ -736,19 +741,19 @@ The following environment variables configure newly created applications:
 
 | Variable | Default | Meaning |
 |-
-| =AUTOLITH_MANAGEMENT_REPL= | =off= | Enable the endpoint. |
-| =AUTOLITH_MANAGEMENT_REPL_TRANSPORT= | =unix=, or =tcp= on Windows | =unix= or =tcp=. |
-| =AUTOLITH_MANAGEMENT_REPL_UNIX_SOCKET= | =${XDG_STATE_HOME:-~/.local/state}/autolith/management/repl.sock= | Unix socket pathname. |
-| =AUTOLITH_MANAGEMENT_REPL_TCP_ADDRESS= | =127.0.0.1= | IPv4 loopback listener address. |
-| =AUTOLITH_MANAGEMENT_REPL_TCP_PORT= | =4141= | TCP listener port. |
-| =AUTOLITH_MANAGEMENT_REPL_TOKEN_FILE= | =${XDG_CONFIG_HOME:-~/.config}/autolith/management-repl.token= | Mode-0600 token file. |
-| =AUTOLITH_MANAGEMENT_REPL_TIMEOUT= | =10= | Evaluation deadline in seconds. |
-| =AUTOLITH_MANAGEMENT_REPL_MAX_FRAME= | =1048576= | Maximum wire-frame octets. |
-| =AUTOLITH_MANAGEMENT_REPL_MAX_SOURCE= | =262144= | Maximum UTF-8 source octets. |
-| =AUTOLITH_MANAGEMENT_REPL_MAX_OUTPUT= | =262144= | Maximum captured output and value text. |
-| =AUTOLITH_MANAGEMENT_REPL_QUEUE_CAPACITY= | =8= | Maximum queued evaluations. |
-| =AUTOLITH_MANAGEMENT_REPL_MAX_CLIENTS= | =8= | Maximum accepted clients, including authentication. |
-| =AUTOLITH_MANAGEMENT_REPL_AUTH_TIMEOUT= | =10= | Absolute authentication deadline in seconds. |
+| =ANTAIOS_MANAGEMENT_REPL= | =off= | Enable the endpoint. |
+| =ANTAIOS_MANAGEMENT_REPL_TRANSPORT= | =unix=, or =tcp= on Windows | =unix= or =tcp=. |
+| =ANTAIOS_MANAGEMENT_REPL_UNIX_SOCKET= | =${XDG_STATE_HOME:-~/.local/state}/antaios/management/repl.sock= | Unix socket pathname. |
+| =ANTAIOS_MANAGEMENT_REPL_TCP_ADDRESS= | =127.0.0.1= | IPv4 loopback listener address. |
+| =ANTAIOS_MANAGEMENT_REPL_TCP_PORT= | =4141= | TCP listener port. |
+| =ANTAIOS_MANAGEMENT_REPL_TOKEN_FILE= | =${XDG_CONFIG_HOME:-~/.config}/antaios/management-repl.token= | Mode-0600 token file. |
+| =ANTAIOS_MANAGEMENT_REPL_TIMEOUT= | =10= | Evaluation deadline in seconds. |
+| =ANTAIOS_MANAGEMENT_REPL_MAX_FRAME= | =1048576= | Maximum wire-frame octets. |
+| =ANTAIOS_MANAGEMENT_REPL_MAX_SOURCE= | =262144= | Maximum UTF-8 source octets. |
+| =ANTAIOS_MANAGEMENT_REPL_MAX_OUTPUT= | =262144= | Maximum captured output and value text. |
+| =ANTAIOS_MANAGEMENT_REPL_QUEUE_CAPACITY= | =8= | Maximum queued evaluations. |
+| =ANTAIOS_MANAGEMENT_REPL_MAX_CLIENTS= | =8= | Maximum accepted clients, including authentication. |
+| =ANTAIOS_MANAGEMENT_REPL_AUTH_TIMEOUT= | =10= | Absolute authentication deadline in seconds. |
 
 TCP accepts IPv4 loopback addresses only. This endpoint does not provide server
 TLS, and arbitrary Lisp results may contain secrets. Challenge-response prevents
@@ -793,7 +798,7 @@ After authentication, send one request at a time:
 #+END_SRC
 
 The source string must contain exactly one form. A dedicated serial evaluator
-thread reads it in package =AUTOLITH=, applies the configured deadline, prevents
+thread reads it in package =ANTAIOS=, applies the configured deadline, prevents
 interactive debugger entry, and captures standard, error, trace, query, debug,
 and terminal output in a bounded Gray stream. Successful responses have this
 shape:
@@ -801,7 +806,7 @@ shape:
 #+BEGIN_SRC lisp
 (:evaluation-result
  :status :ok
- :values ("42" "#<PACKAGE \"AUTOLITH\">")
+ :values ("42" "#<PACKAGE \"ANTAIOS\">")
  :values-truncated-p nil
  :output ""
  :output-truncated-p nil)
@@ -824,7 +829,7 @@ removes only the exact Unix socket created by that runtime.
 
 ** Context
 
-Autolith has a concept of *ephemeral notes*, which can be used to
+Antaios has a concept of *ephemeral notes*, which can be used to
 add temporary additional information to the context that will
 eventually disappear:
 
@@ -871,8 +876,8 @@ count and the persisted usage cover compaction work instead of hiding it.
 
 Providers bill context served from their prompt cache at a fraction of the
 uncached input price, so a request that re-reads context the previous request
-had cached costs noticeably more. =/cache-misses on= or =(cache-misses "on")=
-enables a dim notice after any request whose cache reads fell below half of the
+had cached costs noticeably more. Antaios shows a dim notice after any request
+whose cache reads fell below half of the
 previous prompt, and after any request whose cache reads stopped growing while
 the prompt grew and at least a sixteenth of the previous prompt, never less
 than 4096 tokens, was re-read. The notice gives the re-read and total prompt
@@ -883,9 +888,10 @@ prefix, which means the request reached a provider backend without the newest
 cached context. When the provider attributes cache reads to request fields, the
 notice adds whether the instructions and tools were re-read or still cached, so
 a changed prefix is told apart from lost routing. The first request after
-compaction is expected to miss and stays quiet. Autolith carries no price
-table, so the notice reports tokens rather than currency. The setting is off by
-default and persists across restarts.
+compaction is expected to miss and stays quiet. Antaios carries no price
+table, so the notice reports tokens rather than currency. The setting is on by
+default and persists across restarts; =/cache-misses off= or
+=(cache-misses "off")= hides the notices.
 
 ** Providers
 
@@ -899,16 +905,16 @@ Register a OpenAI-compatible provider:
  :models-endpoint "https://api.example.com/v1/models")
 #+END_SRC
 
-Autolith stores the provider's key in its private store (=autolith auth
+Antaios stores the provider's key in its private store (=antaios auth
 my-provider=). For a local server that issues its own key file, pass
-=:api-key-file "/absolute/path/api-key"= instead: Autolith reads the file on
+=:api-key-file "/absolute/path/api-key"= instead: Antaios reads the file on
 every request, so a rotated key needs no re-authentication. A missing or empty
 file fails the request; the stored key is not used.
 
-List every model ID known to Autolith without authenticating or starting a session:
+List every model ID known to Antaios without authenticating or starting a session:
 
 #+BEGIN_SRC sh
-autolith models | grep gpt
+antaios models | grep gpt
 #+END_SRC
 
 The command prints one sorted, deduplicated model ID per line from built-in and
@@ -917,7 +923,7 @@ locally configured catalogs.
 Inside a session, =/auth= and =(auth)= are the same operation. Omit the
 provider to pick one interactively, or use =/auth my-provider= and
 =(auth "my-provider")= for an explicit selection. Use
-=autolith auth my-provider= to authenticate during startup.
+=antaios auth my-provider= to authenticate during startup.
 
 After a key is saved, static metadata or the last good cache keeps models
 available. =(models)= triggers discovery. You can also pass non-secret
@@ -927,7 +933,7 @@ providers that have no model-list endpoint.
 Built-in ChatGPT subscriptions use browser OAuth with PKCE and a local callback
 on =localhost:1455= or =localhost:1457= by default. Use
 =/auth chatgpt device=, =(auth "chatgpt" "device")=, or
-=autolith auth chatgpt device= to select the device-code flow instead. The
+=antaios auth chatgpt device= to select the device-code flow instead. The
 browser authorization URL is always printed for manual use. Grok and Nous
 Research use browser device flows. Gemini uses Google installed-application
 OAuth with a local loopback callback.
@@ -941,7 +947,7 @@ GPT-6.1, GPT-6, and GPT-5.6 models support it. Use =/fast= or =/fast status= to 
 =/fast off= to change the saved preference. The activity status line displays
 =FAST= while the active model uses Fast mode. Other providers and unknown Codex
 models keep the preference but use the standard path. Set
-=AUTOLITH_CODEX_FAST_MODE=on= or =off= to override the saved choice for one
+=ANTAIOS_CODEX_FAST_MODE=on= or =off= to override the saved choice for one
 process; while it is set, =/fast on= and =/fast off= are unavailable.
 
 A request that fails before the model has produced anything is retried up to
@@ -954,32 +960,32 @@ elapsed seconds, whether output had been received, and the provider's
 identifiers, so retry storms can be audited after the fact.
 
 ChatGPT Codex uses standard Responses requests and native Responses compaction.
-Normal requests enable provider parallel tool calls. Autolith executes independent
+Normal requests enable provider parallel tool calls. Antaios executes independent
 calls concurrently, then records their results in provider wire order. Calls
 requiring a provider round trip, exclusive tools, and calls sharing one mutable
 runtime execute in separate ordered waves.
 
-GPT-5.4 and later Codex models use native Responses tool search. Autolith sends
+GPT-5.4 and later Codex models use native Responses tool search. Antaios sends
 stable namespace names and descriptions up front, marks each function
 =defer_loading=true=, and declares a client-executed =tool_search=. When the
-model searches, Autolith answers from its own registry over the namespaces
+model searches, Antaios answers from its own registry over the namespaces
 that request advertised, scoring namespace names, tool names, and description
 words, and appends the =tool_search_output= as a durable provider item. The
 expansion replays intact in every later request, which keeps those tools
 loaded and the prompt prefix cacheable; only native compaction requests replay
 it empty. Other models and providers receive the complete eager tool array.
 
-Authenticate Gemini with =autolith auth gemini=, =/auth gemini=, or
-=(auth "gemini")=. Autolith stores its Google OAuth credentials separately at
+Authenticate Gemini with =antaios auth gemini=, =/auth gemini=, or
+=(auth "gemini")=. Antaios stores its Google OAuth credentials separately at
 =gemini-auth.sexp= under the state root. The provider uses the Gemini CLI Code
 Assist subscription service directly, including streaming text and thinking,
 tool calls, token usage, account onboarding, and managed companion projects.
-=AUTOLITH_GEMINI_OAUTH_CLIENT_ID= may replace the public installed-application
-client ID; =AUTOLITH_GEMINI_OAUTH_CLIENT_SECRET= supplies a client secret when a
+=ANTAIOS_GEMINI_OAUTH_CLIENT_ID= may replace the public installed-application
+client ID; =ANTAIOS_GEMINI_OAUTH_CLIENT_SECRET= supplies a client secret when a
 deployment requires one.
 
 #+BEGIN_SRC sh
-autolith auth nous
+antaios auth nous
 #+END_SRC
 
 Nous models are discovered from the authenticated account. Run =(models)= after
@@ -990,29 +996,29 @@ are not reliable for agentic tool calling.
 
 The Nous integration accepts three deployment overrides:
 
-- =AUTOLITH_NOUS_PORTAL_URL= selects the OAuth portal.
-- =AUTOLITH_NOUS_INFERENCE_BASE_URL= selects the =/v1= inference base used for
+- =ANTAIOS_NOUS_PORTAL_URL= selects the OAuth portal.
+- =ANTAIOS_NOUS_INFERENCE_BASE_URL= selects the =/v1= inference base used for
   model discovery, Chat Completions, and Messages.
-- =AUTOLITH_NOUS_PROVIDER_ENDPOINT= overrides only the Chat Completions endpoint.
+- =ANTAIOS_NOUS_PROVIDER_ENDPOINT= overrides only the Chat Completions endpoint.
 
-Autolith stores Nous OAuth state separately at =nous-auth.sexp= under its state
+Antaios stores Nous OAuth state separately at =nous-auth.sexp= under its state
 root and serializes rotating refresh-token updates across processes sharing that
 root.
 
 Mistral models are discovered from the authenticated account and filtered to
 models advertising Chat Completions support. =MISTRAL_API_KEY= takes precedence
-over Autolith's private Mistral key. =AUTOLITH_MISTRAL_PROVIDER_ENDPOINT= and
-=AUTOLITH_MISTRAL_MODELS_ENDPOINT= override the chat and discovery endpoints
+over Antaios's private Mistral key. =ANTAIOS_MISTRAL_PROVIDER_ENDPOINT= and
+=ANTAIOS_MISTRAL_MODELS_ENDPOINT= override the chat and discovery endpoints
 independently.
 
 OpenRouter models are discovered from the authenticated catalog and use
 =openrouter/<vendor>/<model>= identifiers locally. Discovery includes only models
 that emit text and advertise function tools, tool choice, and normalized
-reasoning, matching the request shape Autolith sends. =OPENROUTER_API_KEY= takes
-precedence over Autolith's private OpenRouter key. Authenticate with
-=autolith auth openrouter=, =/auth openrouter=, or =(auth "openrouter")=.
-=AUTOLITH_OPENROUTER_PROVIDER_ENDPOINT= and
-=AUTOLITH_OPENROUTER_MODELS_ENDPOINT= override the chat and discovery endpoints
+reasoning, matching the request shape Antaios sends. =OPENROUTER_API_KEY= takes
+precedence over Antaios's private OpenRouter key. Authenticate with
+=antaios auth openrouter=, =/auth openrouter=, or =(auth "openrouter")=.
+=ANTAIOS_OPENROUTER_PROVIDER_ENDPOINT= and
+=ANTAIOS_OPENROUTER_MODELS_ENDPOINT= override the chat and discovery endpoints
 independently.
 
 ** Commands
@@ -1053,7 +1059,7 @@ independently.
 ** Live definitions
 
 Use =self.redefine= to install loaded Lisp definitions, new or replacing,
-including functions and methods outside the Autolith package. =self.define=
+including functions and methods outside the Antaios package. =self.define=
 names the same tool. Qualify the target symbol in the source,
 or supply the =package= argument to select its reader package. Use qualified
 symbols with =self.set= for foreign global bindings.
@@ -1083,8 +1089,8 @@ waits in the idle queue.
 
 Roles load from these directories. First match wins:
 
-- =.autolith/agents/=
-- =${XDG_CONFIG_HOME:-~/.config}/autolith/agents/=
+- =.antaios/agents/=
+- =${XDG_CONFIG_HOME:-~/.config}/antaios/agents/=
 - =<site-config-root>/agents/=
 - bundled roles
 
@@ -1143,8 +1149,8 @@ Windows scopes must be local directories without reparse points or hard-linked f
 scopes or an unavailable helper fail instead of running without isolation.
 
 The default pool admits eight concurrent children.
-=AUTOLITH_TASK_MAX_CONCURRENCY= raises that up to 32. Child jobs have no
-deadline unless =AUTOLITH_TASK_MAX_RUNTIME_MS= is set positive.
+=ANTAIOS_TASK_MAX_CONCURRENCY= raises that up to 32. Child jobs have no
+deadline unless =ANTAIOS_TASK_MAX_RUNTIME_MS= is set positive.
 
 * Non-interactive jobs
 
@@ -1154,7 +1160,7 @@ provider and MCP configuration, role tool and spawn policy, task traces, usage
 accounting, and native structured-output contracts.
 
 #+BEGIN_SRC sh
-autolith --permissions auto run-job \
+antaios --permissions auto run-job \
   --input /path/to/job.sexp \
   --output /path/to/result.sexp
 #+END_SRC
@@ -1162,7 +1168,7 @@ autolith --permissions auto run-job \
 The input is exactly one bounded data-only S-expression:
 
 #+BEGIN_SRC lisp
-(:autolith-job
+(:antaios-job
  :version 1
  :id "job-identifier"
  :role "project-role"
@@ -1177,7 +1183,7 @@ The input is exactly one bounded data-only S-expression:
 
 The supplied output contract applies only to that run and does not alter the
 role definition. The terminal artifact is atomically installed at =--output=
-as =(:autolith-job-result :version 1 ...)=. Structured objects and arrays use
+as =(:antaios-job-result :version 1 ...)=. Structured objects and arrays use
 =:OBJECT= and =:ARRAY= tags, so false, null, and empty arrays remain distinct.
 Failures use stable categories and statuses =:failed=, =:cancelled=, or
 =:timed-out=. Successful jobs use =:succeeded= and include the contracted
@@ -1202,8 +1208,8 @@ resumes the active conversation after the saved image passes its probe.
 Inspect or boot retained generations from the CLI:
 
 #+BEGIN_SRC sh
-autolith --recovery --list
-autolith --recovery --generation GENERATION-ID
+antaios --recovery --list
+antaios --recovery --generation GENERATION-ID
 #+END_SRC
 
 Recovery starts the separately built pristine core, not the damaged active
@@ -1217,7 +1223,7 @@ Explicit generation selection may use an older revision.
 To start a rescue session directly, use:
 
 #+BEGIN_SRC sh
-autolith resume --pristine --permissions full
+antaios resume --pristine --permissions full
 #+END_SRC
 
 =--pristine= forces tracked source instead of a saved active core and skips the
@@ -1244,11 +1250,11 @@ image does not queue diagnosis.
 
 Saved cores require their recorded SBCL version, OS build, and architecture.
 Source remains authoritative. To reconstruct without a core, check out the
-manifest revision, run =./script/bootstrap=, load =autolith=, then load the
-manifest's ordered =reconstruct.lisp= in package =AUTOLITH=:
+manifest revision, run =./script/bootstrap=, load =antaios=, then load the
+manifest's ordered =reconstruct.lisp= in package =ANTAIOS=:
 
 #+BEGIN_SRC lisp
-(asdf:load-asd (truename "autolith.asd"))
-(asdf:load-system :autolith)
+(asdf:load-asd (truename "antaios.asd"))
+(asdf:load-system :antaios)
 (load #P"/path/from/generation/manifest/reconstruct.lisp")
 #+END_SRC

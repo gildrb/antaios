@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Persistent Memories --
 
@@ -20,7 +20,7 @@
 (defparameter *memory-search-term-limit* 24
   "The maximum distinct terms considered by one memory query.")
 
-(defvar *memory-lock* (make-recursive-lock "Autolith persistent memories")
+(defvar *memory-lock* (make-recursive-lock "Antaios persistent memories")
   "Serialize same-process memory reads, appends, and guarded transactions.")
 
 (defclass memory ()
@@ -189,7 +189,7 @@
                        :source-conversation source-conversation)
       (memory-error (condition)
         (error 'memory-error
-               :message (autolith-error-message condition)
+               :message (antaios-error-message condition)
                :pathname pathname
                :identifier identifier)))))
 

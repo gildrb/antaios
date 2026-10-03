@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- ChatGPT Browser OAuth Conditions --
 
@@ -72,8 +72,8 @@
                  :bounded-string-function #'bounded-string
                  :display-function #'chatgpt-oauth--display-login
                  :secret-function #'call-with-secret-use :label "ChatGPT"
-                 :success-response "ChatGPT authorization was received. Return to Autolith."
-                 :failure-response "ChatGPT authorization failed. Return to Autolith."
+                 :success-response "ChatGPT authorization was received. Return to Antaios."
+                 :failure-response "ChatGPT authorization failed. Return to Antaios."
                  :mismatch-response "ChatGPT authorization did not match this login."))
 
 (defun chatgpt-oauth-create-pkce ()
@@ -112,7 +112,7 @@
       (error 'authentication-error :message "OpenAI OAuth exceeded its response deadline."))))
 
 (defun chatgpt-oauth--request (&key url content)
-  "POST an OAuth form with Autolith's identity and OpenAI's originator header."
+  "POST an OAuth form with Antaios's identity and OpenAI's originator header."
   (cl-rfc8252:browser-authentication-request
    :url url :content content
    :headers (list (cons "User-Agent" (authentication-user-agent))

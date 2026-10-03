@@ -6,7 +6,7 @@
        (bin-directory (uiop:pathname-directory-pathname launcher-path))
        (source-root (uiop:pathname-parent-directory-pathname bin-directory))
        (project-setup
-         (or (let ((override (uiop:getenv "AUTOLITH_PROJECT_SETUP")))
+         (or (let ((override (uiop:getenv "ANTAIOS_PROJECT_SETUP")))
                (and override (plusp (length override)) (pathname override)))
              (merge-pathnames ".qlot/setup.lisp" source-root)))
        (user-setup (merge-pathnames "quicklisp/setup.lisp"
@@ -18,7 +18,7 @@
   (let ((*standard-output* *error-output*)
         (*trace-output* *error-output*))
     (unless (probe-file quicklisp-setup)
-      (error "Autolith search needs Quicklisp at ~A" quicklisp-setup))
+      (error "Antaios search needs Quicklisp at ~A" quicklisp-setup))
     (load quicklisp-setup)
     (uiop:symbol-call '#:ql '#:quickload :cffi :silent t)
     (asdf:load-system :clifff))

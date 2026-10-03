@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Fireworks API Key Provider Tests --
 

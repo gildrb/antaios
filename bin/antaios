@@ -38,34 +38,34 @@ source_root=$(CDPATH= cd -P "$(dirname "$launcher_path")/.." && pwd)
 # shellcheck source=../script/launcher-cli.sh
 source "$source_root/script/launcher-cli.sh" || exit 1
 case $source_root in
-  /nix/store/*) autolith_launcher_parse nix "$@" ;;
-  *) autolith_launcher_parse source "$@" ;;
+  /nix/store/*) antaios_launcher_parse nix "$@" ;;
+  *) antaios_launcher_parse source "$@" ;;
 esac
 if [[ $uninstall_requested == true ]]; then
-  autolith_uninstall "$autolith_installation_kind" "" "$source_root"
+  antaios_uninstall "$antaios_installation_kind" "" "$source_root"
   exit $?
 fi
 source_checksums_path=$source_root/sbcl-source-releases.sha256
 terminal_state=
 state_home=$(xdg_base_directory "${XDG_STATE_HOME:-}" "$HOME/.local/state")
 data_home=$(xdg_base_directory "${XDG_DATA_HOME:-}" "$HOME/.local/share")
-runtime_command_path=$data_home/autolith/runtimes/command
-inherited_runtime_source_root=${AUTOLITH_SBCL_SOURCE_ROOT:-}
-configured_sbcl=${AUTOLITH_SBCL:-}
+runtime_command_path=$data_home/antaios/runtimes/command
+inherited_runtime_source_root=${ANTAIOS_SBCL_SOURCE_ROOT:-}
+configured_sbcl=${ANTAIOS_SBCL:-}
 recorded_runtime=
 if [[ -r "$runtime_command_path" ]]; then
   IFS= read -r recorded_runtime < "$runtime_command_path" || recorded_runtime=
 fi
-if [[ -n ${AUTOLITH_SBCL:-} ]]; then
-  sbcl_command=$AUTOLITH_SBCL
+if [[ -n ${ANTAIOS_SBCL:-} ]]; then
+  sbcl_command=$ANTAIOS_SBCL
 elif [[ "$recorded_runtime" == /* && -x "$recorded_runtime" ]]; then
   sbcl_command=$recorded_runtime
 else
   sbcl_command=sbcl
 fi
-export AUTOLITH_SBCL=$sbcl_command
+export ANTAIOS_SBCL=$sbcl_command
 selected_runtime_version=
-if [[ -d "$data_home/autolith/runtimes" ]] &&
+if [[ -d "$data_home/antaios/runtimes" ]] &&
    selected_runtime_probe=$("$sbcl_command" --version 2>/dev/null); then
   selected_runtime_version=${selected_runtime_probe#SBCL }
   selected_runtime_version=${selected_runtime_version%% *}
@@ -74,8 +74,8 @@ runtime_source_root=
 source_identity_path=
 source_identity=
 if [[ -n "$selected_runtime_version" ]]; then
-  runtime_source_root=$data_home/autolith/runtimes/$selected_runtime_version/source
-  source_identity_path=$data_home/autolith/runtimes/$selected_runtime_version/source.identity
+  runtime_source_root=$data_home/antaios/runtimes/$selected_runtime_version/source
+  source_identity_path=$data_home/antaios/runtimes/$selected_runtime_version/source.identity
   if [[ -r "$source_identity_path" ]]; then
     IFS= read -r source_identity < "$source_identity_path" || source_identity=
   fi
@@ -94,7 +94,7 @@ if [[ "$inherited_runtime_source_root" == /* &&
    { [[ -z "$selected_runtime_version" ]] ||
      grep -Fx "\"$selected_runtime_version\"" \
        "$inherited_runtime_source_root/version.lisp-expr" >/dev/null; }; then
-  export AUTOLITH_SBCL_SOURCE_ROOT=$inherited_runtime_source_root
+  export ANTAIOS_SBCL_SOURCE_ROOT=$inherited_runtime_source_root
 elif [[ -n "$runtime_source_root" &&
       -n "$tracked_source_sha256" &&
       "$source_identity_version" == "$selected_runtime_version" &&
@@ -102,13 +102,13 @@ elif [[ -n "$runtime_source_root" &&
       -f "$runtime_source_root/version.lisp-expr" ]] &&
    grep -Fx "\"$source_identity_version\"" \
      "$runtime_source_root/version.lisp-expr" >/dev/null; then
-  export AUTOLITH_SBCL_SOURCE_ROOT=$runtime_source_root
+  export ANTAIOS_SBCL_SOURCE_ROOT=$runtime_source_root
 else
-  unset AUTOLITH_SBCL_SOURCE_ROOT
+  unset ANTAIOS_SBCL_SOURCE_ROOT
 fi
-recovery_core=${AUTOLITH_RECOVERY_CORE:-$data_home/autolith/recovery/autolith-recovery.core}
+recovery_core=${ANTAIOS_RECOVERY_CORE:-$data_home/antaios/recovery/antaios-recovery.core}
 recovery_manifest=$(dirname -- "$recovery_core")/manifest.sexp
-active_core=${AUTOLITH_ACTIVE_CORE:-$data_home/autolith/active/autolith-active.core}
+active_core=${ANTAIOS_ACTIVE_CORE:-$data_home/antaios/active/antaios-active.core}
 active_manifest=$(dirname -- "$active_core")/manifest.sexp
 crash_pointer=
 recovery_session_pointer=
@@ -123,10 +123,10 @@ launcher_notice=
 launcher_failure=
 launcher_reset=
 if [[ -t 2 && -z ${NO_COLOR:-} ]]; then
-  launcher_brand=$'\033[35;1m'
+  launcher_brand=$'\033[35m'
   launcher_dim=$'\033[2m'
   launcher_notice=$'\033[33m'
-  launcher_failure=$'\033[31;1m'
+  launcher_failure=$'\033[31m'
   launcher_reset=$'\033[0m'
 fi
 
@@ -171,7 +171,7 @@ active_image_valid()
      grep -Eq '^\(:ACTIVE-IMAGE :VERSION 1([[:space:]]|$)' "$active_manifest" &&
      "$sbcl_command" --noinform --core "$active_core" \
        --end-runtime-options "$source_root" \
-       --autolith-internal-active-image-probe >/dev/null 2>&1
+       --antaios-internal-active-image-probe >/dev/null 2>&1
 }
 
 run_active_core()
@@ -182,7 +182,7 @@ run_active_core()
 
 run_active_source()
 {
-  "$sbcl_command" --script "$source_root/bin/autolith-active" "$@"
+  "$sbcl_command" --script "$source_root/bin/antaios-active" "$@"
 }
 
 refresh_runtime_command()
@@ -194,7 +194,7 @@ refresh_runtime_command()
   fi
   if [[ "$installed_runtime" == /* && -x "$installed_runtime" ]]; then
     sbcl_command=$installed_runtime
-    export AUTOLITH_SBCL=$sbcl_command
+    export ANTAIOS_SBCL=$sbcl_command
   fi
 }
 
@@ -203,19 +203,19 @@ bootstrap_active_image()
   local bootstrap_status
 
   if [[ -n "$configured_sbcl" ]]; then
-    AUTOLITH_SBCL="$configured_sbcl" "$source_root/script/bootstrap"
+    ANTAIOS_SBCL="$configured_sbcl" "$source_root/script/bootstrap"
   else
-    env -u AUTOLITH_SBCL "$source_root/script/bootstrap"
+    env -u ANTAIOS_SBCL "$source_root/script/bootstrap"
   fi
   bootstrap_status=$?
   if [[ "$bootstrap_status" -ne 0 ]]; then
-    printf '%sAutolith bootstrap failed with status %d.%s\n' \
+    printf '%sAntaios bootstrap failed with status %d.%s\n' \
       "$launcher_failure" "$bootstrap_status" "$launcher_reset" >&2
     return 64
   fi
   refresh_runtime_command
   if ! active_image_valid; then
-    printf '%sAutolith bootstrap completed without a usable fast startup image.%s\n' \
+    printf '%sAntaios bootstrap completed without a usable fast startup image.%s\n' \
       "$launcher_failure" "$launcher_reset" >&2
     return 64
   fi
@@ -227,7 +227,7 @@ offer_bootstrap()
   local answer=
 
   while true; do
-    printf '%sAutolith%s fast startup image is missing or stale. Run %s"%s/script/bootstrap"%s now? [Y/n] ' \
+    printf '%sAntaios%s fast startup image is missing or stale. Run %s"%s/script/bootstrap"%s now? [Y/n] ' \
       "$launcher_brand" "$launcher_reset" \
       "$launcher_dim" "$source_root" "$launcher_reset" >&2
     if ! IFS= read -r answer; then
@@ -251,7 +251,7 @@ offer_bootstrap()
 
 run_active()
 {
-  export AUTOLITH_SOURCE_ROOT="$source_root"
+  export ANTAIOS_SOURCE_ROOT="$source_root"
   if [[ "$from_source_requested" == true ]]; then
     run_active_source "$@"
   elif active_image_valid; then
@@ -264,7 +264,7 @@ run_active()
       if [[ "$status" -eq 64 ]]; then
         return 64
       fi
-      printf '%sLoading Autolith from source.%s\n' \
+      printf '%sLoading Antaios from source.%s\n' \
         "$launcher_dim" "$launcher_reset" >&2
       run_active_source "$@"
     fi
@@ -281,19 +281,19 @@ if [[ "$recovery_requested" == true ]]; then
   exit $?
 fi
 
-crash_pointer_directory="$state_home/autolith/crash-pointers"
+crash_pointer_directory="$state_home/antaios/crash-pointers"
 mkdir -p -- "$crash_pointer_directory"
 chmod 700 "$crash_pointer_directory"
 crash_pointer="$crash_pointer_directory/launcher-$$.path"
 rm -f -- "$crash_pointer"
-export AUTOLITH_CRASH_POINTER="$crash_pointer"
+export ANTAIOS_CRASH_POINTER="$crash_pointer"
 
-recovery_session_pointer_directory="$state_home/autolith/recovery-session-pointers"
+recovery_session_pointer_directory="$state_home/antaios/recovery-session-pointers"
 mkdir -p -- "$recovery_session_pointer_directory"
 chmod 700 "$recovery_session_pointer_directory"
 recovery_session_pointer="$recovery_session_pointer_directory/launcher-$$.sexp"
 rm -f -- "$recovery_session_pointer"
-export AUTOLITH_RECOVERY_SESSION_POINTER="$recovery_session_pointer"
+export ANTAIOS_RECOVERY_SESSION_POINTER="$recovery_session_pointer"
 
 if run_active ${remaining_arguments[@]+"${remaining_arguments[@]}"}; then
   exit 0
@@ -313,7 +313,7 @@ if [[ "$status" -ne 64 && "$status" -ne 76 &&
   if [[ -f "$crash_pointer" ]]; then
     IFS= read -r capsule < "$crash_pointer" || capsule=
     case "$capsule" in
-      "$state_home/autolith/crashes/"*.sexp)
+      "$state_home/antaios/crashes/"*.sexp)
         if [[ ! -f "$capsule" ]]; then
           capsule=
         fi

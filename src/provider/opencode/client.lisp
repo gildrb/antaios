@@ -1,11 +1,11 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- OpenCode Chat Completions Provider --
 
 ;;; The OpenCode provider serves the standard streaming OpenAI Chat
 ;;; Completions dialect via the opencode.ai/zen/go/v1 endpoint. It
 ;;; participates in dynamic model discovery and persists credentials in
-;;; Autolith's private store with an optional OPENCODE_API_KEY environment
+;;; Antaios's private store with an optional OPENCODE_API_KEY environment
 ;;; bootstrap. Tool names ride in the Chat Completions Base64 encoding
 ;;; inherited from OPENAI-COMPATIBLE-PROVIDER, so conversations persist in
 ;;; the same namespaced shape regardless of the serving provider. Every

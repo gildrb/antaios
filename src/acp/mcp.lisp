@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- ACP MCP Overlay --
 
@@ -45,7 +45,7 @@
      (acp-mcp--credential-scope
       (acp-mcp-environment-values transport)
       (lambda ()
-        (cons "AUTOLITH_MCP=1"
+        (cons "ANTAIOS_MCP=1"
               (mapcar (lambda (entry)
                         (format nil "~A=~A" (first entry) (rest entry)))
                       (acp-mcp-environment-values transport))))))

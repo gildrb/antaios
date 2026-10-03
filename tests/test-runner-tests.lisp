@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Test Runner Behavior --
 
@@ -120,7 +120,7 @@
   (unless (fboundp (find-symbol "CHECK-MAIN" '#:cl-user))
     (progv (list (intern "*CHECK-SCRIPT-LIBRARY-MODE*" '#:cl-user)) '(t)
       (load (merge-pathnames "script/check.lisp"
-                            (asdf:system-source-directory :autolith)))))
+                            (asdf:system-source-directory :antaios)))))
   (apply #'uiop:symbol-call '#:cl-user name arguments))
 
 (-> test-check-load-test-system-lock () null)
@@ -146,7 +146,7 @@
              (list 'asdf:load-system
                    (lambda (system &rest arguments)
                      (declare (ignore arguments))
-                     (when (eq system :autolith/tests)
+                     (when (eq system :antaios/tests)
                        (with-lock-held (state-lock)
                          (incf calls)
                          (incf active)
@@ -442,7 +442,7 @@
                     (test-assert
                      (eql (catch 'worker-exit
                             (test-check--call "CHECK--RUN-WORKERS" '(fixture-probe)
-                                              :source-root (asdf:system-source-directory :autolith)
+                                              :source-root (asdf:system-source-directory :antaios)
                                               :temporary-root directory :jobs 1 :timeout 1))
                           (case mode
                             (:normal t)

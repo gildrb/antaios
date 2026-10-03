@@ -1,8 +1,8 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Papercut Resource Conditions --
 
-(define-condition papercut-resource-identifier-unsupported (autolith-error)
+(define-condition papercut-resource-identifier-unsupported (antaios-error)
   ((identifier
     :initarg :identifier
     :reader papercut-resource-identifier-unsupported-identifier
@@ -16,7 +16,7 @@
                      (papercut-resource-identifier-unsupported-identifier
                       condition)))))
 
-(define-condition papercut-resource-not-found (autolith-error)
+(define-condition papercut-resource-not-found (antaios-error)
   ((identifier
     :initarg :identifier
     :reader papercut-resource-not-found-identifier
@@ -346,7 +346,7 @@
         (papercut--validate-text value field limit)
       (papercut-error (condition)
         (error 'tool-error
-               :message (autolith-error-message condition)
+               :message (antaios-error-message condition)
                :tool-name "resource.edit")))))
 
 (-> papercut-resource--required-verdict

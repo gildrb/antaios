@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Native Task Agent Definitions --
 
@@ -423,7 +423,7 @@
 
 The grammar is rebuilt for every read so that a live change to the bound policy
 or the reasoning-effort vocabulary takes effect without reloading this file.
-Block comments are permitted here, unlike the other native Autolith formats, and
+Block comments are permitted here, unlike the other native Antaios formats, and
 the keyword vocabulary is a predicate because live reasoning-effort names join
 the static field names."
   (make-source-grammar
@@ -624,13 +624,13 @@ the offending object rather than only reporting that one was rejected."
 
 (-> task--project-agents-directory (configuration) (option pathname))
 (defun task--project-agents-directory (configuration)
-  "Return the nearest project .autolith/agents directory, or NIL."
+  "Return the nearest project .antaios/agents directory, or NIL."
   (let* ((start (config :working-directory configuration))
          (root (workspace-project-root start)))
     (loop repeat 64
           for directory = start
             then (uiop/pathname:pathname-parent-directory-pathname directory)
-          for candidate = (merge-pathnames ".autolith/agents/" directory)
+          for candidate = (merge-pathnames ".antaios/agents/" directory)
           when (uiop/filesystem:directory-exists-p candidate)
             return candidate
           when (equal directory root)

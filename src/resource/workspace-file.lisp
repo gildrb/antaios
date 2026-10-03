@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Workspace File Resources --
 
@@ -486,7 +486,7 @@ would print as a drive prefix, and NTFS reads NAME:REST as a named stream."
            (make-pathname :host nil :device nil :directory nil :defaults path))))
     (merge-pathnames
      (uiop:parse-native-namestring
-      (format nil ".~A.autolith-resource-~A.tmp"
+      (format nil ".~A.antaios-resource-~A.tmp"
               native-file
               (subseq (daemon-random-token) 0 16)))
      (uiop:pathname-directory-pathname path))))

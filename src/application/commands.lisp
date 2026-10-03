@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Interactive Commands --
 
@@ -513,8 +513,8 @@ notice preference is on, so enabling it mid-session takes effect immediately."
             (append (mapcar #'first fields)
                     (remove nil (list primary-label secondary-label))))))
     (append
-     (list (terminal-span :brand "autolith")
-           (terminal-span :dim (format nil " v~A~%" *autolith-version*)))
+     (list (terminal-span :brand "antaios")
+           (terminal-span :dim (format nil " v~A~%" *antaios-version*)))
      (application--field-rows fields :width width)
      (cond
        ((null snapshot)
@@ -726,7 +726,7 @@ the effort with the same model even when the model was never chosen."
 (defun application--codex-fast-mode-environment-p ()
   "Return true when the process environment controls Codex Fast mode."
   (not (null (non-empty-string-p
-              (uiop:getenv "AUTOLITH_CODEX_FAST_MODE")))))
+              (uiop:getenv "ANTAIOS_CODEX_FAST_MODE")))))
 
 (-> application-set-codex-fast-mode (application boolean) null)
 (defun application-set-codex-fast-mode (application enabled-p)
@@ -735,7 +735,7 @@ the effort with the same model even when the model was never chosen."
     (error 'configuration-error
            :message
            (format nil
-                   "AUTOLITH_CODEX_FAST_MODE controls Fast mode for this ~
+                   "ANTAIOS_CODEX_FAST_MODE controls Fast mode for this ~
                     process; unset it before using /fast on or /fast off.")))
   (let ((configuration (application-configuration application)))
     (setf (config :codex-fast-mode-p configuration) enabled-p)
@@ -761,7 +761,7 @@ the effort with the same model even when the model was never chosen."
           ((application--codex-fast-mode-environment-p)
            (format nil
                    "Codex Fast mode is ~A for this process. ~
-                    AUTOLITH_CODEX_FAST_MODE controls it.~:[ The current ~
+                    ANTAIOS_CODEX_FAST_MODE controls it.~:[ The current ~
                     model uses the standard path.~;~]"
                    (if enabled-p "on" "off")
                    available-p))
@@ -1060,7 +1060,7 @@ the effort with the same model even when the model was never chosen."
          (format nil
                  "~A~%~%Model discovery warnings:~%~{~A~%~}"
                  description
-                 (mapcar #'autolith-error-message failures))
+                 (mapcar #'antaios-error-message failures))
          description)))
   nil)
 
@@ -1092,7 +1092,7 @@ the effort with the same model even when the model was never chosen."
 (-> application--replay-skip-name (image-replay-skip) string)
 (defun application--replay-skip-name (skip)
   "Return SKIP's definition name with method qualifiers and specializers."
-  (let ((*package* (find-package '#:autolith))
+  (let ((*package* (find-package '#:antaios))
         (signature (definition-signature (image-replay-skip-definition skip))))
     (format nil "~(~A~)~{ ~(~S~)~}~@[ ~(~A~)~]"
             (second signature)
@@ -1232,7 +1232,7 @@ it was published, and the tracked definition CONFIGURATION's source holds now."
   "Return the model request that rebuilds SKIPS on the current tracked source."
   (with-output-to-string (stream)
     (format stream
-            "Autolith skipped ~D private definition~:[s~;~] at startup because ~
+            "Antaios skipped ~D private definition~:[s~;~] at startup because ~
              the tracked source they override moved on since they were ~
              published (private commit ~A, published against ~A; this image ~
              runs ~A). Bring every one of them up to date with the current ~
@@ -1484,7 +1484,7 @@ work must steer the running turn, not queue as follow-up work."
        (application-present
         application
         (format nil
-                "Goal set: ~A~%Autolith is starting work on it now. Use /goal ~
+                "Goal set: ~A~%Antaios is starting work on it now. Use /goal ~
                  to inspect it and /goal clear to stop."
                 remainder))
        (application--start-goal-work application))))
@@ -1712,7 +1712,7 @@ are forwarded to TERMINAL-UI-SELECT."
 
 (-> application--project-adaptation-offer-items () list)
 (defun application--project-adaptation-offer-items ()
-  "Return the AUTOLITH.org creation choices for an eligible resumed project."
+  "Return the ANTAIOS.org creation choices for an eligible resumed project."
   (list
    (list :name "create"
          :argument nil
@@ -1726,7 +1726,7 @@ are forwarded to TERMINAL-UI-SELECT."
 
 (-> application-maybe-offer-project-adaptation (application) null)
 (defun application-maybe-offer-project-adaptation (application)
-  "Offer voluntary AUTOLITH.org creation after a qualifying command-line resume."
+  "Offer voluntary ANTAIOS.org creation after a qualifying command-line resume."
   (let* ((configuration (application-configuration application))
          (ui (application-ui application))
          (project-root
@@ -1744,11 +1744,11 @@ are forwarded to TERMINAL-UI-SELECT."
             (project-adaptation-offer-defer configuration project-root)
             (application-present
              application
-             "This project has enough Autolith history to benefit from AUTOLITH.org, a voluntary ledger for project-specific adaptations.")
+             "This project has enough Antaios history to benefit from ANTAIOS.org, a voluntary ledger for project-specific adaptations.")
             (let ((choice
                     (application--pick-identifier
                      application
-                     :title "create AUTOLITH.org?"
+                     :title "create ANTAIOS.org?"
                      :items (application--project-adaptation-offer-items)
                      :usage "Choose create, not-now, or never."
                      :empty-notice "")))
@@ -1768,11 +1768,11 @@ are forwarded to TERMINAL-UI-SELECT."
                  (project-adaptation-offer-refuse configuration project-root)
                  (application-present
                   application
-                  "AUTOLITH.org offers are disabled permanently for this path."))
+                  "ANTAIOS.org offers are disabled permanently for this path."))
                 ((and choice (string= choice "not-now"))
                  (application-present
                   application
-                  "The AUTOLITH.org offer is deferred for five days.")))))
+                  "The ANTAIOS.org offer is deferred for five days.")))))
         (project-adaptation-error (condition)
           (application-handle-expected-error application condition)))))
   nil)
@@ -2119,7 +2119,7 @@ are forwarded to TERMINAL-UI-SELECT."
                      (cons backend generation))
                (application-present
                 application
-                (format nil "Exact heap checkpoint ~A is scheduled. Autolith will restart after this command and resume this session."
+                (format nil "Exact heap checkpoint ~A is scheduled. Antaios will restart after this command and resume this session."
                         (generation-identifier generation))))
              (application-present
               application
@@ -2504,35 +2504,41 @@ the settings page and the slash commands behave identically."
       (:source
        (application-present
         application
-        "Autolith is running from source. Update the checkout and run ./script/bootstrap."))
+        "Antaios is running from source. Update the checkout and run ./script/bootstrap."))
       (:nix
        (application-present
         application
-        "Autolith is installed through Nix. Update the flake or profile that provides it."))
+        "Antaios is installed through Nix. Update the flake or profile that provides it."))
       (:release
-       (if (update-state-refresh configuration :force-p t)
-           (let* ((state (update-state-load configuration))
-                  (latest-tag (update-state-latest-tag state))
-                  (current-tag
-                    (installation-provenance-current-tag provenance)))
-             (if (and current-tag
-                      latest-tag
-                      (release-tag< current-tag latest-tag))
-                 (error 'update-requested
-                        :message
-                        (format nil "Update to Autolith ~A."
-                                (subseq latest-tag 1))
-                        :tag latest-tag)
-                 (progn
-                   (setf (application-update-availability application) nil)
-                   (application-present
-                    application
-                    (format nil
-                            "Autolith ~A is already the newest published release."
-                            *autolith-version*)))))
-           (application-present
-            application
-            "Autolith could not check the release service. The installed release is unchanged.")))))
+       (cond
+         ((not (update-check-configured-p))
+          (application-present
+           application
+           "Antaios has no default release service. Set ANTAIOS_RELEASE_BASE_URL to a release service you trust, or update through Nix (nix run github:gildrb/theseus) or a source checkout. The installed release is unchanged."))
+         ((update-state-refresh configuration :force-p t)
+          (let* ((state (update-state-load configuration))
+                 (latest-tag (update-state-latest-tag state))
+                 (current-tag
+                   (installation-provenance-current-tag provenance)))
+            (if (and current-tag
+                     latest-tag
+                     (release-tag< current-tag latest-tag))
+                (error 'update-requested
+                       :message
+                       (format nil "Update to Antaios ~A."
+                               (subseq latest-tag 1))
+                       :tag latest-tag)
+                (progn
+                  (setf (application-update-availability application) nil)
+                  (application-present
+                   application
+                   (format nil
+                           "Antaios ~A is already the newest published release."
+                           *antaios-version*))))))
+         (t
+          (application-present
+           application
+           "Antaios could not check the release service. The installed release is unchanged."))))))
   nil)
 
 
@@ -2626,7 +2632,7 @@ the settings page and the slash commands behave identically."
     (:name "/cwd"
      :argument "[PATH]"
      :description "show or change the active workspace"
-     :tip "shows or moves the active workspace without restarting Autolith."
+     :tip "shows or moves the active workspace without restarting Antaios."
      :busy-behavior :inspect
      :terminal-behavior :shared
      :callable t)
@@ -2831,7 +2837,7 @@ the settings page and the slash commands behave identically."
     (:name "/goal"
      :argument "[OBJECTIVE]"
      :description "set or view the session goal"
-     :tip "sets the objective Autolith should pursue across continuations."
+     :tip "sets the objective Antaios should pursue across continuations."
      :busy-behavior :inspect
      :terminal-behavior :shared
      :callable t)
@@ -2855,7 +2861,7 @@ the settings page and the slash commands behave identically."
     (:name "/papercuts"
      :argument nil
      :description "show workspace papercut reports"
-     :tip "shows problems Autolith recorded when something was not working."
+     :tip "shows problems Antaios recorded when something was not working."
      :busy-behavior :inspect
      :terminal-behavior :shared
      :callable t)
@@ -3047,7 +3053,7 @@ the settings page and the slash commands behave identically."
     (:name "/update"
      :argument nil
      :description "check and install a newer packaged release"
-     :tip "updates curl-installed Autolith and explains source or Nix updates."
+     :tip "updates curl-installed Antaios and explains source or Nix updates."
      :busy-behavior :hold
      :terminal-behavior :shared
      :callable t)
@@ -3108,7 +3114,7 @@ the settings page and the slash commands behave identically."
 (define-application-command application--builtin-detach-command
     (:name "/detach"
      :argument nil
-     :description "detach Autolith from the current terminal"
+     :description "detach Antaios from the current terminal"
      :tip "keeps the session running and returns the foreground shell."
      ;; Detaching exists precisely to leave while work is running; the
      ;; handoff path schedules foreground release safely mid-turn.
@@ -3134,7 +3140,7 @@ the settings page and the slash commands behave identically."
     (:name "/quit"
      :aliases ("/exit")
      :argument nil
-     :description "leave Autolith"
+     :description "leave Antaios"
      :tip "exits cleanly; Ctrl-C also prints the exact resume command."
      :busy-behavior :cancel
      :terminal-behavior :shared

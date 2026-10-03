@@ -1,4 +1,4 @@
-(defpackage #:autolith
+(defpackage #:antaios
   (:use #:cl)
   (:shadow #:trace)
   (:import-from #:cl-base64
@@ -1099,4 +1099,4 @@
            #:vault-contents
            #:worker-main))
 
-(in-package #:autolith)
+(in-package #:antaios)

@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Responsive Terminal Input --
 
@@ -23,7 +23,7 @@
 (defun application-input-controller--forced-exit-text ()
   "Return the repeated-Ctrl-C forced-exit explanation."
   (format nil
-          "Ctrl-C pressed twice within ~A seconds; forcing Autolith to exit."
+          "Ctrl-C pressed twice within ~A seconds; forcing Antaios to exit."
           (application-input-controller--interrupt-window-text)))
 
 (-> application-input-controller--monotonic-seconds () real)
@@ -48,12 +48,12 @@
     :type application
     :documentation "The application receiving terminal events and submitted work.")
    (lock
-    :initform (make-lock "Autolith input controller")
+    :initform (make-lock "Antaios input controller")
     :reader application-input-controller-lock
     :type t
     :documentation "The lock protecting work, reader, and exit state.")
    (publication-lock
-    :initform (make-lock "Autolith input publication")
+    :initform (make-lock "Antaios input publication")
     :reader application-input-controller-publication-lock
     :type t
     :documentation "The lock serializing terminal and durable pending publication.")
@@ -73,7 +73,7 @@
     :type (integer 0)
     :documentation "The newest generation admitted to durable publication.")
    (condition-variable
-    :initform (make-condition-variable :name "Autolith input controller")
+    :initform (make-condition-variable :name "Antaios input controller")
     :reader application-input-controller-condition-variable
     :type t
     :documentation "The main and reader thread wakeup condition.")
@@ -306,7 +306,7 @@
 (-> application--resume-command (application) string)
 (defun application--resume-command (application)
   "Return the shell command that resumes APPLICATION's exact conversation."
-  (format nil "autolith resume ~A"
+  (format nil "antaios resume ~A"
           (uiop:escape-shell-token
            (conversation-identifier-display
             (conversation-identifier
@@ -359,11 +359,11 @@ resume command that reopens the conversation the run leaves behind."
               (:turn-cancellation
                (application-input-controller--forced-exit-text))
               (:localgroup-abandoned
-               "The attached terminal disconnected without detaching; Autolith is exiting.")
+               "The attached terminal disconnected without detaching; Antaios is exiting.")
               (:localgroup-kill
-               "A localgroup kill request is stopping Autolith.")
+               "A localgroup kill request is stopping Antaios.")
               (otherwise
-               "Ctrl-C pressed during shutdown; forcing Autolith to exit."))
+               "Ctrl-C pressed during shutdown; forcing Antaios to exit."))
             resume-command)))
 
 (-> application-input-controller--show-interrupt-hint
@@ -1565,7 +1565,7 @@ the ordinary FIFO queue."
 (-> application-prompt--primary-target-p (string) boolean)
 (defun application-prompt--primary-target-p (target)
   "Return whether TARGET explicitly names the primary agent."
-  (string-equal target "autolith"))
+  (string-equal target "antaios"))
 
 (-> application-prompt--primary-rejection-reason
     (application-input-controller)
@@ -1699,7 +1699,7 @@ the ordinary FIFO queue."
         (unless (typep controller 'application-input-controller)
           (prompt--error
            ':controller-unavailable
-           "Primary Autolith has no active input controller."
+           "Primary Antaios has no active input controller."
            :target target))
         (application-localgroup-resume application)
         (multiple-value-bind (accepted-p delivery)
@@ -1710,12 +1710,12 @@ the ordinary FIFO queue."
                     (application-prompt--primary-rejection-reason controller)))
               (prompt--error
                reason
-               (format nil "Primary Autolith is not accepting prompts (~(~A~))."
+               (format nil "Primary Antaios is not accepting prompts (~(~A~))."
                        reason)
                :target target)))
           (list :prompt
                 :accepted-p t
-                :target ':autolith
+                :target ':antaios
                 :delivery delivery
                 :content-characters (length (user-message-input-text input))
                 :image-count (length
@@ -2181,7 +2181,7 @@ reaches the very next provider request."
                :debug-condition-p
                (lambda (condition)
                  (not (typep condition
-                             '(or autolith-error cl-llm-provider-api:provider-api-error)))))
+                             '(or antaios-error cl-llm-provider-api:provider-api-error)))))
             (declare (ignore restart-names selected-restart-name))
             (if (eq debugger-status ':aborted)
                 (values ':aborted condition)
@@ -2196,7 +2196,7 @@ reaches the very next provider request."
              active-image-corruption)
          (condition)
           (application-raise-fatal application condition signal-backtrace))
-        ((or autolith-error cl-llm-provider-api:provider-api-error) (condition)
+        ((or antaios-error cl-llm-provider-api:provider-api-error) (condition)
           (funcall expected-error-function application condition)
           (values ':failed (princ-to-string condition)))
         (serious-condition (condition)
@@ -2400,7 +2400,7 @@ may execute immediately; other Lisp waits for the idle boundary."
                           :test #'string=)))
         (and (terminal-ui--lisp-draft-p text)
              (handler-case
-                 (let* ((*package* (find-package '#:autolith))
+                 (let* ((*package* (find-package '#:antaios))
                         (form (self-read-form text :read-eval nil)))
                    (or (application-operation--immediate-vault-form-p form)
                        (not (null (member form
@@ -2429,12 +2429,12 @@ may execute immediately; other Lisp waits for the idle boundary."
     (handler-case
         (progn
           (application-submit-prompt
-           application "autolith" input
+           application "antaios" input
            :prefer-steering-p prefer-steering-p)
           t)
       (prompt-error (condition)
         (unless (eq (prompt-error-reason condition) ':storage-unavailable)
-          (application-present application (autolith-error-message condition)))
+          (application-present application (antaios-error-message condition)))
         nil))))
 
 (-> application-input-controller--handle-submission
@@ -2844,7 +2844,7 @@ may execute immediately; other Lisp waits for the idle boundary."
             (make-thread
              (lambda ()
                (application-input-controller--reader-loop controller))
-             :name "Autolith terminal input"))))
+             :name "Antaios terminal input"))))
   nil)
 
 (-> application-input-controller--pause-reader
@@ -3669,7 +3669,7 @@ reader stays alive in interrupt-only mode until FUNCTION returns or unwinds."
              active-image-corruption)
          (condition)
           (application-raise-fatal application condition signal-backtrace))
-        ((or autolith-error cl-llm-provider-api:provider-api-error) (condition)
+        ((or antaios-error cl-llm-provider-api:provider-api-error) (condition)
           (application--record-turn-aborted
            application condition
            :turn-start-sequence turn-start-sequence

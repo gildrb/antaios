@@ -26,8 +26,8 @@
        (version-pathname (merge-pathnames "sbcl.version" source-root))
        (project-setup (merge-pathnames ".qlot/setup.lisp" source-root))
        (default-core
-         (merge-pathnames "active/autolith-active.core"
-                          (autolith-application-root :data)))
+         (merge-pathnames "active/antaios-active.core"
+                          (antaios-application-root :data)))
        (arguments (uiop:command-line-arguments))
        ;; ACTIVE-IMAGE-INSTALL starts this script again with --child on hosts
        ;; without fork; that process loads the system and saves itself.
@@ -37,13 +37,13 @@
        (core-pathname
          (pathname
           (or (and (not child-core) (first arguments))
-              (uiop:getenv "AUTOLITH_ACTIVE_CORE")
+              (uiop:getenv "ANTAIOS_ACTIVE_CORE")
               default-core))))
   (load (merge-pathnames "script/runtime-requirement.lisp" source-root))
-  (autolith-require-minimum-runtime version-pathname)
+  (antaios-require-minimum-runtime version-pathname)
   (unless (probe-file project-setup)
     (error "Active-image builds need locked dependencies; run ./script/bootstrap."))
-  (format t "~&Loading Autolith for its preloaded active image.~%")
+  (format t "~&Loading Antaios for its preloaded active image.~%")
   (finish-output)
   (load project-setup)
   (load (merge-pathnames "script/build-sandbox.lisp" source-root))
@@ -56,19 +56,19 @@
       (pushnew profile-library-directory
                (symbol-value library-directories)
                :test #'equal)))
-  (asdf:load-asd (merge-pathnames "autolith.asd" source-root))
-  (asdf:load-system :autolith)
+  (asdf:load-asd (merge-pathnames "antaios.asd" source-root))
+  (asdf:load-system :antaios)
   (cond
     (child-core
      (format t "~&Saving the preloaded active image.~%")
      (finish-output)
-     (uiop:symbol-call '#:autolith '#:active-image-save
+     (uiop:symbol-call '#:antaios '#:active-image-save
                        source-root
                        (uiop:parse-native-namestring child-core)))
     (t
      (format t "~&Saving and validating the preloaded active image.~%")
      (finish-output)
-     (uiop:symbol-call '#:autolith '#:active-image-install
+     (uiop:symbol-call '#:antaios '#:active-image-install
                        source-root
                        core-pathname)
      (format t "~&Installed preloaded active image at ~A.~%" core-pathname))))

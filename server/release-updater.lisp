@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Release Host Updater Configuration --
 
@@ -126,71 +126,71 @@
    :selection-path
    (or selection-path
        (let ((configured
-               (uiop:getenv "AUTOLITH_RELEASE_SELECTION_PATH")))
+               (uiop:getenv "ANTAIOS_RELEASE_SELECTION_PATH")))
          (and configured (pathname configured)))
-       #p"/srv/autolith-release-server/current")
+       #p"/srv/antaios-release-server/current")
    :deployments-root
    (uiop:ensure-directory-pathname
     (or deployments-root
         (let ((configured
-                (uiop:getenv "AUTOLITH_RELEASE_DEPLOYMENTS_ROOT")))
+                (uiop:getenv "ANTAIOS_RELEASE_DEPLOYMENTS_ROOT")))
           (and configured (pathname configured)))
-        #p"/srv/autolith-release-server/deployments/"))
+        #p"/srv/antaios-release-server/deployments/"))
    :state-root
    (uiop:ensure-directory-pathname
     (or state-root
         (let ((configured
-                (uiop:getenv "AUTOLITH_RELEASE_UPDATER_STATE_ROOT")))
+                (uiop:getenv "ANTAIOS_RELEASE_UPDATER_STATE_ROOT")))
           (and configured (pathname configured)))
-        #p"/var/lib/autolith-release-server/updater/"))
+        #p"/var/lib/antaios-release-server/updater/"))
    :host-lock-root
    (uiop:ensure-directory-pathname
     (or host-lock-root
-        (let ((configured (uiop:getenv "AUTOLITH_RELEASE_STATE_ROOT")))
+        (let ((configured (uiop:getenv "ANTAIOS_RELEASE_STATE_ROOT")))
           (and configured (pathname configured)))
-        #p"/var/lib/autolith-release-server/builder/"))
+        #p"/var/lib/antaios-release-server/builder/"))
    :repository
    (or repository
-       (uiop:getenv "AUTOLITH_RELEASE_REPOSITORY")
+       (uiop:getenv "ANTAIOS_RELEASE_REPOSITORY")
        *release-builder-default-repository*)
    :poll-seconds
    (or poll-seconds
        (release-builder--positive-integer
-        (uiop:getenv "AUTOLITH_RELEASE_UPDATE_POLL_SECONDS")
+        (uiop:getenv "ANTAIOS_RELEASE_UPDATE_POLL_SECONDS")
         *release-updater-default-poll-seconds*
         "release host update poll interval"))
    :activation-timeout-seconds
    (or activation-timeout-seconds
        (release-builder--positive-integer
-        (uiop:getenv "AUTOLITH_RELEASE_ACTIVATION_TIMEOUT_SECONDS")
+        (uiop:getenv "ANTAIOS_RELEASE_ACTIVATION_TIMEOUT_SECONDS")
         *release-updater-default-activation-timeout-seconds*
         "release host activation timeout"))
    :server-service
    (or server-service
        (let ((configured
-               (uiop:getenv "AUTOLITH_RELEASE_SERVER_SERVICE")))
+               (uiop:getenv "ANTAIOS_RELEASE_SERVER_SERVICE")))
          (and configured (pathname configured)))
-       #p"/run/service/autolith-release-server")
+       #p"/run/service/antaios-release-server")
    :builder-service
    (or builder-service
        (let ((configured
-               (uiop:getenv "AUTOLITH_RELEASE_BUILDER_SERVICE")))
+               (uiop:getenv "ANTAIOS_RELEASE_BUILDER_SERVICE")))
          (and configured (pathname configured)))
-       #p"/run/service/autolith-release-builder")
+       #p"/run/service/antaios-release-builder")
    :health-url
    (or health-url
-       (uiop:getenv "AUTOLITH_RELEASE_HEALTH_URL")
+       (uiop:getenv "ANTAIOS_RELEASE_HEALTH_URL")
        "http://127.0.0.1:8098/health")
    :service-account
    (or service-account
-       (uiop:getenv "AUTOLITH_RELEASE_SERVICE_ACCOUNT")
-       "autolith-release")
+       (uiop:getenv "ANTAIOS_RELEASE_SERVICE_ACCOUNT")
+       "antaios-release")
    :service-home
    (uiop:ensure-directory-pathname
     (or service-home
-        (let ((configured (uiop:getenv "AUTOLITH_RELEASE_SERVICE_HOME")))
+        (let ((configured (uiop:getenv "ANTAIOS_RELEASE_SERVICE_HOME")))
           (and configured (pathname configured)))
-        #p"/var/lib/autolith-release-server/home/"))))
+        #p"/var/lib/antaios-release-server/home/"))))
 
 
 ;;;; -- Durable Update State --
@@ -208,7 +208,7 @@
     list)
 (defun release-updater--state (phase source-tag &key previous failed)
   "Return one validated native deployment-state form."
-  (list ':autolith-release-deployment
+  (list ':antaios-release-deployment
         ':version 1
         ':phase phase
         ':tag (release-source-tag-name source-tag)
@@ -223,7 +223,7 @@
   "Return true when STATE is one complete supported deployment-state form."
   (and (listp state)
        (= (length state) 17)
-       (eq (first state) ':autolith-release-deployment)
+       (eq (first state) ':antaios-release-deployment)
        (eq (second state) ':version)
        (eql (third state) 1)
        (eq (fourth state) ':phase)
@@ -540,8 +540,8 @@ checked-out commit are rejected."
           (list "s6-setuidgid"
                 (release-updater-configuration-service-account configuration)
                 "env"
-                "-u" "AUTOLITH_SBCL"
-                "-u" "AUTOLITH_SBCL_SOURCE_ROOT"
+                "-u" "ANTAIOS_SBCL"
+                "-u" "ANTAIOS_SBCL_SOURCE_ROOT"
                 (format nil "HOME=~A" (namestring home))
                 (format nil "XDG_DATA_HOME=~A"
                         (namestring (merge-pathnames ".local/share/" home)))
@@ -595,7 +595,7 @@ checked-out commit are rejected."
    ':candidate-probe
    (release-source-tag-name source-tag)
    (list "env"
-         (format nil "AUTOLITH_RELEASE_SOURCE_ROOT=~A"
+         (format nil "ANTAIOS_RELEASE_SOURCE_ROOT=~A"
                  (namestring deployment))
          (namestring (merge-pathnames "server/run" deployment))
          "host-probe"
@@ -1212,7 +1212,7 @@ checked-out commit are rejected."
 (-> release-updater-run (release-updater-configuration) null)
 (defun release-updater-run (configuration)
   "Poll until one host deployment is promoted, then exit for an s6 reload."
-  (format t "~&Autolith release host updater polling ~A every ~D seconds.~%"
+  (format t "~&Antaios release host updater polling ~A every ~D seconds.~%"
           (release-updater-configuration-repository configuration)
           (release-updater-configuration-poll-seconds configuration))
   (finish-output)
@@ -1239,7 +1239,7 @@ checked-out commit are rejected."
            :stage ':candidate-probe
            :tag tag
            :cause "The candidate probe identity is malformed."))
-  (let* ((source-root (asdf:system-source-directory :autolith))
+  (let* ((source-root (asdf:system-source-directory :antaios))
          (source-tag
            (make-instance 'release-source-tag :name tag :commit commit)))
     (unless (release-updater--checkout-valid-p source-root source-tag)
@@ -1258,7 +1258,7 @@ checked-out commit are rejected."
                :tag tag
                :cause (format nil "Required host file ~A is unavailable."
                               pathname))))
-    (format t "~&Autolith release host candidate ~A at ~A is ready.~%"
+    (format t "~&Antaios release host candidate ~A at ~A is ready.~%"
             tag commit)
     (finish-output))
   nil)

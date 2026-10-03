@@ -18,7 +18,7 @@
               (uiop:ensure-directory-pathname (fourth arguments)))))
   (labels ((fail (control &rest values)
              "Signal a release runtime build failure using CONTROL and VALUES."
-             (error "Autolith release runtime build failed: ~?" control values))
+             (error "Antaios release runtime build failed: ~?" control values))
 
            (trimmed-file (pathname)
              "Read PATHNAME and remove surrounding ASCII whitespace."
@@ -149,18 +149,18 @@
                  (runtime-source
                    (merge-pathnames (format nil "sbcl-~A/" runtime-version)
                                     temporary-root)))
-            (unless (autolith-version-components runtime-version)
+            (unless (antaios-version-components runtime-version)
               (fail "sbcl.version is malformed."))
             (unless (sha256-p runtime-sha256)
               (fail "sbcl-source.sha256 is malformed."))
             (let* ((bootstrap-version (runtime-version bootstrap-command))
                    (host-bootstrap-p
-                     (equal (uiop:getenv "AUTOLITH_HOST_BOOTSTRAP") "1"))
+                     (equal (uiop:getenv "ANTAIOS_HOST_BOOTSTRAP") "1"))
                    (host-minimum
-                     (or (uiop:getenv "AUTOLITH_HOST_BOOTSTRAP_MINIMUM")
+                     (or (uiop:getenv "ANTAIOS_HOST_BOOTSTRAP_MINIMUM")
                          "2.0.0")))
               (if host-bootstrap-p
-                  (unless (autolith-version-at-least-p bootstrap-version host-minimum)
+                  (unless (antaios-version-at-least-p bootstrap-version host-minimum)
                     (fail "the host bootstrap compiler ~A does not satisfy SBCL ~A or newer."
                           bootstrap-version host-minimum))
                   (unless (string= bootstrap-version "2.4.0")
@@ -189,7 +189,7 @@
              (list "env" "-u" "SBCL_HOME" "sh" "install.sh"
                    (format nil "--prefix=~A" (namestring installation)))
              :directory runtime-source)
-            (when (equal (uiop:getenv "AUTOLITH_STATIC_MUSL") "1")
+            (when (equal (uiop:getenv "ANTAIOS_STATIC_MUSL") "1")
               (run (list "make" "-C" "src/runtime" "libsbcl.a")
                    :directory runtime-source)
               (let* ((support-root

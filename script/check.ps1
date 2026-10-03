@@ -10,16 +10,16 @@ $constantPattern = '^\s*\(\s*([^\s()]+:)?(define-constant|defconstant)(\s|\(|\)|
 $roots = @('src', 'recovery', 'server', 'script', 'tests') |
   ForEach-Object { Join-Path $sourceRoot $_ } |
   Where-Object { Test-Path -LiteralPath $_ }
-$files = @(Get-Item -LiteralPath (Join-Path $sourceRoot 'autolith.asd')) +
+$files = @(Get-Item -LiteralPath (Join-Path $sourceRoot 'antaios.asd')) +
   @(Get-ChildItem -LiteralPath $roots -Recurse -File -Filter '*.lisp')
 $matches = $files | Select-String -Pattern $constantPattern
 if ($matches) {
-  [Console]::Error.WriteLine('Autolith source must not declare constants:')
+  [Console]::Error.WriteLine('Antaios source must not declare constants:')
   foreach ($match in $matches) {
     [Console]::Error.WriteLine("$($match.Path):$($match.LineNumber):$($match.Line)")
   }
   exit 1
 }
 
-& (Join-Path $sourceRoot 'bin\autolith-runtime.ps1') --script (Join-Path $sourceRoot 'script\check.lisp') @args
+& (Join-Path $sourceRoot 'bin\antaios-runtime.ps1') --script (Join-Path $sourceRoot 'script\check.lisp') @args
 exit $LASTEXITCODE

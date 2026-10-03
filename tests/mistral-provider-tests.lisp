@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Mistral Provider Tests --
 
@@ -110,14 +110,14 @@
   "Test endpoint overrides, authenticated discovery, and key validation."
   (let* ((configuration (mistral-provider-test--configuration))
          (root (test-configuration-root configuration))
-         (saved-chat (uiop:getenv "AUTOLITH_MISTRAL_PROVIDER_ENDPOINT"))
-         (saved-models (uiop:getenv "AUTOLITH_MISTRAL_MODELS_ENDPOINT"))
+         (saved-chat (uiop:getenv "ANTAIOS_MISTRAL_PROVIDER_ENDPOINT"))
+         (saved-models (uiop:getenv "ANTAIOS_MISTRAL_MODELS_ENDPOINT"))
          (observed nil))
     (unwind-protect
          (progn
-           (platform-setenv "AUTOLITH_MISTRAL_PROVIDER_ENDPOINT"
+           (platform-setenv "ANTAIOS_MISTRAL_PROVIDER_ENDPOINT"
                             "https://chat.mistral.invalid/v1/chat/completions")
-           (platform-setenv "AUTOLITH_MISTRAL_MODELS_ENDPOINT"
+           (platform-setenv "ANTAIOS_MISTRAL_MODELS_ENDPOINT"
                             "https://models.mistral.invalid/v1/models")
            (test-assert
             (string= (configuration--provider-endpoint-for "mistral-test")
@@ -173,9 +173,9 @@
                   observed))
             "Mistral discovery and validation use the configured endpoint and key"))
       (mistral-provider-test--restore-environment
-       "AUTOLITH_MISTRAL_PROVIDER_ENDPOINT" saved-chat)
+       "ANTAIOS_MISTRAL_PROVIDER_ENDPOINT" saved-chat)
       (mistral-provider-test--restore-environment
-       "AUTOLITH_MISTRAL_MODELS_ENDPOINT" saved-models)
+       "ANTAIOS_MISTRAL_MODELS_ENDPOINT" saved-models)
       (platform-delete-directory-tree *platform* root :validate t :if-does-not-exist ':ignore)))
   nil)
 

@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- In-Process Task Orchestration --
 
@@ -151,7 +151,7 @@
    "The explicit terminal protocol state of one child agent."))
 
 (defclass task-progress nil
-  ((lock :initform (make-lock "Autolith task progress") :reader
+  ((lock :initform (make-lock "Antaios task progress") :reader
          task-progress-lock :documentation
          "The lock protecting snapshots read by job tools.")
    (status :initform ':queued :accessor task-progress-status :type
@@ -203,11 +203,11 @@
     :type job-pool
     :documentation "The supervised worker pool running asynchronous tool calls.")
    (lock
-    :initform (make-lock "Autolith task orchestrator")
+    :initform (make-lock "Antaios task orchestrator")
     :accessor task-orchestrator-lock
     :documentation "The lock protecting naming, ordering, hurry-up, and listeners.")
    (artifact-lock
-    :initform (make-lock "Autolith task artifacts")
+    :initform (make-lock "Antaios task artifacts")
     :reader task-orchestrator-artifact-lock
     :documentation "The lock serializing artifact publication and retention cleanup.")
     (closed-p
@@ -340,7 +340,7 @@ nesting depth, and lifecycle listeners."))
     :documentation
     "The parent capability used to authorize child external tool calls.")
     (steering-lock
-     :initform (make-lock "Autolith task steering")
+     :initform (make-lock "Antaios task steering")
      :reader task-job-steering-lock
      :documentation
      "The lock serializing steering, response promotion, and terminal claims.")

@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Portable Data CLI --
 
@@ -55,11 +55,11 @@
   "Return the portable-data command group without starting an interactive session."
   (make-command
    :name "data"
-   :description "export and import portable Autolith user data"
+   :description "export and import portable Antaios user data"
    :usage "export|import FILE [OPTIONS]"
    :sub-commands (list (main--data-transfer-command ':export)
                        (main--data-transfer-command ':import))
    :handler (lambda (command)
               (declare (ignore command))
               (error 'configuration-error
-                     :message "Usage: autolith data export|import FILE [OPTIONS]"))))
+                     :message "Usage: antaios data export|import FILE [OPTIONS]"))))

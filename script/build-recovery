@@ -27,5 +27,5 @@ resolve_path()
 launcher_path=$(resolve_path "${BASH_SOURCE[0]}")
 source_root=$(CDPATH= cd -P "$(dirname "$launcher_path")/.." && pwd)
 
-exec "$source_root/bin/autolith-runtime" \
+exec "$source_root/bin/antaios-runtime" \
   --script "$source_root/script/build-recovery.lisp" "$@"

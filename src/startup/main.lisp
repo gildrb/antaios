@@ -1,42 +1,6 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Application Lifecycle --
-
-(defparameter *application-banner-logo-lines*
-  '((:brand-gradient-1 . "  :::.      :::")
-    (:brand-gradient-2 . "  ;;`;;     ;;;")
-    (:brand-gradient-3 . " ,[[ '[[,   [[[")
-    (:brand-gradient-4 . "c$$$cc$$$c  $$'")
-    (:brand-gradient-5 . " 888   888,o88oo,.__")
-    (:brand-gradient-6 . " YMM   \"\"` \"\"\"\"YUMMM"))
-  "The AL mark generated with FIGlet's Cosmic font, paired with row styles.")
-
-(defparameter *application-recovery-gradient-styles*
-  '(:recovery-gradient-1 :recovery-gradient-2 :recovery-gradient-3
-    :recovery-gradient-4 :recovery-gradient-5 :recovery-gradient-6)
-  "The distinct row styles used after recovery starts Autolith.")
-
-(defparameter *application-banner-gap* "   "
-  "Horizontal space between the startup mark and session data.")
-
-(defparameter *application-banner-minimum-metadata-width* 32
-  "The minimum useful width for metadata beside the startup mark.")
-
-(-> application--banner-logo-lines () list)
-(defun application--banner-logo-lines ()
-  "Return startup-mark rows colored for an ordinary or recovered process."
-  (if (non-empty-string-p (uiop:getenv "AUTOLITH_RECOVERED"))
-      (mapcar (lambda (entry style)
-                (cons style (rest entry)))
-              *application-banner-logo-lines*
-              *application-recovery-gradient-styles*)
-      *application-banner-logo-lines*))
-
-(-> application--banner-logo-width () (integer 1))
-(defun application--banner-logo-width ()
-  "Return the widest row of the embedded startup mark in terminal cells."
-  (loop for entry in (application--banner-logo-lines)
-        maximize (text-cell-width (rest entry))))
 
 (-> application--banner-columns (application) (integer 1))
 (defun application--banner-columns (application)
@@ -53,101 +17,52 @@
   (list (terminal-span :dim (format nil "~12A  " label))
         (terminal-span :plain value)))
 
-(-> application--banner-metadata-rows (application (integer 1)) list)
-(defun application--banner-metadata-rows (application maximum-width)
-  "Return identity and runtime rows no wider than MAXIMUM-WIDTH."
-  (let* ((configuration (application-configuration application))
-         (title
-           (list (terminal-span :strong "AUTOLITH")
-                 (terminal-span :dim (format nil " v~A" *autolith-version*))))
-         (model
+(-> application--banner-rows (application) list)
+(defun application--banner-rows (application)
+  "Return the title row followed by APPLICATION's session metadata rows.
+
+A process started by the recovery launcher adds a recovered row, which is how
+the banner distinguishes recovery from an ordinary start."
+  (let ((configuration (application-configuration application)))
+    (append
+     (list (list (terminal-span :brand (format nil "Antaios v~A" *antaios-version*)))
            (application--banner-metadata-field
             "model"
             (format nil "~A (effort ~A)"
                     (config :model configuration)
-                    (config :reasoning-effort configuration))))
-         (workspace
+                    (config :reasoning-effort configuration)))
            (application--banner-metadata-field
             "workspace"
             (namestring (config :working-directory configuration))))
-         (mode
-           (and (config :immutable-p configuration)
-                (application--banner-metadata-field "mode" "immutable")))
-         (detail-rows (append (list title model workspace)
-                              (when mode (list mode))))
-         (divider-width
-           (min maximum-width
-                (loop for row in detail-rows
-                      maximize (terminal--spans-width row)))))
-    (append
-     (list title
-           (list (terminal-span
-                  :dim
-                  (make-string divider-width :initial-element #\─)))
-           model
-           workspace)
-     (when mode (list mode)))))
+     (when (config :immutable-p configuration)
+       (list (application--banner-metadata-field "mode" "immutable")))
+     (when (non-empty-string-p (uiop:getenv "ANTAIOS_RECOVERED"))
+       (list (application--banner-metadata-field
+              "recovered" "started by the recovery launcher"))))))
 
 (-> application--banner-terminate-row (list) list)
 (defun application--banner-terminate-row (spans)
   "Return SPANS followed by one plain newline span."
   (append spans (list (terminal-span :plain (string #\Newline)))))
 
-(-> application--banner-side-by-side-spans (list integer) list)
-(defun application--banner-side-by-side-spans (metadata-rows columns)
-  "Return the startup mark with METADATA-ROWS aligned beside it within COLUMNS."
-  (let* ((logo-width (application--banner-logo-width))
-         (metadata-width (- columns
-                            logo-width
-                            (text-cell-width *application-banner-gap*))))
-    (loop for logo-entry in (application--banner-logo-lines)
-          for index from 0
-          for metadata-row = (nth index metadata-rows)
-          append
-          (let ((logo-text (rest logo-entry)))
-            (application--banner-terminate-row
-             (append
-              (list (terminal-span
-                     (first logo-entry)
-                     (if metadata-row
-                         (format nil "~VA" logo-width logo-text)
-                         logo-text)))
-              (when metadata-row
-                (append
-                 (list (terminal-span :plain *application-banner-gap*))
-                 (terminal--clip-spans metadata-row metadata-width)))))))))
-
-(-> application--banner-stacked-spans (list integer) list)
-(defun application--banner-stacked-spans (metadata-rows columns)
-  "Return the startup mark above clipped METADATA-ROWS within COLUMNS."
-  (append
-   (loop for logo-entry in (application--banner-logo-lines)
-         append (application--banner-terminate-row
-                 (list (terminal-span (first logo-entry)
-                                      (rest logo-entry)))))
-   (list (terminal-span :plain (string #\Newline)))
-   (loop for metadata-row in metadata-rows
-         append (application--banner-terminate-row
-                 (terminal--clip-spans metadata-row columns)))))
-
 (defparameter *application-startup-tips*
   '(((:plain "The prompt is a Lisp REPL, you can use it to evaluate arbitrary Common Lisp."))
     ((:plain "The tools available to the model are callable functions in the prompt, try for instance ")
      (:code "(search.files :query \"README\")")
      (:plain " to fuzzy-search workspace file paths with fff."))
-    ((:code "AUTOLITH_WEB_SEARCH")
+    ((:code "ANTAIOS_WEB_SEARCH")
      (:plain " selects provider web search: disabled turns it off, cached uses indexed results, and live fetches fresh results where supported."))
     ((:plain "Configuring a language server in ")
      (:code "lsp.sexp")
-     (:plain " under your Autolith config directory adds definition, hover, and diagnostics tools for workspace code."))
-    ((:code "autolith --fullscreen")
-     (:plain " uses a scrollable transcript and bottom-pinned composer. Save the choice for future launches with ")
-     (:code "(setf (config :fullscreen-p) t)")
-     (:plain "; nil restores the inline default."))
+     (:plain " under your Antaios config directory adds definition, hover, and diagnostics tools for workspace code."))
+    ((:code "antaios")
+     (:plain " opens a scrollable transcript with a bottom-pinned composer. Save the inline terminal view for future launches with ")
+     (:code "(setf (config :fullscreen-p) nil)")
+     (:plain "."))
     ((:plain "Visit ")
      (:code "https://almightylisp.com/")
      (:plain " for almighty tools for almighty programmers, and try ")
-     (:code "autolith --almighty")
+     (:code "antaios --almighty")
      (:plain " to wear its colors.")))
   "Startup advice supplementing registered command tips, as styled span specifications.")
 
@@ -178,30 +93,16 @@
 (-> application-banner (application) list)
 (defun application-banner (application)
   "Return APPLICATION's identity, session metadata, security notice, and tip."
-  (let* ((columns (application--banner-columns application))
-         (metadata-width
-           (- columns
-              (application--banner-logo-width)
-              (text-cell-width *application-banner-gap*)))
-         (side-by-side-minimum
-           (+ (application--banner-logo-width)
-              (text-cell-width *application-banner-gap*)
-              *application-banner-minimum-metadata-width*))
-         (header
-           (if (>= columns side-by-side-minimum)
-               (application--banner-side-by-side-spans
-                (application--banner-metadata-rows application metadata-width)
-                columns)
-               (application--banner-stacked-spans
-                (application--banner-metadata-rows application columns)
-                columns))))
+  (let ((columns (application--banner-columns application)))
     (append
      (list (terminal-span :plain (string #\Newline)))
-     header
+     (loop for row in (application--banner-rows application)
+           append (application--banner-terminate-row
+                   (terminal--clip-spans row columns)))
      (list
       (terminal-span
        :notice
-       (format nil "~%Autolith executes model-generated code with your user ~
+       (format nil "~%Antaios executes model-generated code with your user ~
                     privileges.~%Sandboxing is no substitute for human oversight")))
      (list (terminal-span ':plain (format nil "~2%")))
      (application--startup-tip-spans))))
@@ -211,17 +112,17 @@
   "Return the cached update notice appropriate to APPLICATION's installation."
   (let ((availability (application-update-availability application)))
     (when availability
-      (let ((current-version *autolith-version*)
+      (let ((current-version *antaios-version*)
             (latest-version (subseq (update-availability-tag availability) 1)))
         (list
          (terminal-span
           ':notice
-          (format nil "Update available: Autolith ~A -> ~A.~%"
+          (format nil "Update available: Antaios ~A -> ~A.~%"
                   current-version latest-version))
          (terminal-span
           ':dim
           (if (eq (update-availability-method availability) ':nix)
-              "Installed through Nix. Update the flake or profile that provides Autolith."
+              "Installed through Nix. Update the flake or profile that provides Antaios."
               "Choose whether to install it before continuing.")))))))
 
 (-> application--update-choice-items () list)
@@ -244,13 +145,13 @@
              (choice
                (terminal-ui-select
                 (application-ui application)
-                :title (format nil "Autolith ~A is available" (subseq tag 1))
+                :title (format nil "Antaios ~A is available" (subseq tag 1))
                 :items (application--update-choice-items)
                 :resize-callback #'application-pending-terminal-size)))
         (cond
           ((string= (or choice "") "Update now")
            (error 'update-requested
-                  :message (format nil "Update to Autolith ~A." (subseq tag 1))
+                  :message (format nil "Update to Antaios ~A." (subseq tag 1))
                   :tag tag))
           ((string= (or choice "") "Skip this version")
            (update-state-dismiss (application-configuration application) tag)
@@ -258,11 +159,11 @@
            (application-present
             application
             (list (terminal-span ':dim
-                                 (format nil "Skipped Autolith ~A." (subseq tag 1))))))))))
+                                 (format nil "Skipped Antaios ~A." (subseq tag 1))))))))))
   nil)
 
 (-> application--expected-error-entry
-    (application (or autolith-error cl-llm-provider-api:provider-api-error))
+    (application (or antaios-error cl-llm-provider-api:provider-api-error))
     list)
 (defun application--expected-error-entry (application condition)
   "Return the transcript entry describing expected CONDITION."
@@ -271,12 +172,12 @@
    :style ':failure
    :header "✗ error"
    :body (if (typep condition 'credentials-unavailable)
-             (format nil "~A~%Use /auth to authenticate Autolith directly."
+             (format nil "~A~%Use /auth to authenticate Antaios directly."
                      condition)
              (format nil "~A" condition))))
 
 (-> application-handle-expected-error
-    (application (or autolith-error cl-llm-provider-api:provider-api-error))
+    (application (or antaios-error cl-llm-provider-api:provider-api-error))
     null)
 (defun application-handle-expected-error (application condition)
   "Present expected CONDITION without abandoning APPLICATION's active path."
@@ -561,19 +462,19 @@ it on the normal screen after its alternate buffer closes."
 (defmethod main--launcher-exit ((condition update-requested))
   "Ask the packaged outer launcher to install the requested release."
   (values *main-update-request-status*
-          (format nil "Autolith will update to ~A after restoring the terminal."
+          (format nil "Antaios will update to ~A after restoring the terminal."
                   (subseq (update-requested-tag condition) 1))))
 
 (defmethod main--launcher-exit ((condition rollback-requested))
   "Ask the stable launcher to start the selected retained generation."
   (values *main-rollback-recovery-status*
-          (format nil "Autolith is rolling back to retained generation ~A."
+          (format nil "Antaios is rolling back to retained generation ~A."
                   (rollback-requested-generation-id condition))))
 
 (defmethod main--launcher-exit ((condition fatal-control-path-error))
   "Ask the stable launcher to boot recovery after a fatal error."
   (values *main-fatal-recovery-status*
-          (format nil "Autolith entered recovery after a fatal error. Capsule: ~A"
+          (format nil "Antaios entered recovery after a fatal error. Capsule: ~A"
                   (fatal-control-path-error-capsule-pathname condition))))
 
 (-> main--authentication-provider (configuration (option string)) model-provider)
@@ -632,7 +533,7 @@ The locked dependency environment replaces ASDF's default configuration,
 so ~/common-lisp and ~/quicklisp/local-projects would otherwise be
 invisible to REPL forms like (ql:quickload ...). This locator runs after
 every other ASDF search and never resolves a system that is already
-registered, so user trees cannot shadow Autolith or its locked
+registered, so user trees cannot shadow Antaios or its locked
 dependencies."
   (handler-case
       (let ((primary (asdf:primary-system-name
@@ -749,7 +650,7 @@ dependencies."
 (defun main--start-session
     (command &key resume-requested-p resume-id authenticate-p
                   authentication-selection authentication-method)
-  "Start one interactive Autolith session from COMMAND's parsed options."
+  "Start one interactive Antaios session from COMMAND's parsed options."
   (main--register-local-source-trees)
   (let* ((pristine-p (not (null (getopt* command ':pristine))))
          (immutable-p (or pristine-p
@@ -819,7 +720,7 @@ dependencies."
       (application--clear-recovery-environment))
     (when (and (string-equal (software-type) "Linux")
                (not (application--command-sandbox-available-p)))
-      (format *error-output* "~&Autolith: ~A~%"
+      (format *error-output* "~&Antaios: ~A~%"
               (application--command-sandbox-unavailable-message))
       (force-output *error-output*))
     (when (main--client-session-p
@@ -866,7 +767,7 @@ dependencies."
              :fresh-conversation-p (not (null fresh-handoff-p))))
       (application--clear-recovery-environment)
       (when (and (getopt* command ':simulate-crash)
-                 (not (non-empty-string-p (uiop:getenv "AUTOLITH_RECOVERED"))))
+                 (not (non-empty-string-p (uiop:getenv "ANTAIOS_RECOVERED"))))
         (let ((capsule
                 (application-write-crash-capsule
                  *active-application*
@@ -923,7 +824,7 @@ A client-first start keeps this terminal a thin relay whose detach is
 immediate and never interrupts session work, so resumes and crash recovery
 take it too. Replacements, authentication, startup images, crash simulation,
 non-interactive terminals, hosts without detached sessions, and
-AUTOLITH_SESSION_STYLE=direct keep the direct path."
+ANTAIOS_SESSION_STYLE=direct keep the direct path."
   (declare (ignore resume-requested-p resume-id
                    recovery-conversation-id recovery-diagnosis))
   (and (null handoff-record)
@@ -931,7 +832,7 @@ AUTOLITH_SESSION_STYLE=direct keep the direct path."
        (not authenticate-p)
        (null image-values)
        (not simulate-crash-p)
-       (not (string= (or (uiop:getenv "AUTOLITH_SESSION_STYLE") "")
+       (not (string= (or (uiop:getenv "ANTAIOS_SESSION_STYLE") "")
                      "direct"))
        (platform-supports-p *platform* ':detached-sessions)
        (not (null (interactive-stream-p *standard-input*)))))
@@ -955,7 +856,7 @@ AUTOLITH_SESSION_STYLE=direct keep the direct path."
                                       :recovery-diagnosis recovery-diagnosis)
     (error (condition)
       (format *error-output*
-              "Autolith is starting directly in this terminal: ~A~%"
+              "Antaios is starting directly in this terminal: ~A~%"
               (bounded-string condition :limit 400))
       nil)))
 
@@ -1196,14 +1097,14 @@ AUTOLITH_SESSION_STYLE=direct keep the direct path."
    :name "update"
    :description "install the latest packaged release and exit"
    :long-description
-   "autolith --update is an equivalent update-and-exit alias.
+   "antaios --update is an equivalent update-and-exit alias.
 Source checkouts update through Git and ./script/bootstrap; Nix installations
 update through their flake or Nix profile."
    :handler
    (lambda (command)
      (declare (ignore command))
      (error 'configuration-error
-            :message "Run update through the installed autolith launcher."))))
+            :message "Run update through the installed antaios launcher."))))
 
 (defun main--uninstall-command ()
   "Describe the launcher-owned uninstall operation without starting a session."
@@ -1223,7 +1124,7 @@ Lisp starts; on Windows it prints the folders to delete."
    (lambda (command)
      (declare (ignore command))
      (error 'configuration-error
-            :message "Run uninstall through the installed autolith launcher."))))
+            :message "Run uninstall through the installed antaios launcher."))))
 
 (-> main--normalize-update-arguments (list) list)
 (defun main--normalize-update-arguments (arguments)
@@ -1234,7 +1135,7 @@ Lisp starts; on Windows it prints the folders to delete."
           (setf tail (butlast tail)))
         (unless (or (null tail) (equal tail '("--help")) (equal tail '("-h")))
           (error 'configuration-error
-                 :message "Usage: autolith update [--help]"))
+                 :message "Usage: antaios update [--help]"))
         (cons "update" (when tail '("--help"))))
       arguments))
 
@@ -1261,17 +1162,17 @@ Lisp starts; on Windows it prints the folders to delete."
 
 (-> main--top-level-command () clingon:command)
 (defun main--top-level-command ()
-  "Return Autolith's top-level command-line definition."
+  "Return Antaios's top-level command-line definition."
   (make-command
-   :name "autolith"
+   :name "antaios"
    :description "a small, live, self-modifying Common Lisp agent"
    :long-description
    "The stable launcher also accepts --recovery and --from-source, which
-select how Autolith starts before this command line is parsed.
-Use -- to end option parsing. autolith --update is an alias for autolith update;
+select how Antaios starts before this command line is parsed.
+Use -- to end option parsing. antaios --update is an alias for antaios update;
 both update the packaged installation and exit without starting a session.
-autolith uninstall removes the installation and keeps user data."
-   :version *autolith-version*
+antaios uninstall removes the installation and keeps user data."
+   :version *antaios-version*
    :options (main--session-options)
    :sub-commands (list (main--resume-command)
                        (main--replay-command)
@@ -1294,7 +1195,7 @@ autolith uninstall removes the installation and keeps user data."
 
 (-> main-dispatch (list) null)
 (defun main-dispatch (arguments)
-  "Dispatch validated Autolith ARGUMENTS inside the active process."
+  "Dispatch validated Antaios ARGUMENTS inside the active process."
   (setf arguments (main--normalize-update-arguments arguments))
   (cond
     ((and (= (length arguments) 3)
@@ -1319,10 +1220,10 @@ autolith uninstall removes the installation and keeps user data."
 
 (-> main (list) null)
 (defun main (arguments)
-  "Run the Autolith command described by ARGUMENTS with stable exit classification."
+  "Run the Antaios command described by ARGUMENTS with stable exit classification."
   (handler-case
       (main-dispatch arguments)
-    ((or autolith-error cl-llm-provider-api:provider-api-error) (condition)
-      (format *error-output* "Autolith could not start: ~A~%" condition)
+    ((or antaios-error cl-llm-provider-api:provider-api-error) (condition)
+      (format *error-output* "Antaios could not start: ~A~%" condition)
       (uiop:quit 64)))
   nil)

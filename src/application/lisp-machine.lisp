@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Local Common Lisp Evaluation --
 
@@ -56,19 +56,19 @@ are presented by the evaluator."
 
 (-> application-lisp--control-condition-p (condition) boolean)
 (defun application-lisp--control-condition-p (condition)
-  "Return true when CONDITION belongs to Autolith's own control boundary."
+  "Return true when CONDITION belongs to Antaios's own control boundary."
   (typep condition
          '(or application-operation-loop-action
               application-turn-cancelled
               application-input-failed
-              autolith-control-condition
+              antaios-control-condition
               agent-loop-error
               conversation-invariant-error
               active-image-corruption)))
 
 (-> application-lisp--selectable-restarts (condition) list)
 (defun application-lisp--selectable-restarts (condition)
-  "Return CONDITION's named restarts without Autolith's outer ABORT restart."
+  "Return CONDITION's named restarts without Antaios's outer ABORT restart."
   (remove-if
    (lambda (restart)
      (let ((name (restart-name restart)))
@@ -83,8 +83,8 @@ are presented by the evaluator."
 
 (-> application-lisp--restart-arguments (string) list)
 (defun application-lisp--restart-arguments (source)
-  "Evaluate one Lisp SOURCE form in AUTOLITH and return all restart arguments."
-  (let ((*package* (find-package '#:autolith)))
+  "Evaluate one Lisp SOURCE form in ANTAIOS and return all restart arguments."
+  (let ((*package* (find-package '#:antaios)))
     (multiple-value-list (eval (self-read-form source)))))
 
 (-> application-lisp-call-with-debugger
@@ -107,7 +107,7 @@ and its selectable live restarts. It returns either a selected live restart and
 optional Lisp argument source, or a validated APPLICATION-DEBUGGER-RECOVERY.
 Returning NIL invokes ABORT-USER-OPERATION. Retry recoveries rerun FUNCTION from
 its explicit operation boundary; effects completed before the failure are not
-rolled back. Autolith control and corruption conditions remain outside this
+rolled back. Antaios control and corruption conditions remain outside this
 user boundary. Return captured values, status, condition text, available restart
 names, and the selected restart name."
   (let ((raw-values nil)
@@ -125,7 +125,7 @@ names, and the selected restart name."
                (when application
                  (application-present
                   application
-                  (list (terminal-span ':failure "Autolith recovery failed: ")
+                  (list (terminal-span ':failure "Antaios recovery failed: ")
                         (terminal-span ':plain condition-text))))
                nil)
 
@@ -298,7 +298,7 @@ names, and the selected restart name."
               (unless (eq outcome ':retry)
                 (return))))
         (abort-user-operation ()
-          :report "Return to the Autolith prompt."
+          :report "Return to the Antaios prompt."
           (setf status ':aborted
                 raw-values nil)))
       (values raw-values status condition-text restart-names
@@ -309,7 +309,7 @@ names, and the selected restart name."
                  (:application (option application)))
     application-lisp-evaluation)
 (defun application-lisp-evaluate (source &key restart-selector application)
-  "Evaluate exactly one SOURCE form in the active AUTOLITH package.
+  "Evaluate exactly one SOURCE form in the active ANTAIOS package.
 
 RESTART-SELECTOR receives the signaling condition and selectable restart
 objects. It returns a selected restart and, optionally, a Lisp source form whose
@@ -328,7 +328,7 @@ journaling or provider conversation projection."
         (let ((*standard-output* output-stream)
               (*error-output* output-stream)
               (*trace-output* output-stream)
-              (*package* (find-package '#:autolith))
+              (*package* (find-package '#:antaios))
               (*application-operation-application* application))
           (multiple-value-bind
                 (values debugger-status debugger-condition debugger-restart-names
@@ -526,7 +526,7 @@ journaling or provider conversation projection."
   "Present CONDITION in a stack-preserving live debugger modal loop.
 
 The owner thread remains inside its dynamic restart binding while an independent
-Autolith diagnosis may propose validated executable recoveries."
+Antaios diagnosis may propose validated executable recoveries."
   (let* ((ui (application-ui application))
          (terminal (and ui (terminal-ui-terminal ui))))
     (when ui
@@ -586,7 +586,7 @@ Autolith diagnosis may propose validated executable recoveries."
                    (list :name "diagnosis"
                          :argument nil
                          :value "diagnosis-info"
-                         :group "Autolith diagnosis"
+                         :group "Antaios diagnosis"
                          :description description
                          :description-spans
                          (list (terminal-span ':notice "diagnosis")
@@ -602,7 +602,7 @@ Autolith diagnosis may propose validated executable recoveries."
                         (list (list :name "cancel-diagnosis"
                                     :argument nil
                                     :value "cancel-diagnosis"
-                                    :group "Autolith diagnosis"
+                                    :group "Antaios diagnosis"
                                     :description "cancel diagnosis"
                                     :description-spans
                                     (list (terminal-span ':failure
@@ -619,7 +619,7 @@ Autolith diagnosis may propose validated executable recoveries."
                           (list :name name
                                 :argument nil
                                 :value name
-                                :group "Autolith recoveries"
+                                :group "Antaios recoveries"
                                 :description description
                                 :description-spans
                                 (list (terminal-span ':success name)
@@ -629,15 +629,15 @@ Autolith diagnosis may propose validated executable recoveries."
                (normal-items ()
                  "Build the ordinary live-restart selector items."
                  (append live-items
-                         (list (list :name "ask-autolith"
+                         (list (list :name "ask-antaios"
                                      :argument nil
-                                     :value "ask-autolith"
-                                     :group "Autolith diagnosis"
-                                     :description "Ask Autolith why this failed"
+                                     :value "ask-antaios"
+                                     :group "Antaios diagnosis"
+                                     :description "Ask Antaios why this failed"
                                      :description-spans
                                      (list (terminal-span
                                             ':brand
-                                            "Ask Autolith why this failed"))))))
+                                            "Ask Antaios why this failed"))))))
 
                (recovery-choice (choice)
                  "Resolve a fixed recovery CHOICE to the current proposal object."
@@ -732,7 +732,7 @@ Autolith diagnosis may propose validated executable recoveries."
           (cond
             ((null choice)
              (return (values nil nil)))
-            ((string= choice "ask-autolith")
+            ((string= choice "ask-antaios")
                (let ((diagnosis-choice (diagnose)))
                  (cond
                    ((or (null diagnosis-choice)

@@ -6,7 +6,7 @@
   (and (null (uiop:getenvp "NO_COLOR"))
        (interactive-stream-p *standard-output*)
        t)
-  "Whether bootstrap output uses the Autolith interface palette.")
+  "Whether bootstrap output uses the Antaios interface palette.")
 
 (defun bootstrap-style (code text)
   "Return TEXT wrapped in SGR CODE when colors are enabled."
@@ -16,7 +16,7 @@
 
 (defun bootstrap-section (title)
   "Print one brand-styled bootstrap section TITLE."
-  (format t "~&~%~A~%" (bootstrap-style "35;1" title))
+  (format t "~&~%~A~%" (bootstrap-style "35" title))
   (finish-output))
 
 (defun bootstrap-note (text)
@@ -129,14 +129,14 @@ grandchild processes all land under the rail."
        (script-directory (uiop:pathname-directory-pathname script-path))
        (source-root (uiop:pathname-parent-directory-pathname script-directory))
        (version-pathname (merge-pathnames "sbcl.version" source-root))
-       (sbcl-command (or (uiop:getenv "AUTOLITH_SBCL") "sbcl"))
+       (sbcl-command (or (uiop:getenv "ANTAIOS_SBCL") "sbcl"))
        (quicklisp-setup (merge-pathnames "quicklisp/setup.lisp"
                                          (user-homedir-pathname))))
   (load (merge-pathnames "script/runtime-requirement.lisp" source-root))
-  (autolith-require-minimum-runtime version-pathname)
+  (antaios-require-minimum-runtime version-pathname)
   (unless (probe-file quicklisp-setup)
-    (error "Autolith bootstrap needs Quicklisp at ~A" quicklisp-setup))
-  (format t "~&~A~%" (bootstrap-style "35;1" "Autolith bootstrap"))
+    (error "Antaios bootstrap needs Quicklisp at ~A" quicklisp-setup))
+  (format t "~&~A~%" (bootstrap-style "35" "Antaios bootstrap"))
   (bootstrap-note (format nil "SBCL ~A" (lisp-implementation-version)))
   (bootstrap-note (format nil "Source ~A" (namestring source-root)))
   (uiop:with-current-directory (source-root)
@@ -195,4 +195,4 @@ grandchild processes all land under the rail."
            (namestring (merge-pathnames "script/build-active.lisp"
                                         source-root))))
     (bootstrap-done
-     "Autolith dependencies, private native libraries, recovery image, and fast startup image are installed.")))
+     "Antaios dependencies, private native libraries, recovery image, and fast startup image are installed.")))

@@ -1,8 +1,8 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Nous OAuth Credential Management --
 
-;;; Nous refresh tokens rotate on every exchange and are single-use. Autolith
+;;; Nous refresh tokens rotate on every exchange and are single-use. Antaios
 ;;; therefore serializes refresh and login publication across processes sharing
 ;;; one state root, and always reloads the latest credential record while the
 ;;; filesystem lock is held.
@@ -119,7 +119,7 @@
 (defmethod credential-manager-login-hint ((manager nous-credential-manager))
   "Point Nous credential failures at the browser login command."
   (declare (ignore manager))
-  "run autolith auth nous")
+  "run antaios auth nous")
 
 (-> nous-credential-manager-create
     (configuration &key (:refresh-request-function function))
@@ -132,12 +132,12 @@
    'nous-credential-manager
    :primary-source
    (make-instance
-    'autolith-credential-source
+    'antaios-credential-source
     :pathname (configuration-nous-auth-path configuration))
    :refresh-request-function refresh-request-function))
 
 (defmethod credential-manager-load ((manager nous-credential-manager))
-  "Load only Autolith-owned Nous credentials under the shared store lock."
+  "Load only Antaios-owned Nous credentials under the shared store lock."
   (let* ((source (credential-manager-primary-source manager))
          (pathname (credential-source-pathname source)))
     (nous-authentication--call-with-store-lock

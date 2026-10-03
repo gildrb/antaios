@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- System Prompt Tests --
 
@@ -19,9 +19,9 @@
     (unwind-protect
          (progn
            (test-assert (probe-file (system-prompt--template-path))
-                        "the Org system prompt template is shipped with Autolith")
+                        "the Org system prompt template is shipped with Antaios")
            (test-assert (probe-file (request-context--template-path))
-                        "the Org request-context template is shipped with Autolith")
+                        "the Org request-context template is shipped with Antaios")
            (test-assert
             (string= (request-context--bounded-complete-lines
                       (format nil "first row~%second row is too long") 25)
@@ -29,8 +29,8 @@
             "mutable context bounds only at complete row boundaries")
            (let ((prompt (system-prompt configuration))
                  (context (request-context-session-state configuration)))
-             (prompt-tests--contains prompt "You are Autolith"
-                                     "the rendered prompt keeps the Autolith identity")
+             (prompt-tests--contains prompt "You are Antaios"
+                                     "the rendered prompt keeps the Antaios identity")
              (prompt-tests--contains context "Current workspace agenda: empty."
                                      "mutable context describes an empty agenda")
              (prompt-tests--contains context "Saved Lisp worker images"
@@ -54,8 +54,8 @@
                                      "review commentary is omitted"))
              (prompt-tests--contains prompt "RECURSIVE INFERENCE IS AVAILABLE"
                                      "RLM guidance rides with registered rlm tools")
-             (prompt-tests--absent context "SIMPLE TECHNICAL ENGLISH MODE IS ACTIVE"
-                                   "STE is omitted when the preference is off")
+             (prompt-tests--contains context "SIMPLE TECHNICAL ENGLISH MODE IS ACTIVE"
+                                     "STE guidance is on by default")
              (prompt-tests--absent context "HURRY-UP MODE IS ACTIVE"
                                    "hurry-up is omitted unless requested")
              (prompt-tests--absent prompt "hosted web_search"
@@ -86,13 +86,13 @@
                                    "an immutable session omits live-image guidance"))
            (setf (config :immutable-p configuration) nil)
            (let ((stable-prompt (system-prompt configuration)))
-             (setf (config :simple-technical-english-p configuration) t)
+             (setf (config :simple-technical-english-p configuration) nil)
              (test-assert (string= stable-prompt (system-prompt configuration))
                           "an STE toggle does not rewrite the stable system prompt")
-             (prompt-tests--contains
+             (prompt-tests--absent
               (request-context-session-state configuration)
               "SIMPLE TECHNICAL ENGLISH MODE IS ACTIVE"
-              "STE guidance rides in mutable context")))
+              "STE is omitted when the preference is off")))
       (platform-delete-directory-tree *platform* (test-configuration-root configuration)
                                       :validate t
                                       :if-does-not-exist ':ignore)))

@@ -1,8 +1,8 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Resource Conditions --
 
-(define-condition resource-uri-malformed (autolith-error)
+(define-condition resource-uri-malformed (antaios-error)
   ((uri
     :initarg :uri
     :reader resource-uri-malformed-uri
@@ -20,7 +20,7 @@
                      (resource-uri-malformed-uri condition)
                      (resource-uri-malformed-reason condition)))))
 
-(define-condition resource-scheme-unknown (autolith-error)
+(define-condition resource-scheme-unknown (antaios-error)
   ((uri
     :initarg :uri
     :reader resource-scheme-unknown-uri
@@ -38,7 +38,7 @@
                      (resource-scheme-unknown-scheme condition)
                      (resource-scheme-unknown-uri condition)))))
 
-(define-condition resource-access-denied (autolith-error)
+(define-condition resource-access-denied (antaios-error)
   ((uri
     :initarg :uri
     :reader resource-access-denied-uri
@@ -54,7 +54,7 @@
   "Discriminate authority denials without pinning their prose."
   ':access-denied)
 
-(define-condition resource-operation-unsupported (autolith-error)
+(define-condition resource-operation-unsupported (antaios-error)
   ((uri
     :initarg :uri
     :reader resource-operation-unsupported-uri
@@ -76,7 +76,7 @@
   "Discriminate unsupported resource operations without pinning their prose."
   ':operation-unsupported)
 
-(define-condition resource-revision-stale (autolith-error)
+(define-condition resource-revision-stale (antaios-error)
   ((uri
     :initarg :uri
     :reader resource-revision-stale-uri

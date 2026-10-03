@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Recovery Input Vault Test Support --
 
@@ -1576,11 +1576,11 @@
          (vault-pathname
            (configuration-recovery-input-vault-path
             configuration (conversation-pathname conversation)))
-         (gate (make-lock "Autolith vault restore capture test"))
+         (gate (make-lock "Antaios vault restore capture test"))
          (condition
-           (make-condition-variable :name "Autolith vault restore capture test"))
+           (make-condition-variable :name "Antaios vault restore capture test"))
          (capture-gate-condition
-           (make-condition-variable :name "Autolith vault capture completion test"))
+           (make-condition-variable :name "Antaios vault capture completion test"))
          (restore-read-p nil)
          (release-restore-p nil)
          (capture-started-p nil)

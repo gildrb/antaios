@@ -2,7 +2,7 @@
 
 ## Purpose and Sources of Truth
 
-Autolith is a small, live, self-modifying Common Lisp agent. This file contains
+Antaios is a small, live, self-modifying Common Lisp agent. This file contains
 its enduring architectural and repository policy. `docs/guide.org` documents
 user-visible behavior, `docs/architecture.org` maps runtime and source
 boundaries, and tracked source plus behavioral tests are executable truth. Do
@@ -37,7 +37,7 @@ musl, macOS x86-64 and arm64, FreeBSD x86-64, NetBSD x86-64, OpenBSD x86-64,
 
 Host differences live behind the platform protocol in `src/core/platform.lisp`
 with one adapter per host family; `#+win32` appears only in those adapters, in
-`autolith.asd` feature expressions, and in the standalone scripts that run
+`antaios.asd` feature expressions, and in the standalone scripts that run
 before the system loads. Windows supports supervised detached sessions and
 exact-heap restart checkpoints, while withholding fork-based image saves and
 filesystem sockets. Windows commands use the native AppContainer
@@ -59,7 +59,7 @@ When a change depends on established behavior in another agent, inspect a
 current upstream checkout outside this Git worktree. Keep reference checkouts
 read-only, record the repository URL and exact inspected commit in the review
 notes, and refresh the checkout before making claims about current behavior.
-References are research inputs, not Autolith dependencies; do not edit them or
+References are research inputs, not Antaios dependencies; do not edit them or
 copy their architecture wholesale.
 
 ## Architectural Guardrails
@@ -91,7 +91,7 @@ copy their architecture wholesale.
   evaluation fails until that entry exists.
 - Source is authoritative for clean rebuilds. Saved cores preserve exact
   working live states, but never replace tracked source.
-- Dumped images are the normal way to start Autolith. Fresh Autolith
+- Dumped images are the normal way to start Antaios. Fresh Antaios
   processes, including pristine workers and test children, boot a saved core
   whose recorded provenance matches the source; loading FASLs is only the
   fallback when no matching core exists. Do not add launch paths or test
@@ -110,7 +110,7 @@ For a durable live mutation, preserve the specified order:
    history.
 5. Atomically select the private commit and mark the journal entry durable.
 
-Autolith's durable live mutations never patch its own tracked repository;
+Antaios's durable live mutations never patch its own tracked repository;
 selected private replay scripts load after the tracked system. The ordinary
 workspace tools may develop the tracked repository, including the launcher
 and recovery sources, exactly like any other project.
@@ -123,13 +123,13 @@ must remain possible without loading a damaged active core.
 
 ## Package Policy
 
-Use one project package, `#:autolith`. Do not create scoped, subsystem, feature,
+Use one project package, `#:antaios`. Do not create scoped, subsystem, feature,
 file-local, or test packages unless the user explicitly changes this policy.
 Split the implementation into focused files while keeping those files in the
 single project package. Runtime component boundaries are not package
 boundaries.
 
-- Define the package once and use `(in-package #:autolith)` in project source.
+- Define the package once and use `(in-package #:antaios)` in project source.
 - `:use` only `#:cl`.
 - Import individual third-party symbols with `:import-from`; do not wholesale
   `:use` third-party packages.
@@ -288,7 +288,7 @@ Run the complete repository check from the repository root with:
 The check runs FiveAM cases in independent SBCL processes, defaulting to the
 available logical CPU count (one worker if detection fails), and includes the
 recovery probes. It first saves an active image of the checked source and
-passes it to every worker as `AUTOLITH_TEST_ACTIVE_CORE`, which test
+passes it to every worker as `ANTAIOS_TEST_ACTIVE_CORE`, which test
 configurations use as their active core. `--jobs` overrides concurrency; at most one worker per selected
 case is started. Select suites or individual cases for focused work:
 
@@ -318,11 +318,11 @@ Test runs own their configuration directories and remove them on exit. The CLI
 also removes each worker's directories after a crash or timeout, once its
 process group has stopped.
 
-For interactive serial execution after loading `autolith/tests`:
+For interactive serial execution after loading `antaios/tests`:
 
 ```lisp
-(autolith:run-tests :suites '("workspace-resource"))
-(autolith:run-tests :tests '("test-workspace-file-resources"))
+(antaios:run-tests :suites '("workspace-resource"))
+(antaios:run-tests :tests '("test-workspace-file-resources"))
 ```
 
 Materialize the locked project dependencies with:
@@ -345,7 +345,7 @@ Cargo, `clang` on `PATH`, and Quicklisp under `%USERPROFILE%\quicklisp`, then
 run `script\bootstrap.ps1` from PowerShell. An SBCL 2.6.6 or newer on `PATH` is
 used when present; otherwise the bootstrap installs the official Windows binary
 pinned in `sbcl-windows-releases.sha256` below the data root. `script\check.ps1`
-runs the checks and `bin\autolith.cmd` starts a session.
+runs the checks and `bin\antaios.cmd` starts a session.
 
 Rebuild only the installed pristine recovery image with:
 

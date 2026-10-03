@@ -6,12 +6,12 @@ revisions inspected, and what was verified where.
 
 * Decisions taken
 
-- Official binary, no source build on Windows. =bin/autolith-runtime.ps1=
+- Official binary, no source build on Windows. =bin/antaios-runtime.ps1=
   downloads the official SBCL 2.6.6 Windows MSI pinned in
   =sbcl-windows-releases.sha256= and unpacks it below the data root with
   =msiexec /a=, which registers nothing with Windows. An SBCL on =PATH= that
   satisfies =sbcl.version= is used instead when present; a release newer than
-  the pin runs Autolith but has no verified source archive, so the runtime
+  the pin runs Antaios but has no verified source archive, so the runtime
   script says so and Lisp workers report implementation source unavailable
   rather than the bootstrap failing.
 - Privacy policy. A private file or directory carries a protected access
@@ -20,7 +20,7 @@ revisions inspected, and what was verified where.
   the owner; the read-only attribute is never set, so the file stays deletable
   and replaceable, as an unwritable POSIX file in a writable directory is.
   =ls-compat.posix:file-mode= implements the mapping for every library;
-  Autolith's adapter delegates to it and reads privacy back through the
+  Antaios's adapter delegates to it and reads privacy back through the
   security descriptor of an open handle. A private directory's entries are
   inheritable, so a lock file or token file that plain =open= creates below
   it takes them over; without that a file created inside carried an empty
@@ -100,11 +100,11 @@ revisions inspected, and what was verified where.
   Windows namestrings and environment values are base strings while the same
   text built elsewhere is not, so equal snapshots had different revisions.
 - The standalone scripts set environment variables through
-  =autolith-script-setenv= in =script/roots.lisp=, which also updates the
+  =antaios-script-setenv= in =script/roots.lisp=, which also updates the
   Windows process block through =SetEnvironmentVariableW= found at run time.
-  They publish files through =autolith-script-replace-file=, which clears a
+  They publish files through =antaios-script-replace-file=, which clears a
   read-only attribute an older build left on the target, and set modes
-  through =autolith-script-set-file-mode=, which does nothing on Windows:
+  through =antaios-script-set-file-mode=, which does nothing on Windows:
   =sb-posix:chmod= there only sets the attribute, and a recovery core or
   manifest carrying it could never be replaced by the next bootstrap.
 - cl-llm-provider-api closed its context-object temporary file only after
@@ -117,7 +117,7 @@ revisions inspected, and what was verified where.
   protocol instead of shelling out to =ln=.
 - Provider tests clear the host's own API key variables before exercising
   stored keys, since a developer's =OPENROUTER_API_KEY= outranks a stored key.
-- =#+win32= appears in the two adapters, in =autolith.asd=, and in the
+- =#+win32= appears in the two adapters, in =antaios.asd=, and in the
   standalone scripts that run before the system loads (=script/check.lisp=,
   =script/launcher.lisp=); =script/roots.lisp= and =script/runtime.lisp= use
   =uiop:os-windows-p= at run time instead.
@@ -160,7 +160,7 @@ revisions inspected, and what was verified where.
 * Verification
 
 - Linux (WSL2 Ubuntu, SBCL 2.6.6): =./script/check= green, 470 cases and
-  5,852 checks with the recovery probes, after every autolith change and
+  5,852 checks with the recovery probes, after every antaios change and
   library patch. One run made while the Windows check occupied the same
   machine failed =test-active-turn-stop-keys= on timing; it passes alone
   and in every other run.
@@ -170,11 +170,11 @@ revisions inspected, and what was verified where.
   cannot run are FiveAM skips. The recovery probe and listing pass; the
   recovery fallback fails by construction on this uncommitted branch,
   because it runs the source committed at HEAD, which predates the port and
-  does not read on Windows, and it passes once the port is committed. =bin\autolith-runtime.ps1
+  does not read on Windows, and it passes once the port is committed. =bin\antaios-runtime.ps1
   --install= fetched and verified the SBCL 2.6.6 source tree below the data
   root, so workers resolve implementation source. =script\bootstrap.ps1=
   builds the native libraries, the recovery image, and the fast-startup
-  image, and =bin\autolith.cmd= then starts a session from the fast-startup
+  image, and =bin\antaios.cmd= then starts a session from the fast-startup
   image. The bootstrap and the check must run under the same SBCL: the
   pristine recovery core is bound to the runtime that saved it, and a core
   saved under 2.6.8 refuses to start under 2.6.6 with "core was built for
@@ -193,8 +193,8 @@ revisions inspected, and what was verified where.
   created and used from sessions of the same kind. Windows Terminal was exercised through the console probe:
   raw input mode, virtual-terminal output, and UTF-8 code pages are set and
   restored.
-- The launcher chain =bin\autolith.cmd= -> =bin\autolith.ps1= ->
-  =bin\autolith-runtime.ps1= -> =script\runtime.lisp= -> =script\launcher.lisp=
+- The launcher chain =bin\antaios.cmd= -> =bin\antaios.ps1= ->
+  =bin\antaios-runtime.ps1= -> =script\runtime.lisp= -> =script\launcher.lisp=
   runs =--version= from a source checkout.
 
 * Not done

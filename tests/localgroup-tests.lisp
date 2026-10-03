@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Localgroup Tests --
 
@@ -119,7 +119,7 @@
                             (terminal-ui-select ui :title "pick one" :items
                                                 '((:name "default" :argument nil
                                                    :description "the default choice")))))
-                  :name "Autolith relayed picker test"))
+                  :name "Antaios relayed picker test"))
          (test-assert (task-tests--wait-until (lambda () (terminal-ui-selector ui)) 2)
           "the relayed picker opens before receiving input")
          (sleep 0.05)
@@ -300,7 +300,7 @@
           nil)
          (localgroup-error (condition)
           (and (eq (daemon-error-operation condition) ':attach)
-               (search "interactive terminal" (autolith-error-message condition)))))
+               (search "interactive terminal" (antaios-error-message condition)))))
         "localgroup attach rejects noninteractive input before connecting"))))
   (let* ((configuration (test-configuration))
          (root (test-configuration-root configuration))
@@ -442,7 +442,7 @@
             "control attachment draws the initial prompt without a keypress")
            (setf wedged-thread
                    (make-thread (lambda () (loop (sleep 60))) :name
-                                "Autolith wedged localgroup test client"))
+                                "Antaios wedged localgroup test client"))
            (with-lock-held ((image-daemon:daemon-runtime-lock session))
              (push wedged-thread (image-daemon:daemon-runtime-client-threads session)))
            (setf stop-thread
@@ -451,7 +451,7 @@
                       (handler-case (localgroup-stop application)
                                     (error (condition) (setf stop-failure condition)))
                       (setf stopped-p t))
-                    :name "Autolith localgroup stop test"))
+                    :name "Antaios localgroup stop test"))
            (test-assert (task-tests--wait-until (lambda () stopped-p) 3)
             "localgroup shutdown never waits indefinitely for idle clients")
            (test-assert
@@ -588,7 +588,7 @@
            (controller
              (make-instance 'application-input-controller :application application
                                                           :main-thread (current-thread)))
-           (message "Autolith will update to 9.9.9 after restoring the terminal.")
+           (message "Antaios will update to 9.9.9 after restoring the terminal.")
            (socket nil)
            (stream nil))
       (setf (application-input-controller application) controller)
@@ -633,7 +633,7 @@
 (defun test-localgroup-relay-exit ()
   "Test the relaying process exits like its session, and observers only report it."
   (let ((statuses nil)
-        (exit (list :status 76 :message "Autolith will update to 9.9.9.")))
+        (exit (list :status 76 :message "Antaios will update to 9.9.9.")))
     (test-call-with-function-replacements
      (list (list 'uiop:quit (lambda (&optional (status 0) &rest ignored)
                               (declare (ignore ignored))

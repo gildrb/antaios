@@ -1,8 +1,8 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Agenda Resource Conditions --
 
-(define-condition agenda-resource-identifier-unsupported (autolith-error)
+(define-condition agenda-resource-identifier-unsupported (antaios-error)
   ((identifier
     :initarg :identifier
     :reader agenda-resource-identifier-unsupported-identifier

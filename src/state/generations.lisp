@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Generation Store --
 
@@ -15,7 +15,7 @@
 
 (-> generation--validate-manifest (list pathname) null)
 (defun generation--validate-manifest (properties pathname)
-  "Require PROPERTIES to carry the Autolith fields its manifest version promises."
+  "Require PROPERTIES to carry the Antaios fields its manifest version promises."
   (let* ((version (getf properties :version))
          (directory (uiop:pathname-directory-pathname pathname))
          (reconstruction (getf properties :reconstruction))
@@ -71,20 +71,20 @@ can still be listed and booted."
   (make-generation-store
    :root (generation-root configuration)
    :current-pathname (generation-current-pathname configuration)
-   :core-name "autolith.core"
-   :temporary-core-name ".autolith.core.tmp"
+   :core-name "antaios.core"
+   :temporary-core-name ".antaios.core.tmp"
    :manifest-version 3
    :accepted-manifest-versions '(1 2 3)
    :manifest-validator #'generation--validate-manifest
    :publish-validator #'generation--validate-publication
-   ;; Autolith already owns an atomic state layer, so the store uses it rather
+   ;; Antaios already owns an atomic state layer, so the store uses it rather
    ;; than the library's plain-Lisp default: that keeps the private file mode and
-   ;; the crash-tolerant reader that every other Autolith state file relies on.
+   ;; the crash-tolerant reader that every other Antaios state file relies on.
    :write-function #'snapshot-write
    :read-function #'read-portable-form))
 
 
-;;;; -- Autolith Generation Metadata --
+;;;; -- Antaios Generation Metadata --
 
 (-> generation-git-commit (t) t)
 (defun generation-git-commit (generation)
@@ -118,7 +118,7 @@ can still be listed and booted."
     list)
 (defun generation--metadata
     (configuration identifier &key git-commit mutation-checker)
-  "Return the Autolith manifest properties for a new generation IDENTIFIER.
+  "Return the Antaios manifest properties for a new generation IDENTIFIER.
 
 Preparing the image commit and writing its replay script happen here, before any
 quiescing, because both touch the private history repository."
@@ -170,9 +170,9 @@ quiescing, because both touch the private history repository."
     (make-instance 'generation
                    :identifier identifier
                    :directory directory
-                   :core-pathname (merge-pathnames "autolith.core" directory)
+                   :core-pathname (merge-pathnames "antaios.core" directory)
                    :temporary-core-pathname
-                   (merge-pathnames ".autolith.core.tmp" directory)
+                   (merge-pathnames ".antaios.core.tmp" directory)
                    :manifest-pathname (merge-pathnames "manifest.sexp" directory)
                    :metadata metadata
                    :created-at (get-universal-time)
@@ -181,13 +181,13 @@ quiescing, because both touch the private history repository."
 
 (-> generation--translate (t) t)
 (defun generation--translate (condition)
-  "Signal CONDITION as the Autolith error reporting it.
+  "Signal CONDITION as the Antaios error reporting it.
 
-A host check that already signaled an Autolith error reaches here wrapped as
+A host check that already signaled an Antaios error reaches here wrapped as
 the library's cause. Re-signal that original instead of the wrapper, so its
 structured type and message survive the round trip."
   (let ((cause (sbcl-generations:checkpoint-error-cause condition)))
-    (if (typep cause 'autolith-error)
+    (if (typep cause 'antaios-error)
         (error cause)
         (error 'checkpoint-error
                :message (sbcl-generations::checkpoint-error-message condition)
@@ -196,7 +196,7 @@ structured type and message survive the round trip."
                :cause cause))))
 
 (defmacro with-generation-errors (&body body)
-  "Run BODY, reporting a library checkpoint failure as an Autolith one."
+  "Run BODY, reporting a library checkpoint failure as an Antaios one."
   `(handler-case
        (progn ,@body)
      (sbcl-generations:checkpoint-error (condition)
@@ -206,7 +206,7 @@ structured type and message survive the round trip."
 (defun generation-core-probe-runner-create ()
   "Create the subprocess runner that boots unpublished generation cores."
   (make-sbcl-core-probe-runner
-   :command (let ((configured (uiop:getenv "AUTOLITH_SBCL")))
+   :command (let ((configured (uiop:getenv "ANTAIOS_SBCL")))
               (if (non-empty-string-p configured)
                   configured
                   "sbcl"))))
@@ -320,14 +320,14 @@ structured type and message survive the round trip."
          (conversation (and application (application-conversation application)))
          (identifier (and conversation (conversation-identifier conversation))))
     (if (non-empty-string-p identifier)
-        (let ((previous (uiop:getenv "AUTOLITH_SESSION_STYLE")))
+        (let ((previous (uiop:getenv "ANTAIOS_SESSION_STYLE")))
           (unwind-protect
                (progn
                  (platform-set-environment-variable
-                  *platform* "AUTOLITH_SESSION_STYLE" "direct")
+                  *platform* "ANTAIOS_SESSION_STYLE" "direct")
                  (main (list "resume" identifier)))
             (platform-set-environment-variable
-             *platform* "AUTOLITH_SESSION_STYLE" previous)))
+             *platform* "ANTAIOS_SESSION_STYLE" previous)))
         (main arguments))))
 
 (defun checkpoint--source-snapshot (configuration)
@@ -502,11 +502,11 @@ quiescence, metadata, and probe hooks."
 (defun checkpoint-restart-save (backend generation)
   "Persist the restart envelope and save BACKEND's exact heap.
 
-The launcher owns the envelope pathname through AUTOLITH_RESTART_POINTER.  The
+The launcher owns the envelope pathname through ANTAIOS_RESTART_POINTER.  The
 ready callback writes the final generation metadata only after validation at the
 real save boundary, then the library saves and exits.  A missing pointer is a
 configuration error rather than a silent restart without publication."
-  (let ((pointer (uiop:getenv "AUTOLITH_RESTART_POINTER")))
+  (let ((pointer (uiop:getenv "ANTAIOS_RESTART_POINTER")))
     (unless (non-empty-string-p pointer)
       (error 'checkpoint-error
              :message "The stable launcher did not provide a restart envelope path."
@@ -518,7 +518,7 @@ configuration error rather than a silent restart without publication."
      (lambda (final-generation)
        (snapshot-write
         (pathname pointer)
-        (list :autolith-restart
+        (list :antaios-restart
               :version 1
               :identifier (sbcl-generations:generation-identifier
                            final-generation)
@@ -568,7 +568,7 @@ configuration error rather than a silent restart without publication."
           (setf (application-checkpoint-restart-request application)
                 (cons backend generation))
           (tool-success
-           (format nil "Exact heap checkpoint ~A is scheduled after this turn; Autolith will restart and resume the current session."
+           (format nil "Exact heap checkpoint ~A is scheduled after this turn; Antaios will restart and resume the current session."
                    (generation-identifier generation))))
         (tool-success
          (format nil "Checkpoint ~A is being published by coordinator process ~D."

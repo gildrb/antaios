@@ -1,11 +1,11 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Grok Subscription Provider --
 
 ;;; The Grok subscription proxy speaks the standard streaming Responses API,
 ;;; as read from grok-build 1.0.13, reference commit bb7f39d5. Tools ride in the
 ;;; request's flat tools array and function calls return one flat wire name, so
-;;; this provider joins Autolith's namespaced tool names with a dot on the way
+;;; this provider joins Antaios's namespaced tool names with a dot on the way
 ;;; out and splits them again on completed items. Conversations persist in the
 ;;; same namespaced shape regardless of the serving provider.
 ;;;
@@ -266,11 +266,11 @@ instead of an empty assistant turn."
      (cons "User-Agent" (provider-user-agent))
      (cons "x-grok-client-version" *grok-client-protocol-version*)
      (cons "x-grok-client-mode" "interactive")
-     (cons "x-grok-client-identifier" "autolith")
+     (cons "x-grok-client-identifier" "antaios")
      (cons "x-grok-session-id" (provider-session-id provider))
      (cons "x-grok-conv-id" (conversation-identifier conversation))
      (cons "x-grok-req-id" (make-identifier))
-     (cons "x-grok-agent-id" "autolith")
+     (cons "x-grok-agent-id" "antaios")
      (cons "x-grok-model-override"
            (config :model configuration))
      (cons "x-grok-doom-loop-check"

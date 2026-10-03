@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Release Archive --
 
@@ -118,7 +118,7 @@ Environment VARIABLE overrides the lookup when it names an existing file."
              (probe-file configured))
         (handler-case
             (when (equal (truename source-root)
-                         (truename (asdf:system-source-directory :autolith)))
+                         (truename (asdf:system-source-directory :antaios)))
               (let ((candidate
                       (merge-pathnames
                        (format nil "build/~A" name)
@@ -130,7 +130,7 @@ Environment VARIABLE overrides the lookup when it names an existing file."
 (defun release-archive--sandbox-helper (source-root)
   "Locate the private Linux sandbox helper for SOURCE-ROOT's locked dependency."
   (release-archive--locked-sandbox-binary
-   source-root "AUTOLITH_RELEASE_SANDBOX_HELPER" "cl-exec-sandbox-helper"))
+   source-root "ANTAIOS_RELEASE_SANDBOX_HELPER" "cl-exec-sandbox-helper"))
 
 (-> release-archive--process-group-helper (pathname) (option pathname))
 (defun release-archive--process-group-helper (source-root)
@@ -139,7 +139,7 @@ Environment VARIABLE overrides the lookup when it names an existing file."
 Every POSIX release ships it so the packaged launcher never compiles into its
 read-only source tree."
   (release-archive--locked-sandbox-binary
-   source-root "AUTOLITH_RELEASE_PROCESS_GROUP_HELPER"
+   source-root "ANTAIOS_RELEASE_PROCESS_GROUP_HELPER"
    "cl-exec-sandbox-process-group"))
 
 (-> release-archive--stage-executable (pathname pathname string) null)
@@ -154,7 +154,7 @@ read-only source tree."
 (-> release-archive--colorlisp-library () pathname)
 (defun release-archive--colorlisp-library ()
   "Return the configured or materialized ColorLisp native library."
-  (let ((configured (uiop:getenv "AUTOLITH_RELEASE_COLORLISP_LIBRARY")))
+  (let ((configured (uiop:getenv "ANTAIOS_RELEASE_COLORLISP_LIBRARY")))
     (pathname
      (if (and configured (plusp (length configured)))
          configured
@@ -247,7 +247,7 @@ rather than failing, so existence needs the following stat first."
   "Create and return a private temporary directory below OUTPUT-DIRECTORY."
   (let ((pathname
           (merge-pathnames
-           (format nil ".autolith-release.~A/" (make-identifier))
+           (format nil ".antaios-release.~A/" (make-identifier))
            output-directory)))
     (ensure-directories-exist (merge-pathnames ".keep" pathname))
     pathname))
@@ -291,7 +291,7 @@ rather than failing, so existence needs the following stat first."
     source-root
     '("symbolic-ref" "HEAD" "refs/heads/master")))
   (dolist (setting
-           '(("user.name" "Autolith release build")
+           '(("user.name" "Antaios release build")
              ("user.email" "release-build@localhost")
              ("gc.auto" "0")
              ("maintenance.auto" "false")
@@ -328,7 +328,7 @@ rather than failing, so existence needs the following stat first."
                     "-c" "safe.directory=*"
                     "-C" (string-right-trim "/" (namestring source-root))
                     "commit-tree" tree
-                    "-m" (format nil "Autolith ~A source" tag)))
+                    "-m" (format nil "Antaios ~A source" tag)))
              :output ':string
              :error-output ':output))))
     (unless (release-archive--commit-p commit)
@@ -380,13 +380,13 @@ rather than failing, so existence needs the following stat first."
             :output ':string
             :error-output ':output))
          (detected (release-archive--linux-libc-output->identity output))
-         (configured (uiop:getenv "AUTOLITH_LIBC")))
+         (configured (uiop:getenv "ANTAIOS_LIBC")))
     (when (and configured
                (plusp (length configured))
                (not (string-equal configured detected)))
       (error 'release-archive-error
              :stage ':prerequisites
-             :cause (format nil "AUTOLITH_LIBC names ~A, but this host uses ~A."
+             :cause (format nil "ANTAIOS_LIBC names ~A, but this host uses ~A."
                             configured detected)))
     detected))
 
@@ -431,13 +431,13 @@ rather than failing, so existence needs the following stat first."
          (libc (and (string-equal os "Linux")
                     (release-archive--linux-libc)))
          (detected (release-archive--platform-id os (machine-type) libc))
-         (configured (uiop:getenv "AUTOLITH_RELEASE_PLATFORM")))
+         (configured (uiop:getenv "ANTAIOS_RELEASE_PLATFORM")))
     (when (and configured
                (plusp (length configured))
                (not (string= configured detected)))
       (error 'release-archive-error
              :stage ':prerequisites
-             :cause (format nil "AUTOLITH_RELEASE_PLATFORM names ~A, but this host is ~A."
+             :cause (format nil "ANTAIOS_RELEASE_PLATFORM names ~A, but this host is ~A."
                             configured detected)))
     detected))
 
@@ -576,7 +576,7 @@ the managed runtime, matching SBCL source, native libraries, and sandbox helper.
   (handler-case
       (let* ((source-root
                (uiop:ensure-directory-pathname
-                (or source-root (asdf:system-source-directory :autolith))))
+                (or source-root (asdf:system-source-directory :antaios))))
              (output-directory
                (uiop:ensure-directory-pathname
                 (or output-directory (merge-pathnames "dist/" source-root))))
@@ -597,25 +597,25 @@ the managed runtime, matching SBCL source, native libraries, and sandbox helper.
                  (merge-pathnames ".local/share/" home)))
               (runtime-root
                 (merge-pathnames
-                 (format nil "autolith/runtimes/~A/" runtime-version)
+                 (format nil "antaios/runtimes/~A/" runtime-version)
                  data-home))
               (runtime-installation
                 (release-archive--environment-pathname
-                 "AUTOLITH_RELEASE_RUNTIME"
+                 "ANTAIOS_RELEASE_RUNTIME"
                  (merge-pathnames "installation/" runtime-root)))
               (runtime-source
                 (release-archive--environment-pathname
-                 "AUTOLITH_RELEASE_SBCL_SOURCE"
+                 "ANTAIOS_RELEASE_SBCL_SOURCE"
                  (merge-pathnames "source/" runtime-root)))
               (static-runtime-marker
-                (merge-pathnames "lib/autolith-static-musl"
+                (merge-pathnames "lib/antaios-static-musl"
                                  runtime-installation))
               (fff-library
                 (unless static-musl-p
                   (release-archive--environment-pathname
-                   "AUTOLITH_RELEASE_FFF_LIBRARY"
+                   "ANTAIOS_RELEASE_FFF_LIBRARY"
                    (merge-pathnames
-                    (format nil "autolith/native/fff/~A" fff-library-name)
+                    (format nil "antaios/native/fff/~A" fff-library-name)
                     data-home))))
               (colorlisp-library
                 (unless static-musl-p
@@ -684,7 +684,7 @@ the managed runtime, matching SBCL source, native libraries, and sandbox helper.
         (unless (release-archive--semantic-version-p version)
           (error 'release-archive-error
                  :stage ':source-validation
-                 :cause "autolith.asd does not declare one semantic version."))
+                 :cause "antaios.asd does not declare one semantic version."))
         (unless (release-archive--commit-p commit)
           (error 'release-archive-error
                  :stage ':source-validation
@@ -701,12 +701,12 @@ the managed runtime, matching SBCL source, native libraries, and sandbox helper.
                  (release-archive--make-temporary-root output-directory)))
           (unwind-protect
                (let* ((release-name
-                        (format nil "autolith-~A-~A" tag platform))
+                        (format nil "antaios-~A-~A" tag platform))
                       (release-root
                         (merge-pathnames (format nil "~A/" release-name)
                                          temporary-root))
                       (packaged-source
-                        (merge-pathnames "libexec/autolith/" release-root))
+                        (merge-pathnames "libexec/antaios/" release-root))
                       (archive
                         (merge-pathnames (format nil "~A.tar.gz" release-name)
                                          output-directory))
@@ -768,8 +768,8 @@ the managed runtime, matching SBCL source, native libraries, and sandbox helper.
                   process-group-helper release-root
                   "libexec/cl-exec-sandbox-process-group")
                  (release-archive--stage-executable
-                  (merge-pathnames "bin/autolith-release" source-root)
-                  release-root "bin/autolith")
+                  (merge-pathnames "bin/antaios-release" source-root)
+                  release-root "bin/antaios")
                   (unless static-musl-p
                     (release-archive--run
                      (list "chmod" "644"

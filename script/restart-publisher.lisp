@@ -23,25 +23,25 @@
                  (error "The restart envelope is empty."))
                form)))))
   (unless (probe-file setup)
-    (error "Autolith needs Quicklisp at ~A" setup))
+    (error "Antaios needs Quicklisp at ~A" setup))
   (load setup)
-  (asdf:load-asd (merge-pathnames "autolith.asd" source-root))
-  (asdf:load-system :autolith)
+  (asdf:load-asd (merge-pathnames "antaios.asd" source-root))
+  (asdf:load-system :antaios)
   (let* ((record (funcall read-form envelope))
          (configuration
            (uiop:symbol-call
-            "AUTOLITH" "CONFIGURATION-CREATE"
+            "ANTAIOS" "CONFIGURATION-CREATE"
             :source-root source-root
             :defer-provider-validation-p t)))
     (unless (and (consp record)
-                 (eq (first record) :autolith-restart)
+                 (eq (first record) :antaios-restart)
                  (= (or (getf (rest record) :version) 0) 1)
                  (stringp (getf (rest record) :identifier))
                  (integerp (getf (rest record) :created-at))
                  (listp (getf (rest record) :metadata)))
       (error "Invalid restart envelope."))
     (let* ((store
-             (uiop:symbol-call "AUTOLITH" "GENERATION-STORE-FOR" configuration))
+             (uiop:symbol-call "ANTAIOS" "GENERATION-STORE-FOR" configuration))
            (generation
              (uiop:symbol-call
               "SBCL-GENERATIONS" "GENERATION-RECREATE-PENDING"
@@ -50,8 +50,8 @@
               :created-at (getf (rest record) :created-at)
               :metadata (getf (rest record) :metadata))))
       (uiop:symbol-call
-       "AUTOLITH" "GENERATION-PUBLISH"
+       "ANTAIOS" "GENERATION-PUBLISH"
        configuration generation
        :probe-runner
        (uiop:symbol-call
-        "AUTOLITH" "GENERATION-CORE-PROBE-RUNNER-CREATE")))))
+        "ANTAIOS" "GENERATION-CORE-PROBE-RUNNER-CREATE")))))

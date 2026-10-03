@@ -76,7 +76,7 @@ tag_record=$(grep '^tag=' "$release_record")
   fail "RELEASE does not identify $expected_platform."
 tag=${tag_record#tag=}
 [[ $tag =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || fail "RELEASE tag $tag is malformed."
-expected_release_name=autolith-$tag-$expected_platform
+expected_release_name=antaios-$tag-$expected_platform
 [[ $release_name == "$expected_release_name" ]] ||
   fail "the archive root is $release_name, expected $expected_release_name."
 
@@ -140,11 +140,11 @@ runtime_version=$(env -u SBCL_HOME "$runtime" \
 [[ $runtime_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] ||
   fail "the bundled SBCL smoke test returned $runtime_version."
 if [[ $static_release == true ]]; then
-  AUTOLITH_FFF_LIBRARY=$runtime \
+  ANTAIOS_FFF_LIBRARY=$runtime \
   COLORLISP_NATIVE_LIBRARY=$runtime \
   env -u SBCL_HOME "$runtime" --noinform --no-userinit --no-sysinit \
-    --script "$release_root/libexec/autolith/script/validate-static-release.lisp" \
-    "$release_root/libexec/autolith"
+    --script "$release_root/libexec/antaios/script/validate-static-release.lisp" \
+    "$release_root/libexec/antaios"
 fi
 printf 'Validated %s as %s (%s, %s).\n' \
   "$archive_name" "$expected_platform" "$expected_architecture" "$runtime_version"

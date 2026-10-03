@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Active-Image Symbol Search --
 
@@ -84,7 +84,7 @@ plain interned names without a definition yield NIL."
 (-> lisp-apropos-search
     (string &key (:package package) (:kind (option keyword)))
     list)
-(defun lisp-apropos-search (query &key (package (find-package '#:autolith)) kind)
+(defun lisp-apropos-search (query &key (package (find-package '#:antaios)) kind)
   "Return (SYMBOL . KINDS) pairs for defined symbols of PACKAGE matching QUERY.
 
 Every whitespace-separated term of QUERY must occur in the symbol name,
@@ -257,7 +257,7 @@ sorted by name."
 
 (-> self-symbol-suggestions (string &key (:package package) (:limit (integer 1))) list)
 (defun self-symbol-suggestions
-    (name &key (package (find-package '#:autolith)) (limit *lisp-apropos-suggestion-limit*))
+    (name &key (package (find-package '#:antaios)) (limit *lisp-apropos-suggestion-limit*))
   "Return up to LIMIT defined symbols of PACKAGE whose names resemble the guessed NAME.
 
 Candidates share at least one hyphen-separated token with NAME or contain
@@ -283,7 +283,7 @@ it; stronger overlaps rank first and shorter names break ties."
           collect symbol)))
 
 (-> self-symbol-suggestion-text (string &key (:package package)) string)
-(defun self-symbol-suggestion-text (name &key (package (find-package '#:autolith)))
+(defun self-symbol-suggestion-text (name &key (package (find-package '#:antaios)))
   "Return a sentence naming the closest defined names to NAME, or an empty string."
   (let ((suggestions (self-symbol-suggestions name :package package)))
     (if suggestions

@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Workspace Agenda Tests --
 
@@ -248,7 +248,7 @@
                               :if-exists ':supersede
                               :if-does-not-exist ':create)
         (write-string
-         "#.(setf autolith::*agenda-reader-evaluated-p* t)"
+         "#.(setf antaios::*agenda-reader-evaluated-p* t)"
          stream))
       (handler-bind ((agenda-load-warning #'muffle-warning))
         (test-assert (null (agenda-state-records

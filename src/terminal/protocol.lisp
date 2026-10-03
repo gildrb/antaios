@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Terminal Defaults --
 (defparameter *terminal-history-limit* 100
@@ -20,7 +20,7 @@ applies them through TERMINAL-UI-RESIZE. All terminal dimension
 mutation passes through TERMINAL-SET-DIMENSIONS.")
 
 (defvar *terminal-relayed-resize-lock*
-  (make-lock "Autolith relayed terminal resize")
+  (make-lock "Antaios relayed terminal resize")
   "The lock making relayed resize publication and consumption atomic.")
 
 (-> terminal-relayed-resize-publish (integer integer) null)
@@ -41,18 +41,18 @@ mutation passes through TERMINAL-SET-DIMENSIONS.")
       (setf *terminal-relayed-resize* nil))))
 
 (defclass terminal (clinedi:terminal) ()
-  (:documentation "Autolith's terminal transport extension point."))
+  (:documentation "Antaios's terminal transport extension point."))
 
 (defclass stream-terminal (terminal clinedi:host-terminal) ()
   (:default-initargs :event-decoder #'terminal--decode-editing-event
                     :event-prefix-p-function
                     (lambda (character) (find character (list #\Escape (code-char 22))))
                     :styling-p-function #'terminal-environment-styling-p)
-  (:documentation "Native stream transport with Autolith's input and styling policy."))
+  (:documentation "Native stream transport with Antaios's input and styling policy."))
 
 (defclass terminal-ui ()
   ((lock
-    :initform (make-recursive-lock "Autolith terminal UI")
+    :initform (make-recursive-lock "Antaios terminal UI")
     :reader terminal-ui-lock
     :type t
     :documentation "The recursive lock serializing editor state and terminal writes.")
@@ -383,7 +383,7 @@ mutation passes through TERMINAL-SET-DIMENSIONS.")
 
 ;;;; -- Terminal Conditions --
 
-(define-condition terminal-error (autolith-error)
+(define-condition terminal-error (antaios-error)
   ((operation
     :initarg :operation
     :reader terminal-error-operation
@@ -421,7 +421,7 @@ mutation passes through TERMINAL-SET-DIMENSIONS.")
 (-> terminal--prompt-marker-sequence (keyword integer) string)
 (defun terminal--prompt-marker-sequence (marker status)
   "Return the OSC 133 sequence for MARKER and integer STATUS.
-Autolith repaints its own prompt, so prompt starts disable terminal redraw."
+Antaios repaints its own prompt, so prompt starts disable terminal redraw."
   (semantic-prompt-marker-sequence marker
                                    :status   status
                                    :redraw-p (not (eq marker ':prompt-start))))

@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Explicit Queue Storage and Editable Vault Contents --
 

@@ -1,16 +1,16 @@
-#+TITLE: Autolith Skills
+#+TITLE: Antaios Skills
 #+STARTUP: content
 
 * Skills
 
 A Skill is a named bundle of request-local instructions for the model.
-Autolith shows the model a bounded catalog, then the model calls =skill.load=
+Antaios shows the model a bounded catalog, then the model calls =skill.load=
 to load each applicable Skill before work that depends on it.
 
 * Standard =SKILL.md=
 
-Autolith supports the Agent Skills =SKILL.md= format. Put this in
-=.autolith/skills/release-check/SKILL.md=:
+Antaios supports the Agent Skills =SKILL.md= format. Put this in
+=.antaios/skills/release-check/SKILL.md=:
 
 #+BEGIN_SRC markdown
 ---
@@ -18,7 +18,7 @@ name: release-check
 description: Verify a release from source through its packaged artifact.
 license: ISC
 metadata:
-  author: Lambda Symbolics
+  author: Example Maintainer
 allowed-tools: Read Grep
 ---
 Follow the repository release procedure completely.
@@ -38,7 +38,7 @@ The Markdown after the closing =---= line is the exact instruction body.
 An empty body is valid. =allowed-tools= is descriptive metadata and does not
 grant command or tool permissions.
 
-Autolith hashes the exact decoded source re-encoded as UTF-8 and converts it
+Antaios hashes the exact decoded source re-encoded as UTF-8 and converts it
 to a native cache below the configured cache root at
 =skills/agent-skill-v1/<sha256>/SKILL.sexp=. An unchanged source reuses that
 cache across restarts. Changed content gets a new conversion. A malformed or
@@ -48,8 +48,8 @@ corrupt cache is regenerated from =SKILL.md=.
 
 Use =skill.edit= with the exact =name= and complete =content= of a =SKILL.md=
 definition to create or replace
-=${XDG_CONFIG_HOME:-~/.config}/autolith/skills/NAME/SKILL.md=.
-The source is limited to 262144 characters. Autolith validates the frontmatter
+=${XDG_CONFIG_HOME:-~/.config}/antaios/skills/NAME/SKILL.md=.
+The source is limited to 262144 characters. Antaios validates the frontmatter
 and instruction body before atomically replacing the file. Failed validation
 or publication preserves the previous source. If that directory contains a
 native =SKILL.sexp=, edit the native definition directly instead.
@@ -59,7 +59,7 @@ native =SKILL.sexp=, edit the native definition directly instead.
 The native format remains available:
 
 #+BEGIN_SRC lisp
-(:autolith-skill
+(:antaios-skill
  :version      1
  :name         "release-check"
  :description  "Verify a release from source through its packaged artifact."
@@ -70,16 +70,16 @@ Run every relevant check before reporting success.")
 
 A native file is one bounded top-level form with required =:version=,
 =:name=, =:description=, and =:instructions= fields after
-=:autolith-skill=. Autolith rejects unsupported versions, unknown or
+=:antaios-skill=. Antaios rejects unsupported versions, unknown or
 duplicate fields, malformed data, extra forms, reader labels, circular or
 shared structure, and values of the wrong type.
 
 * Locations and precedence
 
-Autolith scans these roots recursively, with earlier roots taking precedence:
+Antaios scans these roots recursively, with earlier roots taking precedence:
 
-1. =.autolith/skills/= at the project root
-2. =${XDG_CONFIG_HOME:-~/.config}/autolith/skills/=
+1. =.antaios/skills/= at the project root
+2. =${XDG_CONFIG_HOME:-~/.config}/antaios/skills/=
 3. =~/.agents/skills/=, the cross-agent user root shared with other agents
 4. =<site-config-root>/skills/=
 5. bundled Skill roots
@@ -102,7 +102,7 @@ user-local version of a site Skill.
   =◆ loaded skill: NAME= transcript marker when selection succeeds. The marker
   survives ordinary redraws but is not written to durable conversation history.
   Expanded tool view presents the ordinary transient =skill.load= result instead.
-- At the next provider boundary, Autolith rereads the original source. A
+- At the next provider boundary, Antaios rereads the original source. A
   changed =SKILL.md= is rehashed and reconverted before its current Markdown
   body is injected.
 - Selected Skills stack in catalog order.

@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 
 ;;;; -- Request Tool Filtering --
@@ -164,7 +164,7 @@ the expanded tools loaded without another search.")
 
 The client execution mode and parameter schema follow the Codex reference at
 commit 18194bfd3534ca567d886eac454028dafaa68b6c: the model asks for a query and
-an optional limit, Autolith answers from its own registry, and the resulting
+an optional limit, Antaios answers from its own registry, and the resulting
 tool_search_output replays in history so the expansion stays loaded."
   (json-object
    "type" "tool_search"
@@ -238,7 +238,7 @@ tool_search_output replays in history so the expansion stays loaded."
   "Return the distinct search terms named by the tool search ARGUMENTS.
 
 The declared query string supplies the terms. A paths array, the shape the
-server-executed search used before Autolith answered searches itself, is
+server-executed search used before Antaios answered searches itself, is
 accepted as a list of namespace names."
   (let ((paths (json-get arguments "paths")))
     (remove-duplicates
@@ -407,7 +407,7 @@ tools rather than failing the turn."
   "Return namespace ENTRY rebuilt in the deferred wire shape, or NIL to drop it.
 
 Children keep only the fields a deferred function declares. Expansions the
-server produced before Autolith answered searches itself carried a null
+server produced before Antaios answered searches itself carried a null
 output_schema that the request validator rejects, so every child is rebuilt
 rather than copied, and a child without an object parameter schema is dropped."
   (when (and (json-object-p entry)

@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- User Input --
 
@@ -345,7 +345,7 @@ format is identified from the leading bytes alone."
               (image-input--error
                absolute ':recognition
                (format nil
-                       "Autolith cannot attach ~A: use PNG, JPEG, GIF, or WebP."
+                       "Antaios cannot attach ~A: use PNG, JPEG, GIF, or WebP."
                        absolute)))
             (when (eq format ':jpeg)
               (let ((complete (make-array length

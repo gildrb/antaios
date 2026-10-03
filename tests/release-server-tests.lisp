@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Release Server Tests --
 
@@ -72,17 +72,17 @@
          (deployment (merge-pathnames (format nil "~A/" tag) root)))
     (ensure-directories-exist (merge-pathnames ".keep" deployment))
     (release-server-tests--write-file
-     (merge-pathnames "autolith.asd" deployment)
+     (merge-pathnames "antaios.asd" deployment)
      (format nil
-             "(asdf:defsystem #:autolith~%  :version \"~A\"~%)~%"
+             "(asdf:defsystem #:antaios~%  :version \"~A\"~%)~%"
              version))
     (when updater-p
       (release-server-tests--write-file
        (merge-pathnames "server/release-updater.lisp" deployment)
-       "(in-package #:autolith)"))
+       "(in-package #:antaios)"))
     (release-server-tests--git deployment '("init" "--quiet"))
     (release-server-tests--git
-     deployment '("config" "user.name" "Autolith Release Test"))
+     deployment '("config" "user.name" "Antaios Release Test"))
     (release-server-tests--git
      deployment '("config" "user.email" "release-test@invalid"))
     (release-server-tests--git deployment '("add" "."))
@@ -103,7 +103,7 @@
   (let* ((root
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-release-git-isolation-tests-~A/"
+             (format nil "antaios-release-git-isolation-tests-~A/"
                      (make-identifier))
              (uiop:temporary-directory))))
          (environment
@@ -136,11 +136,11 @@
 (defun release-server-tests--test-service-runtime-isolation ()
   "Verify candidate setup selects its runtime independently of the updater."
   (let* ((home
-           (merge-pathnames "autolith-release-service-home/"
+           (merge-pathnames "antaios-release-service-home/"
                             (uiop:temporary-directory)))
          (configuration
            (release-updater-configuration-create
-            :service-account "autolith-release"
+            :service-account "antaios-release"
             :service-home home))
          (captured-command nil)
          (captured-directory nil)
@@ -160,10 +160,10 @@
      (equal
       captured-command
       (list "s6-setuidgid"
-            "autolith-release"
+            "antaios-release"
             "env"
-            "-u" "AUTOLITH_SBCL"
-            "-u" "AUTOLITH_SBCL_SOURCE_ROOT"
+            "-u" "ANTAIOS_SBCL"
+            "-u" "ANTAIOS_SBCL_SOURCE_ROOT"
             (format nil "HOME=~A" (namestring home))
             (format nil "XDG_DATA_HOME=~A"
                     (namestring (merge-pathnames ".local/share/" home)))
@@ -230,7 +230,7 @@
     (let ((root
             (uiop:ensure-directory-pathname
              (merge-pathnames
-              (format nil "autolith-release-readonly-cleanup-~A/"
+              (format nil "antaios-release-readonly-cleanup-~A/"
                       (make-identifier))
               (uiop:temporary-directory)))))
       (ensure-directories-exist root)
@@ -243,7 +243,7 @@
   (let* ((root
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-release-server-tests-~A/" (make-identifier))
+             (format nil "antaios-release-server-tests-~A/" (make-identifier))
              (uiop:temporary-directory))))
          (source-root
            (let ((pathname (merge-pathnames "source/" root)))
@@ -284,7 +284,7 @@
            (test-assert
             (string= (release-server-latest-tag configuration) "v0.10.1")
             "the newest complete release becomes latest")
-           (let ((response (release-server-route configuration "GET" "/autolith")))
+           (let ((response (release-server-route configuration "GET" "/antaios")))
              (test-assert (= (release-server-response-status response) 200)
                           "the installer route succeeds")
              (test-assert (pathnamep (release-server-response-body response))
@@ -386,7 +386,7 @@
                (= (release-server-response-status
                    (release-server-route
                     configuration "GET"
-                    (format nil "/releases/~A/autolith-~A-sparc-sunos.tar.gz"
+                    (format nil "/releases/~A/antaios-~A-sparc-sunos.tar.gz"
                             tag tag)))
                   404)
                "unknown platform archives are rejected"))
@@ -398,7 +398,7 @@
             "release routes reject filesystem traversal")
            (test-assert
             (= (release-server-response-status
-                (release-server-route configuration "POST" "/autolith"))
+                (release-server-route configuration "POST" "/antaios"))
                405)
             "release routes reject mutating HTTP methods")
            (multiple-value-bind (method target)
@@ -423,7 +423,7 @@
   (let* ((root
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-release-identity-tests-~A/"
+             (format nil "antaios-release-identity-tests-~A/"
                      (make-identifier))
              (uiop:temporary-directory))))
          (source-a (merge-pathnames "source-a/" root))
@@ -467,7 +467,7 @@
   (let* ((root
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-release-archive-tests-~A/" (make-identifier))
+             (format nil "antaios-release-archive-tests-~A/" (make-identifier))
              (uiop:temporary-directory))))
          (dependency-root (merge-pathnames "dependencies/" root))
          (target-root (merge-pathnames "target/" root))
@@ -517,7 +517,7 @@
   (let* ((root
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-release-builder-tests-~A/" (make-identifier))
+             (format nil "antaios-release-builder-tests-~A/" (make-identifier))
              (uiop:temporary-directory))))
          (source-root (merge-pathnames "source/" root))
          (public-root (merge-pathnames "public/" root))
@@ -527,7 +527,7 @@
             :source-root source-root
             :state-root state-root
             :public-root public-root
-            :repository "https://example.invalid/autolith.git"
+            :repository "https://example.invalid/antaios.git"
             :poll-seconds 30
             :container-command "container-test"))
          (commit "0123456789abcdef0123456789abcdef01234567")
@@ -560,24 +560,24 @@
                    '("v0.11.1" "v0.12.0"))
             "a builder catches up every tag newer than its latest publication")
            (release-server-tests--write-file
-            (merge-pathnames "autolith.asd" source-root)
+            (merge-pathnames "antaios.asd" source-root)
             (format nil
-                    "(asdf:defsystem #:autolith~%  :version \"0.11.2\"~%)~%"))
+                    "(asdf:defsystem #:antaios~%  :version \"0.11.2\"~%)~%"))
            (test-assert
             (string= (release-builder--source-version source-root) "0.11.2")
             "builder source validation reads the declared ASDF version"))
         (release-server-tests--delete-tree root)))
     (test-assert
-     (search "lambda-symbolics/autolith" *release-builder-default-repository*)
+     (search "gildrb/theseus" *release-builder-default-repository*)
      "the builder default repository is the live GitHub origin")
-    (dolist (case '(("https://github.com/lambda-symbolics/autolith.git"
-                     "lambda-symbolics" "autolith")
-                    ("https://github.com/lambda-symbolics/autolith/"
-                     "lambda-symbolics" "autolith")
-                    ("git@github.com:lambda-symbolics/autolith.git"
-                     "lambda-symbolics" "autolith")
-                    ("ssh://git@github.com/lambda-symbolics/autolith.git"
-                     "lambda-symbolics" "autolith")))
+    (dolist (case '(("https://github.com/gildrb/theseus.git"
+                     "gildrb" "theseus")
+                    ("https://github.com/gildrb/theseus/"
+                     "gildrb" "theseus")
+                    ("git@github.com:gildrb/theseus.git"
+                     "gildrb" "theseus")
+                    ("ssh://git@github.com/gildrb/theseus.git"
+                     "gildrb" "theseus")))
       (destructuring-bind (url owner repo) case
         (multiple-value-bind (parsed-owner parsed-repo)
             (release-builder--github-repository url)
@@ -588,7 +588,7 @@
      (handler-case
          (progn
            (release-builder--github-repository
-            "https://example.invalid/autolith.git")
+            "https://example.invalid/antaios.git")
            nil)
        (release-builder-error (condition)
          (and (eq (release-builder-error-stage condition) ':tag-discovery)
@@ -598,7 +598,7 @@
     (let* ((root
              (uiop:ensure-directory-pathname
               (merge-pathnames
-               (format nil "autolith-release-mirror-tests-~A/" (make-identifier))
+               (format nil "antaios-release-mirror-tests-~A/" (make-identifier))
                (uiop:temporary-directory))))
            (source-root (merge-pathnames "source/" root))
            (public-root (merge-pathnames "public/" root))
@@ -609,7 +609,7 @@
               :source-root source-root
               :state-root state-root
               :public-root public-root
-              :repository "https://github.com/lambda-symbolics/autolith.git"
+              :repository "https://github.com/gildrb/theseus.git"
               :poll-seconds 30))
            (tag "v0.32.2")
            (source-tag
@@ -714,7 +714,7 @@
                          directory)))
                      *release-server-platform-ids*)
                     (find-if (lambda (url)
-                               (search "lambda-symbolics/autolith" url))
+                               (search "gildrb/theseus" url))
                              fetched))
                    "the builder fetches every recognized GitHub platform asset")))
               (let* ((waiting-tag
@@ -731,7 +731,7 @@
   (let* ((root
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-release-timeout-tests-~A/"
+             (format nil "antaios-release-timeout-tests-~A/"
                      (make-identifier))
              (uiop:temporary-directory))))
          (source-root (merge-pathnames "source/" root))
@@ -743,7 +743,7 @@
             :source-root source-root
             :state-root state-root
             :public-root public-root
-            :repository "https://example.invalid/autolith.git"
+            :repository "https://example.invalid/antaios.git"
             :poll-seconds 30
             :container-command "container-test"
             :container-timeout-seconds 17))
@@ -787,7 +787,7 @@
   (let* ((root
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-release-updater-tests-~A/"
+             (format nil "antaios-release-updater-tests-~A/"
                      (make-identifier))
              (uiop:temporary-directory))))
          (deployments-root (merge-pathnames "deployments/" root))
@@ -834,7 +834,7 @@
                     :deployments-root deployments-root
                     :state-root state-root
                     :host-lock-root host-lock-root
-                    :repository "https://example.invalid/autolith.git"
+                    :repository "https://example.invalid/antaios.git"
                     :poll-seconds 1
                     :activation-timeout-seconds 1
                     :server-service (merge-pathnames "server-service/" root)
@@ -972,7 +972,7 @@
   (let* ((root
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-release-final-path-tests-~A/"
+             (format nil "antaios-release-final-path-tests-~A/"
                      (make-identifier))
              (uiop:temporary-directory))))
          (remote-root (merge-pathnames "remote/" root))
@@ -1048,13 +1048,13 @@
              (test-assert setup-called-p
                           "final-path candidate setup is invoked")
              (release-server-tests--write-file
-              (merge-pathnames "autolith.asd"
+              (merge-pathnames "antaios.asd"
                                (merge-pathnames "v0.18.0/" remote-root))
               (format nil
-                      "(asdf:defsystem #:autolith~%  :version \"0.18.1\"~%)~%"))
+                      "(asdf:defsystem #:antaios~%  :version \"0.18.1\"~%)~%"))
              (release-server-tests--git
               (merge-pathnames "v0.18.0/" remote-root)
-              '("add" "autolith.asd"))
+              '("add" "antaios.asd"))
              (release-server-tests--git
               (merge-pathnames "v0.18.0/" remote-root)
               '("commit" "--quiet" "--no-gpg-sign" "-m" "Advance release fixture"))

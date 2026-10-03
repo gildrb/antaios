@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Workspace Tool Classes --
 
@@ -50,7 +50,7 @@ Agent turns bind this to the configured workspace and source roots. Specialized
 resources may extend or replace that boundary dynamically.")
 
 (defvar *workspace-file-mutation-lock*
-  (make-recursive-lock "Autolith workspace file mutations")
+  (make-recursive-lock "Antaios workspace file mutations")
   "Serialize native workspace file writes and revision-gated publication.")
 
 

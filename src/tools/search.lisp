@@ -1,10 +1,10 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Search Tool Configuration --
 
 (defparameter *fff-source-commit*
   "95fd777c2529fc7b4d7572dabff64cc07268f2c5"
-  "The reviewed fff v0.11.0 source revision built by Autolith bootstrap.")
+  "The reviewed fff v0.11.0 source revision built by Antaios bootstrap.")
 
 (defparameter *search-default-result-limit* 20
   "The default number of fff results returned to the model.")
@@ -54,7 +54,7 @@
 (-> search--library-path (configuration) (values pathname boolean))
 (defun search--library-path (configuration)
   "Return the fff library path and whether it is an explicit override."
-  (let ((override (uiop:getenv "AUTOLITH_FFF_LIBRARY")))
+  (let ((override (uiop:getenv "ANTAIOS_FFF_LIBRARY")))
     (if (non-empty-string-p override)
         (values (pathname override) t)
         (values (merge-pathnames (format nil "native/fff/~A"

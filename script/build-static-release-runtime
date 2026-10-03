@@ -42,9 +42,9 @@ builder_runtime=$support_root/installation/bin/sbcl
 libsbcl=$support_root/libsbcl.a
 home=${HOME:?HOME is not set}
 data_home=$(xdg_base_directory "${XDG_DATA_HOME:-}" "$home/.local/share")
-fff_shared=$data_home/autolith/native/fff/libfff_c.so
-fff_archive=$data_home/autolith/native/fff/libfff_c.a
-marker=$installation/lib/autolith-static-musl
+fff_shared=$data_home/antaios/native/fff/libfff_c.so
+fff_archive=$data_home/antaios/native/fff/libfff_c.a
+marker=$installation/lib/antaios-static-musl
 
 [[ $(uname -s) == Linux ]] || {
   printf 'build-static-release-runtime supports Linux only.\n' >&2
@@ -80,7 +80,7 @@ trap cleanup EXIT HUP INT TERM
 
 symbols_assembly=$work_root/static-symbols.S
 color_archive=$work_root/libcolorlisp-tree-sitter.a
-export AUTOLITH_FFF_LIBRARY=$fff_shared
+export ANTAIOS_FFF_LIBRARY=$fff_shared
 "$builder_runtime" --noinform --no-userinit --no-sysinit \
   --script "$source_root/script/build-static-release-runtime.lisp" \
   "$source_root" "$symbols_assembly" "$color_archive"

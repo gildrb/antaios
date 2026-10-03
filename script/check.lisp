@@ -175,11 +175,11 @@ Selectors and --list bypass recovery checks.
 POSIX hosts go through the stable runtime launcher; Windows runs the SBCL
 that is running this check, since the launcher is a Bash script."
   #-win32
-  (list (namestring (merge-pathnames "bin/autolith-runtime" source-root)) "--script")
+  (list (namestring (merge-pathnames "bin/antaios-runtime" source-root)) "--script")
   #+win32
   (progn
     source-root
-    (list (or (uiop:getenv "AUTOLITH_SBCL")
+    (list (or (uiop:getenv "ANTAIOS_SBCL")
               (namestring sb-ext:*runtime-pathname*))
           "--noinform" "--script")))
 
@@ -272,13 +272,13 @@ inherited XDG or HOME entry would silently defeat an override placed first."
 (defun check--build-active-core (source-root temporary-root)
   "Build this run's active image from the checked source and return its core.
 
-Cases that start a fresh Autolith, such as pristine Lisp workers, boot this core
+Cases that start a fresh Antaios, such as pristine Lisp workers, boot this core
 instead of loading every FASL. A fresh process saves it, so it holds nothing
 from this runner's heap."
-  (let ((core (merge-pathnames "active/autolith-active.core" temporary-root)))
+  (let ((core (merge-pathnames "active/antaios-active.core" temporary-root)))
     (format t "~&Building this run's active image.~%")
     (finish-output)
-    (uiop:symbol-call '#:autolith '#:active-image-install source-root core
+    (uiop:symbol-call '#:antaios '#:active-image-install source-root core
                       :saver ':fresh-process)
     core))
 
@@ -286,7 +286,7 @@ from this runner's heap."
                                     (jobs (check--processor-count)) (timeout 600))
   "Run CASES in fresh SBCL processes and remove their owned fixture directories.
 Parent cleanup follows process-group termination, including crashes and timeouts.
-Workers receive ACTIVE-CORE as AUTOLITH_TEST_ACTIVE_CORE, which only test
+Workers receive ACTIVE-CORE as ANTAIOS_TEST_ACTIVE_CORE, which only test
 configurations read; launchers under test keep their own core selection."
   (let ((entries nil) (results nil) (fixture-roots nil) (successful-p t))
     (unwind-protect
@@ -296,7 +296,7 @@ configurations read; launchers under test keep their own core selection."
                  for request = (merge-pathnames "request.sexp" directory)
                  for result = (merge-pathnames "result.sexp" directory)
                  for names = (mapcar #'string-downcase partition)
-                 for fixture-root = (uiop:symbol-call '#:autolith '#:test-make-temporary-root)
+                 for fixture-root = (uiop:symbol-call '#:antaios '#:test-make-temporary-root)
                  do (push fixture-root fixture-roots)
                     (ensure-directories-exist request)
                     (check--write-form request (list :version 1 :cases names
@@ -313,7 +313,7 @@ configurations read; launchers under test keep their own core selection."
                            :environment (check--environment-with
                                          (list (format nil "XDG_CONFIG_HOME=~Aconfig/" directory)
                                                (format nil "XDG_STATE_HOME=~Astate/" directory)
-                                               (format nil "AUTOLITH_TEST_ACTIVE_CORE=~A"
+                                               (format nil "ANTAIOS_TEST_ACTIVE_CORE=~A"
                                                        (uiop:native-namestring active-core))))
                            ;; Leave TMPDIR alone: native Unix-domain sockets need short paths.
                            :command (append (check--runtime-command source-root)
@@ -351,7 +351,7 @@ configurations read; launchers under test keep their own core selection."
                                                   for timing = (assoc (string-downcase case) timings
                                                                       :test #'string=)
                                                   when timing collect timing))))
-             (and (uiop:symbol-call '#:autolith '#:tests-report aggregate) successful-p)))
+             (and (uiop:symbol-call '#:antaios '#:tests-report aggregate) successful-p)))
       (dolist (root fixture-roots)
         (uiop:delete-directory-tree root :validate t :if-does-not-exist ':ignore)))))
 
@@ -359,7 +359,7 @@ configurations read; launchers under test keep their own core selection."
   "Return the version of HEAD, which pristine recovery uses for source fallback."
   (let ((source (uiop:run-program
                  (list "git" "-C" (namestring source-root)
-                       "show" "HEAD:autolith.asd")
+                       "show" "HEAD:antaios.asd")
                  :output ':string)))
     (with-input-from-string (stream source)
       (let* ((*read-eval* nil)
@@ -368,29 +368,29 @@ configurations read; launchers under test keep their own core selection."
                            (eq (first definition) 'asdf:defsystem)
                            (getf (cddr definition) :version))))
         (unless (and (stringp version) (plusp (length version)))
-          (check--fail "Committed Autolith source has no readable version."))
+          (check--fail "Committed Antaios source has no readable version."))
         version))))
 
 (defun check--run-recovery (&key source-root temporary-root quicklisp-setup jobs timeout)
   "Run the pristine probe, listing, and fallback checks with bounded processes."
-  (let* ((data-root (autolith-application-root :data))
-         (core (merge-pathnames "recovery/autolith-recovery.core" data-root))
+  (let* ((data-root (antaios-application-root :data))
+         (core (merge-pathnames "recovery/antaios-recovery.core" data-root))
          (manifest-path (merge-pathnames "recovery/manifest.sexp" data-root))
          (temporary-home (merge-pathnames "home/" temporary-root))
-         (command (list (or (uiop:getenv "AUTOLITH_SBCL") "sbcl")
+         (command (list (or (uiop:getenv "ANTAIOS_SBCL") "sbcl")
                         "--noinform" "--core" (namestring core)
                         "--end-runtime-options" (namestring source-root))))
     (unless (and (probe-file core) (probe-file manifest-path))
-      (check--fail "Autolith's pristine recovery image is missing; run ./script/bootstrap."))
+      (check--fail "Antaios's pristine recovery image is missing; run ./script/bootstrap."))
     (let ((manifest (check--read-single-form manifest-path)))
       (unless (and (listp manifest) (eq (first manifest) :recovery-image)
                    (eql (getf (rest manifest) :version) 2)
                    (equal (truename (getf (rest manifest) :core)) (truename core)))
-        (check--fail "Autolith's pristine recovery manifest is invalid.")))
+        (check--fail "Antaios's pristine recovery manifest is invalid.")))
     (ensure-directories-exist temporary-home)
     (let ((pointer
             (merge-pathnames
-             "state/autolith/current-image-commit.sexp" temporary-root)))
+             "state/antaios/current-image-commit.sexp" temporary-root)))
       (ensure-directories-exist pointer)
       (with-open-file (stream pointer
                               :direction :output
@@ -413,7 +413,7 @@ configurations read; launchers under test keep their own core selection."
                                (format nil "XDG_DATA_HOME=~Adata/" temporary-root)
                                (format nil "XDG_STATE_HOME=~Astate/" temporary-root)
                                (format nil "XDG_CACHE_HOME=~Acache/" temporary-root)
-                               (format nil "AUTOLITH_PROJECT_SETUP=~A" quicklisp-setup))))
+                               (format nil "ANTAIOS_PROJECT_SETUP=~A" quicklisp-setup))))
                   collect (make-check-process
                            :label label :command arguments
                            :environment environment
@@ -431,10 +431,10 @@ configurations read; launchers under test keep their own core selection."
         (unless (and (listp probe) (eq (first probe) :recovery-probe)
                      (eql (getf (rest probe) :version) 2))
           (check--print-process-log (first entries))
-          (check--fail "Autolith's pristine recovery probe is invalid."))
+          (check--fail "Antaios's pristine recovery probe is invalid."))
         (unless (and (search "boots pristine committed source" fallback)
                      (search "Starting clean committed source" fallback)
-                     (search (format nil "autolith version ~A"
+                     (search (format nil "antaios version ~A"
                                      (check--committed-version source-root))
                              fallback))
           (check--print-process-log (third entries))
@@ -447,13 +447,13 @@ configurations read; launchers under test keep their own core selection."
   (asdf:load-system :ls-flock)
   (uiop:symbol-call '#:ls-flock '#:call-with-file-lock
                     (merge-pathnames ".qlot/test-load.lock" source-root)
-                    (lambda () (asdf:load-system :autolith/tests))))
+                    (lambda () (asdf:load-system :antaios/tests))))
 
 (defun check--load-tests (source-root &key build-sandbox)
   "Load the locked test system and runtime libraries; return the setup pathname."
   (let ((setup (merge-pathnames ".qlot/setup.lisp" source-root)))
     (load (merge-pathnames "script/runtime-requirement.lisp" source-root))
-    (autolith-require-minimum-runtime (merge-pathnames "sbcl.version" source-root))
+    (antaios-require-minimum-runtime (merge-pathnames "sbcl.version" source-root))
     (unless (probe-file setup)
       (check--fail "Locked dependencies are missing; run ./script/bootstrap."))
     (load setup)
@@ -464,14 +464,14 @@ configurations read; launchers under test keep their own core selection."
           (directories (find-symbol "*FOREIGN-LIBRARY-DIRECTORIES*" "CFFI")))
       (when (probe-file directory)
         (pushnew directory (symbol-value directories) :test #'equal)))
-    (asdf:load-asd (merge-pathnames "autolith.asd" source-root))
+    (asdf:load-asd (merge-pathnames "antaios.asd" source-root))
     (check--load-test-system source-root)
     setup))
 
 (defun check--delete-temporary-root (pathname)
-  "Delete PATHNAME through Autolith's host-specific directory-tree adapter."
-  (let ((platform-symbol (find-symbol "*PLATFORM*" "AUTOLITH"))
-        (delete-symbol (find-symbol "PLATFORM-DELETE-DIRECTORY-TREE" "AUTOLITH")))
+  "Delete PATHNAME through Antaios's host-specific directory-tree adapter."
+  (let ((platform-symbol (find-symbol "*PLATFORM*" "ANTAIOS"))
+        (delete-symbol (find-symbol "PLATFORM-DELETE-DIRECTORY-TREE" "ANTAIOS")))
     (funcall (symbol-function delete-symbol)
              (symbol-value platform-symbol)
              pathname
@@ -490,15 +490,15 @@ configurations read; launchers under test keep their own core selection."
                 (check--load-tests source-root :build-sandbox (not (getf options :list)))))
           (let* ((suites (getf options :suites))
                  (tests (getf options :tests))
-                 (cases (uiop:symbol-call '#:autolith '#:tests-select :suites suites :tests tests)))
+                 (cases (uiop:symbol-call '#:antaios '#:tests-select :suites suites :tests tests)))
             (unless cases
               (check--fail "No test cases matched the selection."))
             (when (getf options :list)
-              (uiop:symbol-call '#:autolith '#:tests-list :suites suites :tests tests)
+              (uiop:symbol-call '#:antaios '#:tests-list :suites suites :tests tests)
               (return-from check-main 0))
             (let* ((temporary-root
                      (merge-pathnames
-                      (format nil "autolith-check-~D-~D/" (sb-posix:getpid)
+                      (format nil "antaios-check-~D-~D/" (sb-posix:getpid)
                               (random most-positive-fixnum))
                       (uiop:temporary-directory)))
                    (jobs (getf options :jobs))

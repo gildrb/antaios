@@ -1,8 +1,8 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Grok Device Authentication --
 
-;;; Autolith implements the RFC 8628 device authorization grant against the
+;;; Antaios implements the RFC 8628 device authorization grant against the
 ;;; xAI OAuth issuer, matching grok-build reference commit 47348d13.
 
 (defclass grok-device-authentication-client
@@ -55,7 +55,7 @@
    :device-code-path "/oauth2/device/code"
    :token-path "/oauth2/token"
    :scope (format nil "~{~A~^ ~}" *grok-oauth-scopes*)
-   :request-code-parameters (list (cons "referrer" "autolith"))
+   :request-code-parameters (list (cons "referrer" "antaios"))
    :request-function
    (or request-function #'device-authentication-request)
    :poll-function
@@ -72,7 +72,7 @@
   "Display the Grok verification URL and one-time code."
   (declare (ignore client))
   (format stream
-          "~&Sign in with Grok:~%  Open: ~A~%  Code: ~A~%~%Continue only if you started this login in Autolith and the browser shows the same code.~%"
+          "~&Sign in with Grok:~%  Open: ~A~%  Code: ~A~%~%Continue only if you started this login in Antaios and the browser shows the same code.~%"
           (device-authorization-verification-url authorization)
           (device-authorization-user-code authorization))
   (finish-output stream)

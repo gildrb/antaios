@@ -1,0 +1,14 @@
+#!/bin/sh
+
+exec 2>&1
+
+export HOME=/var/lib/antaios-release-server/home
+export XDG_DATA_HOME=$HOME/.local/share
+export XDG_STATE_HOME=$HOME/.local/state
+export XDG_CACHE_HOME=$HOME/.cache
+export ANTAIOS_RELEASE_SOURCE_ROOT=/srv/antaios-release-server/current
+export ANTAIOS_RELEASE_STATE_ROOT=/var/lib/antaios-release-server/builder
+export ANTAIOS_RELEASE_PUBLIC_ROOT=/srv/antaios-release-server/public
+export ANTAIOS_RELEASE_POLL_SECONDS=300
+
+exec /srv/antaios-release-server/current/server/run build

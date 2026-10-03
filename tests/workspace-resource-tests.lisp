@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Workspace Resource Test Support --
 
@@ -1085,7 +1085,7 @@
                            (null
                             (directory
                              (merge-pathnames
-                              ".*.autolith-resource-*.tmp" workspace))))
+                              ".*.antaios-resource-*.tmp" workspace))))
                       "oversized replacement rejection writes nothing and preserves the original")))))
              (let ((path (merge-pathnames "publish-failure.txt" workspace)))
                (workspace-resource-tests--write-text path (format nil "before~%"))
@@ -1112,7 +1112,7 @@
                            (format nil "before~%"))
                   "failed atomic publication leaves original content intact")
                  (test-assert
-                  (null (directory (merge-pathnames ".*.autolith-resource-*.tmp"
+                  (null (directory (merge-pathnames ".*.antaios-resource-*.tmp"
                                                     workspace)))
                   "failed atomic publication cleans its same-directory temporary file")))
              (let ((path (merge-pathnames "publish-mismatch.txt" workspace)))
@@ -1143,7 +1143,7 @@
                            (format nil "before~%"))
                   "publication mismatch preserves the original content")
                  (test-assert
-                  (null (directory (merge-pathnames ".*.autolith-resource-*.tmp"
+                  (null (directory (merge-pathnames ".*.antaios-resource-*.tmp"
                                                     workspace)))
                   "publication mismatch cleans its same-directory temporary file")))
              (let ((path (merge-pathnames "extensionless" workspace)))
@@ -1171,7 +1171,7 @@
                   (null (probe-file (merge-pathnames "extensionless.tmp" workspace)))
                   "extensionless publication does not default the target type")
                  (test-assert
-                  (null (directory (merge-pathnames ".*.autolith-resource-*.tmp"
+                  (null (directory (merge-pathnames ".*.antaios-resource-*.tmp"
                                                     workspace)))
                   "extensionless publication leaves no temporary file")))
              (let* ((path (merge-pathnames "serialized.txt" workspace))

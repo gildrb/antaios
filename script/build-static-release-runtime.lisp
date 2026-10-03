@@ -12,7 +12,7 @@
               (pathname (third arguments)))))
   (labels ((fail (control &rest values)
              "Signal a static runtime build failure using CONTROL and VALUES."
-             (error "Autolith static runtime build failed: ~?" control values))
+             (error "Antaios static runtime build failed: ~?" control values))
 
            (run (command &key directory)
              "Run COMMAND in DIRECTORY with visible diagnostics."
@@ -23,16 +23,16 @@
                                :error-output ':interactive))
 
            (load-project ()
-             "Load the locked Autolith system and its native libraries."
+             "Load the locked Antaios system and its native libraries."
              (let ((setup (merge-pathnames ".qlot/setup.lisp" source-root)))
                (unless (probe-file setup)
                  (fail "locked dependencies are absent."))
                (load setup)
-               (asdf:load-asd (merge-pathnames "autolith.asd" source-root))
-               (asdf:load-system :autolith)
-               (let ((fff-library (uiop:getenv "AUTOLITH_FFF_LIBRARY")))
+               (asdf:load-asd (merge-pathnames "antaios.asd" source-root))
+               (asdf:load-system :antaios)
+               (let ((fff-library (uiop:getenv "ANTAIOS_FFF_LIBRARY")))
                  (unless (and fff-library (probe-file fff-library))
-                   (fail "AUTOLITH_FFF_LIBRARY does not name the shared build."))
+                   (fail "ANTAIOS_FFF_LIBRARY does not name the shared build."))
                  (uiop:symbol-call :cffi :load-foreign-library fff-library))
                (uiop:symbol-call :colorlisp :native-ensure-loaded)))
 
@@ -149,22 +149,22 @@
                  (format stream ".section .rodata~%")
                  (loop for name in names
                        for index from 0
-                       do (format stream ".Lautolith_static_name_~D:~% .asciz ~S~%"
+                       do (format stream ".Lantaios_static_name_~D:~% .asciz ~S~%"
                                   index name))
                  (format stream ".section .data.rel.ro,\"aw\"~%")
-                 (format stream ".balign 8~%.globl autolith_static_symbols~%")
-                 (format stream ".type autolith_static_symbols, @object~%")
-                 (format stream "autolith_static_symbols:~%")
+                 (format stream ".balign 8~%.globl antaios_static_symbols~%")
+                 (format stream ".type antaios_static_symbols, @object~%")
+                 (format stream "antaios_static_symbols:~%")
                  (loop for name in names
                        for index from 0
-                       do (format stream " .quad .Lautolith_static_name_~D~% .quad ~A~%"
+                       do (format stream " .quad .Lantaios_static_name_~D~% .quad ~A~%"
                                   index name))
-                 (format stream ".size autolith_static_symbols, .-autolith_static_symbols~%")
+                 (format stream ".size antaios_static_symbols, .-antaios_static_symbols~%")
                  (format stream ".section .rodata~%.balign 8~%")
-                 (format stream ".globl autolith_static_symbol_count~%")
-                 (format stream ".type autolith_static_symbol_count, @object~%")
-                 (format stream "autolith_static_symbol_count:~% .quad ~D~%" (length names))
-                 (format stream ".size autolith_static_symbol_count, 8~%")
+                 (format stream ".globl antaios_static_symbol_count~%")
+                 (format stream ".type antaios_static_symbol_count, @object~%")
+                 (format stream "antaios_static_symbol_count:~% .quad ~D~%" (length names))
+                 (format stream ".size antaios_static_symbol_count, 8~%")
                  (format stream ".section .note.GNU-stack,\"\",@progbits~%"))
                (format t "~&Recorded ~D static foreign symbols.~%" (length names)))))
     (handler-case

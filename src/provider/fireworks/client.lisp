@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Fireworks API Key Provider --
 
@@ -9,7 +9,7 @@
 ;;; and response.completed without an end_turn flag; requests accept
 ;;; reasoning.effort, store=false, and prompt_cache_key. Like the Grok
 ;;; proxy, tools ride in the request's flat tools array and function calls
-;;; return one flat wire name, so this provider joins Autolith's namespaced
+;;; return one flat wire name, so this provider joins Antaios's namespaced
 ;;; tool names with a dot on the way out and splits them again on completed
 ;;; items. Conversations therefore persist in the same namespaced shape
 ;;; regardless of the serving provider.
@@ -51,7 +51,7 @@
 ;;;; -- Fireworks Protocol Specializations --
 
 ;; Verified 2026-08-11 against the live Fireworks Responses API: every
-;; effort level Autolith can send (low, medium, high) fails for this model
+;; effort level Antaios can send (low, medium, high) fails for this model
 ;; with a 404 'Model not found, inaccessible, and/or not deployed', while
 ;; omitting the reasoning object succeeds.
 (defparameter *fireworks-reasoning-effort-models-blacklist*

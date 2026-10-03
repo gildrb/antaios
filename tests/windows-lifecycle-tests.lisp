@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 (defun windows-tests--script (pathname forms)
   "Write readable FORMS as a native runtime test script."
@@ -6,7 +6,7 @@
   (with-open-file (stream pathname :direction ':output :if-exists ':supersede
                                    :external-format ':utf-8)
     (with-standard-io-syntax
-      (let ((*package* (find-package '#:autolith)))
+      (let ((*package* (find-package '#:antaios)))
         (dolist (form forms)
           (write form :stream stream)
           (terpri stream)))))
@@ -175,7 +175,7 @@ this shared test worker."
     (with-test-configuration (configuration root)
       (declare (ignore configuration))
       (let* ((setup (merge-pathnames ".qlot/setup.lisp"
-                                     (asdf:system-source-directory ':autolith)))
+                                     (asdf:system-source-directory ':antaios)))
              (script (windows-tests--script
                       (merge-pathnames "library-tests.lisp" root)
                       `((require :asdf)

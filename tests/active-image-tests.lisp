@@ -1,16 +1,16 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Preloaded Active Image Tests --
 
 (-> test-active-image-build-record () null)
 (defun test-active-image-build-record ()
   "Test exact source identity, runtime compatibility, and manifest projection."
-  (let* ((source-root (asdf:system-source-directory :autolith))
+  (let* ((source-root (asdf:system-source-directory :antaios))
          (record (active-image-build-record-create source-root))
          (source-files (getf (rest record) :source-files))
          (probe (active-image-probe-record record))
          (manifest (active-image-manifest-form
-                    #P"/tmp/autolith-active-test.core"
+                    #P"/tmp/antaios-active-test.core"
                     record)))
     (test-assert (active-image-build-record-p record)
                  "active-image build records are complete portable data")
@@ -19,7 +19,7 @@
     (test-assert (equal (mapcar #'first source-files)
                         (active-image-source-paths source-root))
                  "active-image identities cover every compiled source input")
-    (test-assert (and (eq (first probe) :autolith-active-image)
+    (test-assert (and (eq (first probe) :antaios-active-image)
                       (= (getf (rest probe) :version)
                          *active-image-protocol-version*))
                  "the active-image probe exposes the current protocol")
@@ -47,9 +47,9 @@
 
 (-> test-active-image-process-command () null)
 (defun test-active-image-process-command ()
-  "Test fresh Autolith processes boot a matching active core and fall back to source."
+  "Test fresh Antaios processes boot a matching active core and fall back to source."
   (with-test-configuration (configuration root)
-    (let* ((core (merge-pathnames "active/autolith-active.core" root))
+    (let* ((core (merge-pathnames "active/antaios-active.core" root))
            (configuration (configuration-copy configuration :active-image-core core))
            (source-root (config :source-root configuration))
            (record (active-image-build-record-create source-root)))
@@ -100,7 +100,7 @@
        (image-commit-error (condition)
          (and (eq (image-commit-error-stage condition) ':surface-battery)
               (search "missing-surface-function"
-                      (autolith-error-message condition)))))
+                      (antaios-error-message condition)))))
      "a missing core definition fails the battery and is named"))
   (let ((*image-commit-surface-classes* (list ':not-a-class-name)))
     (test-assert
@@ -110,7 +110,7 @@
            nil)
        (image-commit-error (condition)
          (not (null (search "not-a-class-name"
-                            (autolith-error-message condition))))))
+                            (antaios-error-message condition))))))
      "a missing core class fails the battery and is named"))
   nil)
 
@@ -146,7 +146,7 @@
                                    :if-exists ':supersede
                                    :if-does-not-exist ':create
                                    :external-format ':utf-8)
-             (format stream "(in-package #:autolith)~%(error \"Broken replay.\")~%"))
+             (format stream "(in-package #:antaios)~%(error \"Broken replay.\")~%"))
            (test-assert
             (handler-case
                 (progn
@@ -155,7 +155,7 @@
               (image-commit-error (condition)
                 (and (eq (image-commit-error-stage condition) ':replay-probe)
                      (search "Broken replay."
-                             (autolith-error-message condition)))))
+                             (antaios-error-message condition)))))
             "a rejected replay script carries the probe output in its error")
            (let ((log-pathname
                    (merge-pathnames

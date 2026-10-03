@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- User Initialization Tests --
 
@@ -14,18 +14,18 @@
   (let* ((root
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-site-root-tests-~A/" (make-identifier))
+             (format nil "antaios-site-root-tests-~A/" (make-identifier))
              (uiop:temporary-directory))))
          (site-root (merge-pathnames "site/" root))
          (environment-site-root (merge-pathnames "environment-site/" root))
          (missing-root (merge-pathnames "missing/" root))
-         (source-root (asdf:system-source-directory :autolith))
-         (previous-site-root (uiop:getenv "AUTOLITH_SITE_CONFIG_ROOT")))
+         (source-root (asdf:system-source-directory :antaios))
+         (previous-site-root (uiop:getenv "ANTAIOS_SITE_CONFIG_ROOT")))
     (ensure-directories-exist site-root)
     (ensure-directories-exist environment-site-root)
     (unwind-protect
          (progn
-           (platform-setenv "AUTOLITH_SITE_CONFIG_ROOT"
+           (platform-setenv "ANTAIOS_SITE_CONFIG_ROOT"
                             (namestring environment-site-root))
            (let ((environment-configuration
                    (configuration-create
@@ -37,7 +37,7 @@
                 (config :site-config-root environment-configuration)
                (uiop:ensure-directory-pathname
                   (platform-truename *platform* environment-site-root)))
-              "the site root defaults from AUTOLITH_SITE_CONFIG_ROOT"))
+              "the site root defaults from ANTAIOS_SITE_CONFIG_ROOT"))
            (let ((configuration
                    (configuration-create
                     :source-root source-root
@@ -91,7 +91,7 @@
                 (configuration-error ()
                   t))
               "a missing explicit site root is rejected")
-             (platform-unsetenv "AUTOLITH_SITE_CONFIG_ROOT")
+             (platform-unsetenv "ANTAIOS_SITE_CONFIG_ROOT")
              (let ((without-site
                      (configuration-create
                       :source-root source-root
@@ -102,8 +102,8 @@
                      (null (configuration-site-init-path without-site)))
                 "an unset site root preserves ordinary user configuration"))))
       (if previous-site-root
-          (platform-setenv "AUTOLITH_SITE_CONFIG_ROOT" previous-site-root)
-          (platform-unsetenv "AUTOLITH_SITE_CONFIG_ROOT"))
+          (platform-setenv "ANTAIOS_SITE_CONFIG_ROOT" previous-site-root)
+          (platform-unsetenv "ANTAIOS_SITE_CONFIG_ROOT"))
       (platform-delete-directory-tree *platform* root
                                      :validate t :if-does-not-exist ':ignore)))
   nil)
@@ -128,7 +128,7 @@
             (let ((observed nil)
                   (explicit-p (member selection '(:explicit :override))))
               (with-test-environment
-                  (("AUTOLITH_SITE_CONFIG_ROOT"
+                  (("ANTAIOS_SITE_CONFIG_ROOT"
                     (when (member selection '(:environment :override))
                       (namestring environment-root))))
                 (test-call-with-function-replacements
@@ -215,8 +215,8 @@
            (test-assert
             (and (first *user-init-test-value*)
                  (eq (second *user-init-test-value*)
-                     (find-package '#:autolith)))
-            "user init executes in the Autolith package and marked dynamic extent")
+                     (find-package '#:antaios)))
+            "user init executes in the Antaios package and marked dynamic extent")
            (test-assert
             (eq (getf (find "user-init-test"
                             (context-contributor-registrations)
@@ -319,7 +319,7 @@
   "Test user tree lookups resolve new systems without shadowing loaded ones."
   (let* ((root (uiop:ensure-directory-pathname
                 (merge-pathnames
-                 (format nil "autolith-source-tree-~A/" (make-identifier))
+                 (format nil "antaios-source-tree-~A/" (make-identifier))
                  (uiop:temporary-directory))))
          (checkout (merge-pathnames "fresh-system/" root))
          (buried (merge-pathnames "fresh-system/_build/decoy/" root)))
@@ -336,10 +336,10 @@
                              "(asdf:defsystem #:fresh-system)")
            (write-definition (merge-pathnames "skipped-system.asd" buried)
                              "(asdf:defsystem #:skipped-system)")
-           (write-definition (merge-pathnames "autolith.asd" checkout)
-                             "(asdf:defsystem #:autolith :version \"0.0.0\")")
+           (write-definition (merge-pathnames "antaios.asd" checkout)
+                             "(asdf:defsystem #:antaios :version \"0.0.0\")")
             (let* ((version-before (asdf:component-version
-                                    (asdf:find-system "autolith")))
+                                    (asdf:find-system "antaios")))
                    (located (main--locate-user-tree-system
                              "fresh-system" (list root)))
                    (expected (merge-pathnames "fresh-system.asd" checkout))
@@ -355,7 +355,7 @@
                                  "skipped-system" (list root)))
                           "user tree lookups skip build directories")
              (test-assert (null (main--locate-user-tree-system
-                                 "autolith" (list root)))
+                                 "antaios" (list root)))
                           "user tree lookups never shadow registered systems")
              (main--register-local-source-trees)
              (test-assert (null (main--register-local-source-trees))
@@ -365,7 +365,7 @@
                               'main--locate-user-tree-system)
                           "user tree lookups run after every other ASDF search")
              (test-assert (string= (asdf:component-version
-                                    (asdf:find-system "autolith"))
+                                    (asdf:find-system "antaios"))
                                    version-before)
                           "registration keeps the loaded system authoritative")))
       (platform-delete-directory-tree *platform* root :validate t :if-does-not-exist ':ignore)))
@@ -377,7 +377,7 @@
   (let* ((site-container
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-site-init-tests-~A/" (make-identifier))
+             (format nil "antaios-site-init-tests-~A/" (make-identifier))
              (uiop:temporary-directory))))
          (site-root (merge-pathnames "site/" site-container))
          (base-configuration

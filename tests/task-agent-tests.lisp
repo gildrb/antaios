@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Native Role Contract Tests --
 
@@ -117,34 +117,34 @@
                       (princ-to-string
                       (task-agent-definition-error-cause condition)))
                "the native role reader starts from a fresh standard readtable"))
-           (let ((bare-name "AUTOLITH-TASK-READER-BARE-LEAK-71D21A")
+           (let ((bare-name "ANTAIOS-TASK-READER-BARE-LEAK-71D21A")
                  (qualified-name
-                   "AUTOLITH-TASK-READER-QUALIFIED-LEAK-71D21A")
+                   "ANTAIOS-TASK-READER-QUALIFIED-LEAK-71D21A")
                  (keyword-name
-                   "AUTOLITH-TASK-READER-KEYWORD-LEAK-71D21A"))
+                   "ANTAIOS-TASK-READER-KEYWORD-LEAK-71D21A"))
              (test-assert
-              (and (null (find-symbol bare-name '#:autolith))
-                   (null (find-symbol qualified-name '#:autolith))
+              (and (null (find-symbol bare-name '#:antaios))
+                   (null (find-symbol qualified-name '#:antaios))
                    (null (find-symbol keyword-name '#:keyword)))
               "reader-pollution sentinels begin absent from global packages")
              (task-tests--agent-definition-error
               (task-tests--write-text
                (merge-pathnames "bare-symbol.sexp" directory)
-               "(:name \"bare-symbol\" :description \"Bare symbol\" :instructions \"Reject and forget it.\" :tools (autolith-task-reader-bare-leak-71d21a))")
+               "(:name \"bare-symbol\" :description \"Bare symbol\" :instructions \"Reject and forget it.\" :tools (antaios-task-reader-bare-leak-71d21a))")
               :project)
              (task-tests--agent-definition-error
               (task-tests--write-text
                (merge-pathnames "qualified-symbol.sexp" directory)
-               "(:name \"qualified-symbol\" :description \"Qualified symbol\" :instructions \"Reject before interning it.\" :tools (autolith::autolith-task-reader-qualified-leak-71d21a))")
+               "(:name \"qualified-symbol\" :description \"Qualified symbol\" :instructions \"Reject before interning it.\" :tools (antaios::antaios-task-reader-qualified-leak-71d21a))")
               :project)
              (task-tests--agent-definition-error
               (task-tests--write-text
                (merge-pathnames "unknown-keyword.sexp" directory)
-               "(:name\"unknown-keyword\":description\"Unknown keyword\":instructions\"Reject adjacent unknown keywords before interning them.\":autolith-task-reader-keyword-leak-71d21a\"rejected\")")
+               "(:name\"unknown-keyword\":description\"Unknown keyword\":instructions\"Reject adjacent unknown keywords before interning them.\":antaios-task-reader-keyword-leak-71d21a\"rejected\")")
               :project)
              (test-assert
-              (and (null (find-symbol bare-name '#:autolith))
-                   (null (find-symbol qualified-name '#:autolith))
+              (and (null (find-symbol bare-name '#:antaios))
+                   (null (find-symbol qualified-name '#:antaios))
                    (null (find-symbol keyword-name '#:keyword)))
               "malformed role symbols never pollute project or keyword packages"))
            (let* ((pathname
@@ -226,7 +226,7 @@
   (let* ((site-root
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-agent-site-tests-~A/" (make-identifier))
+             (format nil "antaios-agent-site-tests-~A/" (make-identifier))
              (uiop:temporary-directory))))
          (base-configuration
            (progn
@@ -238,7 +238,7 @@
          (root          (test-configuration-root base-configuration))
          (configuration
             (configuration-copy base-configuration :working-directory root))
-          (project-directory (merge-pathnames ".autolith/agents/" root))
+          (project-directory (merge-pathnames ".antaios/agents/" root))
           (user-directory
             (merge-pathnames "agents/"
                              (config :config-root configuration)))
@@ -365,11 +365,11 @@
          (root               (test-configuration-root base-configuration))
          (configuration
            (configuration-copy base-configuration :working-directory root))
-         (project-directory (merge-pathnames ".autolith/agents/" root))
+         (project-directory (merge-pathnames ".antaios/agents/" root))
          (hidden-broken-path
            (merge-pathnames "hidden-broken.sexp" project-directory))
          (secret
-           "AUTOLITH-TASK-AGENT-INSTRUCTION-SENTINEL-71D21A")
+           "ANTAIOS-TASK-AGENT-INSTRUCTION-SENTINEL-71D21A")
          (registry
            (task-augment-tool-registry (make-default-tool-registry))))
     (unwind-protect
@@ -1040,7 +1040,7 @@
                          "normal-race"
                          (list (agent-test-message "done"))
                          :turn-completion ':end))
-                      (gate-lock (make-lock "Autolith steering race gate"))
+                      (gate-lock (make-lock "Antaios steering race gate"))
                       (gate-condition (make-condition-variable))
                       (ready-count 0)
                       (released-p nil)
@@ -1075,7 +1075,7 @@
                                            (setf enqueue-reason reason)))
                                      (condition (condition)
                                        (setf enqueue-condition condition))))
-                                 :name "Autolith steering enqueue race")
+                                 :name "Antaios steering enqueue race")
                                 claim-thread
                                 (make-thread
                                  (lambda ()
@@ -1092,7 +1092,7 @@
                                                    normal-result)))))
                                      (condition (condition)
                                        (setf claim-condition condition))))
-                                 :name "Autolith steering completion race"))
+                                 :name "Antaios steering completion race"))
                           (with-lock-held (gate-lock)
                             (loop until (= ready-count 2)
                                   unless
@@ -1468,9 +1468,9 @@
              (let* ((fixture (fixture "steering-response-race"))
                     (job (mark-running (getf fixture :job)))
                     (orchestrator (task-job-orchestrator job))
-                    (gate-lock (make-lock "Autolith response promotion race gate"))
+                    (gate-lock (make-lock "Antaios response promotion race gate"))
                     (gate-condition (make-condition-variable))
-                    (event-lock (make-lock "Autolith response promotion race events"))
+                    (event-lock (make-lock "Antaios response promotion race events"))
                     (ready-count 0)
                     (released-p nil)
                     (results (make-array 8 :initial-element nil))
@@ -1515,7 +1515,7 @@
                                     job
                                     (format nil "race answer ~D" thread-index)
                                     (get-universal-time))))
-                                :name "Autolith response promotion race")
+                                :name "Antaios response promotion race")
                                threads)))
                           (with-lock-held (gate-lock)
                             (loop until (= ready-count (length results))
@@ -1738,7 +1738,7 @@
                     (original-hook
                       (cl-jobpond:job-terminal-result-function job))
                     (gate-lock
-                      (make-lock "Autolith steering publication gate"))
+                      (make-lock "Antaios steering publication gate"))
                     (gate-condition (make-condition-variable))
                     (entered-p nil)
                     (released-p nil)
@@ -1778,7 +1778,7 @@
                                                 :error "stopped")))
                                  (condition (condition)
                                    (setf publication-condition condition))))
-                             :name "Autolith steering publication claim"))
+                             :name "Antaios steering publication claim"))
                       (with-lock-held (gate-lock)
                         (loop until entered-p
                               unless

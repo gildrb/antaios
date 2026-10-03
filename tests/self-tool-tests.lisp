@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Subsystem Tests --
 
@@ -155,7 +155,7 @@
          (previous-function (symbol-function 'test-self-target))
          (implementation-package (find-package '#:sb-ext))
          (implementation-name
-           (format nil "AUTOLITH-ACTIVE-IMAGE-TEST-~A"
+           (format nil "ANTAIOS-ACTIVE-IMAGE-TEST-~A"
                    (string-upcase (make-identifier))))
          (implementation-source
            nil)
@@ -253,7 +253,7 @@
                                      :if-does-not-exist ':create
                                      :external-format ':utf-8)
                (format stream
-                       "(in-package #:autolith)~%~%(defun test-self-target () ~
+                       "(in-package #:antaios)~%~%(defun test-self-target () ~
                         \"Tracked source documentation.\" 0)~%"))
              (let* ((definitions
                       (self-tracked-definitions source-configuration
@@ -341,11 +341,11 @@
                   (self-dependency-definitions
                    'sbcl-workers:sbcl-worker-create
                    (find-package '#:sbcl-workers)
-                   :system-name "not-an-autolith-dependency")
+                   :system-name "not-an-antaios-dependency")
                   nil)
               (source-mutation-error ()
                 t))
-            "dependency source inspection rejects systems outside Autolith")
+            "dependency source inspection rejects systems outside Antaios")
            (test-assert
             (equal (definition-signature
                     '(defmethod sample-operation ((left string) right) left))
@@ -425,7 +425,7 @@
 (-> test-self-definition-installation-rollback () null)
 (defun test-self-definition-installation-rollback ()
   "Test failed definition installation restores exact live and cached state."
-  (let* ((*package* (find-package '#:autolith))
+  (let* ((*package* (find-package '#:antaios))
          (configuration (test-configuration))
          (root (test-configuration-root configuration))
          (existing-name 'test-self-atomic-existing)
@@ -536,7 +536,7 @@
 (-> test-self-application-command-definitions () null)
 (defun test-self-application-command-definitions ()
   "Test command definition identity, rollback, discard, and private replay."
-  (let* ((*package* (find-package '#:autolith))
+  (let* ((*package* (find-package '#:antaios))
          (configuration (test-configuration))
          (root (test-configuration-root configuration))
          (registry-snapshot (application-command--registry-snapshot))
@@ -655,7 +655,7 @@
                                      :if-exists ':supersede
                                      :if-does-not-exist ':create
                                      :external-format ':utf-8)
-               (format stream "(in-package #:autolith)~2%~A~%"
+               (format stream "(in-package #:antaios)~2%~A~%"
                        replay-source))
              (let ((definitions
                      (self-tracked-definitions
@@ -770,7 +770,7 @@
                (list :kind ':definition
                      :id "command-replay-definition"
                      :target (definition-key replay-definition)
-                     :package "AUTOLITH"
+                     :package "ANTAIOS"
                      :source replay-source)))
              (load script)
              (load script))
@@ -1079,7 +1079,7 @@
                 nil)
        (image-commit-error (condition)
          (and (eq (image-commit-error-stage condition) ':validation)
-              (search "broken" (autolith-error-message condition)))))
+              (search "broken" (antaios-error-message condition)))))
      "unreadable proposed definitions fail commit validation")
     (test-assert
      (handler-case
@@ -1097,7 +1097,7 @@
   (let* ((source-root
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-durable-tests-~A/" (make-identifier))
+             (format nil "antaios-durable-tests-~A/" (make-identifier))
              (uiop:temporary-directory))))
          (configuration (test-configuration-for-source-root source-root))
          (outside-workspace
@@ -1134,13 +1134,13 @@
                                    :if-does-not-exist ':create
                                    :external-format ':utf-8)
              (format stream
-                     "(in-package #:autolith)~%~%(defun test-self-target () \"Return the durable baseline.\" 0)~%"))
+                     "(in-package #:antaios)~%~%(defun test-self-target () \"Return the durable baseline.\" 0)~%"))
            (self-git-command configuration '("init" "--quiet"))
            (self-git-command configuration
-                             '("config" "user.name" "Autolith Test"))
+                             '("config" "user.name" "Antaios Test"))
            (self-git-command
             configuration
-            '("config" "user.email" "autolith-test@example.invalid"))
+            '("config" "user.email" "antaios-test@example.invalid"))
            (self-git-command configuration '("add" "src/definitions.lisp"))
            (self-git-command configuration
                              '("commit" "--quiet" "--no-gpg-sign" "-m" "Create baseline"))
@@ -1229,7 +1229,7 @@
                                    :id "definition-test-self-target"
                                    :target (definition-key
                                             '(defun test-self-target () 0))
-                                   :package "AUTOLITH"
+                                   :package "ANTAIOS"
                                    :source current-source)))
                      (generation-script
                        (merge-pathnames "legacy-generation.lisp" source-root)))
@@ -1318,7 +1318,7 @@
                (string= (or (image-commit--pointer-identifier configuration) "")
                         legacy-identifier)
                "a rejected definition preserves private selection")
-             (let* ((*package* (find-package '#:autolith))
+             (let* ((*package* (find-package '#:antaios))
                     (new-definition-source
                       "(defun test-self-new-rejected-definition () \"Exist only during a rejected durable mutation.\" 17)")
                     (new-definition
@@ -1365,7 +1365,7 @@
                (test-assert
                 (uiop:subpathp (image-commit-script-pathname first-commit)
                                (configuration-image-commit-root configuration))
-                "the reconstruction script stays under private Autolith data")
+                "the reconstruction script stays under private Antaios data")
                (test-assert
                 (test-fixture-permissions-p
                  *platform*
@@ -1499,12 +1499,12 @@
                (test-assert
                 (uiop:subpathp (image-commit-manifest-pathname committed)
                                (config :data-root configuration))
-                "self.commit writes only beneath private Autolith data")
+                "self.commit writes only beneath private Antaios data")
                (test-assert
                 (uiop:subpathp
                  (configuration-current-image-commit-path configuration)
                  (config :state-root configuration))
-                "self.commit selects its result beneath private Autolith state")
+                "self.commit selects its result beneath private Antaios state")
                (test-assert (string= head-before head-after)
                             "self.commit never changes workspace Git history")
                (test-assert
@@ -1626,11 +1626,11 @@
   (let* ((source-root
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-replay-tests-~A/" (make-identifier))
+             (format nil "antaios-replay-tests-~A/" (make-identifier))
              (uiop:temporary-directory))))
          (configuration (test-configuration-for-source-root source-root))
          (source-pathname (merge-pathnames "src/definitions.lisp" source-root))
-         (package (find-package '#:autolith))
+         (package (find-package '#:antaios))
          (previous-function (symbol-function 'test-self-target))
          (previous-state-initialized-p *image-state-initialized-p*)
          (previous-commit-identifier *active-image-commit-identifier*)
@@ -1665,7 +1665,7 @@
                                        :if-exists ':supersede
                                        :if-does-not-exist ':create
                                        :external-format ':utf-8)
-                 (format stream "(in-package #:autolith)~2%~A~%" source)))
+                 (format stream "(in-package #:antaios)~2%~A~%" source)))
 
              (reset ()
                "Restore the baseline function and forget exploratory sources."
@@ -1685,7 +1685,7 @@
                (let ((*image-replay-context* context)
                      (*image-replay-skips* nil)
                      (*package* package))
-                 (apply #'self-replay-definition "AUTOLITH" source arguments)
+                 (apply #'self-replay-definition "ANTAIOS" source arguments)
                  *image-replay-skips*))
 
              (context (lineage image)
@@ -1824,11 +1824,11 @@
 (-> test-durable-definition-publication-boundary () null)
 (defun test-durable-definition-publication-boundary ()
   "Test a post-publication failure does not undo selected live definition state."
-  (let* ((*package* (find-package '#:autolith))
+  (let* ((*package* (find-package '#:antaios))
          (source-root
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-publication-tests-~A/" (make-identifier))
+             (format nil "antaios-publication-tests-~A/" (make-identifier))
              (uiop:temporary-directory))))
          (configuration (test-configuration-for-source-root source-root))
          (source-pathname (merge-pathnames "src/baseline.lisp" source-root))
@@ -1855,13 +1855,13 @@
                                    :if-exists ':supersede
                                    :if-does-not-exist ':create
                                    :external-format ':utf-8)
-             (format stream "(in-package #:autolith)~%"))
+             (format stream "(in-package #:antaios)~%"))
            (self-git-command configuration '("init" "--quiet"))
            (self-git-command configuration
-                             '("config" "user.name" "Autolith Test"))
+                             '("config" "user.name" "Antaios Test"))
            (self-git-command
             configuration
-            '("config" "user.email" "autolith-test@example.invalid"))
+            '("config" "user.email" "antaios-test@example.invalid"))
            (self-git-command configuration '("add" "src/baseline.lisp"))
            (self-git-command configuration
                              '("commit" "--quiet" "--no-gpg-sign" "-m" "Create baseline"))
@@ -2138,7 +2138,7 @@
                    'provider--call-with-transport-normalization)))
     (test-assert
      (null (self-replay-definition
-            "AUTOLITH"
+            "ANTAIOS"
             "(defun provider--call-with-transport-normalization (attempt-function) attempt-function)"))
      "a library-owned definition is not installed")
     (test-assert
@@ -2157,25 +2157,25 @@
     (unwind-protect
          (progn
            (self-replay-definition
-            "AUTOLITH"
+            "ANTAIOS"
             "(defun self-replay-home-test-function () :installed)")
            (test-assert
             (eq (funcall (symbol-function
                           (find-symbol "SELF-REPLAY-HOME-TEST-FUNCTION"
-                                       '#:autolith)))
+                                       '#:antaios)))
                 ':installed)
             "definitions home in the target package still replay")
            (test-assert (null *image-replay-skips*)
                         "home definitions are not reported as skipped"))
       (let ((symbol (find-symbol "SELF-REPLAY-HOME-TEST-FUNCTION"
-                                 '#:autolith)))
+                                 '#:antaios)))
         (when symbol
           (fmakunbound symbol)
-          (unintern symbol '#:autolith)))))
+          (unintern symbol '#:antaios)))))
   (let ((*image-replay-skips* nil))
     (test-assert
      (null (self-replay-definition
-            "AUTOLITH"
+            "ANTAIOS"
             "(defparameter #:uninterned-replay-target (error \"must not install\"))"
             :home-package nil))
      "an uninterned target is skipped even with explicit ownership metadata")
@@ -2187,7 +2187,7 @@
   (test-assert
    (not (definition-foreign-home-p
          (list 'defmethod 'print-object nil)
-         (find-package '#:autolith)))
+         (find-package '#:antaios)))
    "methods on foreign generics stay replayable")
   nil)
 
@@ -2227,7 +2227,7 @@
                       (self-call-with-package-unlocked
                        package
                        (lambda ()
-                         (intern (format nil "AUTOLITH-FOREIGN-~A" (make-identifier))
+                         (intern (format nil "ANTAIOS-FOREIGN-~A" (make-identifier))
                                  package))))
                     (baseline (test-self--foreign-definition kind symbol ':original))
                     (replacement (test-self--foreign-definition kind symbol ':replacement))
@@ -2248,7 +2248,7 @@
                         (self-call-with-package-unlocked package (lambda () (eval baseline)))
                         (self-install-definition configuration source)
                         (test-assert (eq (observe) ':replacement)
-                                     "a foreign target is replaced from the Autolith reader package")
+                                     "a foreign target is replaced from the Antaios reader package")
                         (test-assert (sb-ext:package-locked-p package)
                                      "installation restores the foreign package lock")
                         (let* ((record (first (image-commit-effective-pending-records configuration)))
@@ -2271,9 +2271,9 @@
                         (unless (eq kind ':method)
                           (let ((*image-replay-skips* nil))
                             (self-replay-definition
-                             "AUTOLITH"
+                             "ANTAIOS"
                              (write-to-string (test-self--foreign-definition kind symbol ':wrong))
-                             :home-package "AUTOLITH")
+                             :home-package "ANTAIOS")
                             (test-assert (and *image-replay-skips*
                                               (eq (observe) ':replacement))
                                          "recorded ownership changes skip stale replacements")))
@@ -2366,7 +2366,7 @@
                                  "target" "self"))
                    nil)
                (tool-error (condition)
-                 (autolith-error-message condition))))
+                 (antaios-error-message condition))))
            (near-miss
              (handler-case
                  (progn
@@ -2375,10 +2375,10 @@
                     context
                     (json-object "name" "self-symbol-defined-predicate"
                                  "target" "self"
-                                 "package" "autolith"))
+                                 "package" "antaios"))
                    nil)
                (tool-error (condition)
-                 (autolith-error-message condition)))))
+                 (antaios-error-message condition)))))
       (test-assert (and message
                         (search "NO-SUCH-DEFINITION-FOR-LISP-SOURCE-TEST" message))
                    "an undefined name fails with the requested symbol in the message")
@@ -2403,7 +2403,7 @@
                             :conversation conversation))
            (tool (tool-registry-find (make-default-tool-registry)
                                      "lisp" "apropos")))
-      (intern "APROPOS-TEST-UNDEFINED-INTERNED-NAME" (find-package '#:autolith))
+      (intern "APROPOS-TEST-UNDEFINED-INTERNED-NAME" (find-package '#:antaios))
       (let ((content
               (tool-result-content
                (tool-execute tool context
@@ -2428,7 +2428,7 @@
                              (json-object "query" "apropos" "limit" 1)))))
         (test-assert (search "(showing the first 1)" content)
                      "a limit below the match count is reported"))
-      (test-assert (search "No defined name in AUTOLITH matches"
+      (test-assert (search "No defined name in ANTAIOS matches"
                            (tool-result-content
                             (tool-execute tool context
                                           (json-object "query" "zqxj-no-such-fragment"))))
@@ -2439,7 +2439,7 @@
                                        (json-object "query" "apropos" "kind" "widget"))
                          nil)
                      (tool-error (condition)
-                       (search "Unknown definition kind" (autolith-error-message condition))))
+                       (search "Unknown definition kind" (antaios-error-message condition))))
                    "an unknown kind filter is rejected with the accepted kinds")))
   nil)
 
@@ -2457,7 +2457,7 @@
            (tool (tool-registry-find (make-default-tool-registry) "lisp" "describe")))
       (dolist (designator '("'self-symbol-defined-p"
                             "#'self-symbol-defined-p"
-                            " 'autolith::self-symbol-defined-p"))
+                            " 'antaios::self-symbol-defined-p"))
         (test-assert (search "Function binding: yes"
                              (tool-result-content
                               (tool-execute tool context
@@ -2472,7 +2472,7 @@
                                                "target" "self"))
                     nil)
                 (tool-error (condition)
-                  (autolith-error-message condition)))))
+                  (antaios-error-message condition)))))
         (test-assert (and message
                           (search "SELF-SYMBOL-DEFINED-PREDICATE" message)
                           (search "self-symbol-defined-p" message))

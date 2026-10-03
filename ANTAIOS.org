@@ -1,8 +1,8 @@
-#+title: Autolith project adaptations
+#+title: Antaios project adaptations
 
 * Purpose
 
-This voluntary file records reusable ways Autolith adapts itself to this
+This voluntary file records reusable ways Antaios adapts itself to this
 project. It supplements AGENTS.md and never overrides repository policy, user
 instructions, or capability boundaries. It contains documentation, not
 executable Lisp.
@@ -37,7 +37,7 @@ a user-local init.lisp change, or a private image commit.
 ** Intentional foreign definitions
 
 - Problem: The replay ownership guard treated intentional foreign definitions as
-  stale Autolith definitions moved into libraries. Installation and undo unlocked
+  stale Antaios definitions moved into libraries. Installation and undo unlocked
   the reader package but not a separately qualified target's package.
 - Behavior: Journal each new definition's owning package and preserve it through
   replay entries and direct persistence. Unlock the reader and target packages
@@ -87,7 +87,7 @@ a user-local init.lisp change, or a private image commit.
 - Scope and location: RLM routing is private image commit
   =fc16f9e6-e071-4dcc-9360-039c7b3b1e4d=, private Git commit
   =0ed468c50d3e825a2c52c586ee27aca47128980b=. Task routing is declarative user
-  configuration in =~/.config/autolith/agents/task.sexp=; project role overrides
+  configuration in =~/.config/antaios/agents/task.sexp=; project role overrides
   take precedence. The other bundled roles are unchanged.
 - Verification: 31 routing cases passed, covering defaults, explicit routes,
   inherited configurations, rejected nested overrides and effective task
@@ -95,7 +95,7 @@ a user-local init.lisp change, or a private image commit.
   effort and a successful response. The private commit passed its clean-process
   replay probe.
 - Removal condition: equivalent RLM defaults become configurable in tracked
-  Autolith, or the user selects a different delegation policy.
+  Antaios, or the user selects a different delegation policy.
 
 ** GitHub workflow waiter
 
@@ -117,7 +117,7 @@ a user-local init.lisp change, or a private image commit.
 - Verification: both clean-process replays passed. Focused active-image
   exercises verified that HTTP 403 is non-retryable and one permanent failure
   produces exactly one workflow request.
-- Removal condition: tracked Autolith provides equivalent workflow waiting and
+- Removal condition: tracked Antaios provides equivalent workflow waiting and
   safe multiline reconstruction comments, or GitHub workflow waits cease to be
   recurring work.
 
@@ -156,24 +156,24 @@ a user-local init.lisp change, or a private image commit.
   =d5387bc4-9dd1-47a6-8788-a8cd59e7f0ce=, private Git commit
   =fbc458a9e19f894d7872d06af3f5e2c983f590b8=. The durable downstream fix is
   =lambda-symbolics/sbcl-workers= commit =1f832d0=, retained by the current
-  =85bbab4= pin; Autolith first pinned it in tracked commit =536dc1f=.
+  =85bbab4= pin; Antaios first pinned it in tracked commit =536dc1f=.
 - Verification: clean-process replay passed. A fresh pristine worker reports
   =*read-eval*= as true during request execution, and =lisp.load-system=
-  successfully loads =autolith=.
+  successfully loads =antaios=.
 - Removal condition: a rebuilt active image loads the tracked =sbcl-workers=
   pin, making the private replay definition redundant.
 
-** Autolith Qlot worker image
+** Antaios Qlot worker image
 
 - Problem: The generic =asdf-user-tree= worker image resolved an incompatible
-  =sexp-store= while loading =autolith/tests=, so focused tests failed before
+  =sexp-store= while loading =antaios/tests=, so focused tests failed before
   compiling the changed code.
-- Behavior: Start Autolith-focused workers from =autolith-qlot=. The image is
+- Behavior: Start Antaios-focused workers from =antaios-qlot=. The image is
   pristine SBCL with the current checkout's locked Qlot setup loaded and
-  =autolith.asd= registered, giving project sources exact precedence.
-- Scope and location: saved Lisp worker image =autolith-qlot=, parent
+  =antaios.asd= registered, giving project sources exact precedence.
+- Scope and location: saved Lisp worker image =antaios-qlot=, parent
   =pristine=; no active-image or tracked runtime behavior changes.
-- Verification: a fresh =autolith-qlot= worker loads =autolith/tests=
+- Verification: a fresh =antaios-qlot= worker loads =antaios/tests=
   successfully.
 - Removal condition: the generic worker image reliably reproduces this
   checkout's Qlot source registry, or project-focused workers stop recurring.
@@ -197,19 +197,19 @@ a user-local init.lisp change, or a private image commit.
 
 ** NetBSD amd64 source bootstrap
 
-- Problem: Autolith's supported source targets were Linux x86-64 and macOS
+- Problem: Antaios's supported source targets were Linux x86-64 and macOS
   arm64. nbsd64 needs a host SBCL, BSD terminal ioctl, and two bootstrap
   workarounds before images will build.
 - Behavior: TIOCGWINSZ uses the BSD ioctl request. Building fff defines
   =union semun= for LMDB on NetBSD only. Active-image ASDF treats the
   SBCL =CONTEXT-FLOAT-REGISTER= stub warning as non-fatal. Runtime binary
-  install remains Linux-only; set =AUTOLITH_SBCL= to a 2.6.6+ build.
+  install remains Linux-only; set =ANTAIOS_SBCL= to a 2.6.6+ build.
 - Scope and location: tracked project work in =src/terminal/stream.lisp=,
   =script/build-fff.lisp=, and =script/build-active.lisp=. Guest install is
-  local to nbsd64 (=al@10.0.0.21=, =/home/al/autolith=,
+  local to nbsd64 (=al@10.0.0.21=, =/home/al/antaios=,
   =/home/al/sbcl-2.6.6=).
 - Verification: recovery probe returns NetBSD 10.1 x86-64 / SBCL 2.6.6.
-  =./bin/autolith --version= reports 0.32.2 from the active core.
+  =./bin/antaios --version= reports 0.32.2 from the active core.
 - Removal condition: SBCL implements NetBSD =os_context_float_register_addr=,
   LMDB builds without extra CFLAGS, and a NetBSD runtime path exists.
 
@@ -218,17 +218,17 @@ a user-local init.lisp change, or a private image commit.
 - Problem: OpenBSD 7.9 already provides =union semun=. The shared BSD LMDB
   flag redefined it and broke fff/lmdb-master-sys.
 - Behavior: =_SEM_SEMUN_UNDEFINED= is NetBSD-only. OpenBSD needs
-  =wxallowed= on =/home= for SBCL cores, =AUTOLITH_SBCL= at 2.6.6, and a
+  =wxallowed= on =/home= for SBCL cores, =ANTAIOS_SBCL= at 2.6.6, and a
   =sha256sum= wrapper around =gsha256sum=.
 - Scope and location: tracked =script/build-fff.lisp=. Guest install is
-  local to obsd64 (=al@10.0.0.22=, =/home/al/autolith=, =/home/al/sbcl-2.6.6=).
-- Verification: recovery and active cores built. =./bin/autolith --version=
+  local to obsd64 (=al@10.0.0.22=, =/home/al/antaios=, =/home/al/sbcl-2.6.6=).
+- Verification: recovery and active cores built. =./bin/antaios --version=
   reports 0.32.2 on OpenBSD 7.9 amd64 / SBCL 2.6.6 after reboot.
 - Removal condition: a packaged OpenBSD runtime path exists.
 
 ** Isolated sibling ASDF verification
 
-- Problem: Lisp workers start with Autolith's Qlot source registry and loaded
+- Problem: Lisp workers start with Antaios's Qlot source registry and loaded
   systems. Loading a sibling checkout's ASDF file under the same system name can
   silently retain the pinned Qlot definition and produce a false-positive test
   result against old source.
@@ -258,7 +258,7 @@ a user-local init.lisp change, or a private image commit.
 - Behavior: terminal startup enables Kitty CSI-u and xterm modifyOtherKeys.
   Pinned Clinedi =de133d8= decodes enhanced reports for Escape, Enter, Tab,
   Shift-Tab, Backspace, and Ctrl-D and owns the exact bracketed-paste enable and
-  disable controls. Autolith retains product-specific protocol lifecycle and
+  disable controls. Antaios retains product-specific protocol lifecycle and
   rollback, physical EOF, literal Ctrl-V, and raw multiline burst policy. Literal
   and enhanced Ctrl-D produce =:end-of-input=; physical stream EOF remains
   =:stream-end= so modal and responsive readers cancel or exit without entering
@@ -280,20 +280,20 @@ a user-local init.lisp change, or a private image commit.
   =src/terminal/ui.lisp=, =src/terminal/responsive-input.lisp=,
   =src/localgroup/terminal.lisp=, and =src/localgroup/client.lisp=.
 - Verification: Clinedi's exhaustive enhanced key mapping and exact
-  bracketed-paste control suites pass. Autolith's representative Clinedi
+  bracketed-paste control suites pass. Antaios's representative Clinedi
   delegation, physical EOF, bracketed and literal Ctrl-V paste, raw string-stream
   and OS-pipe multiline paste, multiline control precedence, single-line paste
   batching, mixed buffered keys, protocol ordering and rollback, follow-up cycling,
   active-interrupt queue holding and resumption, descriptor-backed terminal restart,
   and cleanup regressions pass in focused checks. The complete repository check
   previously passed 3,734 tests.
-- Removal condition: terminals reliably bracket every paste path, so Autolith can
+- Removal condition: terminals reliably bracket every paste path, so Antaios can
   remove its unbracketed Ctrl-V and raw-burst compatibility without losing
   multiline paste semantics.
 
 ** Authenticated local session control
 
-- Problem: long-running Autolith processes exposed no reliable external view of
+- Problem: long-running Antaios processes exposed no reliable external view of
   session identity, strict idleness, queued work, cancellation, or live child
   jobs. Operators therefore could not safely inspect, message, attach to, pause,
   or stop another local session, and releasing a foreground terminal risked
@@ -339,7 +339,7 @@ a user-local init.lisp change, or a private image commit.
   while content differs and valid again if the exact snapshot returns. Agenda
   URIs cannot resolve another workspace or the raw state file, task child agents
   cannot resolve them, and aliases cannot cross conversations or workspace
-  changes. The agenda lock serializes same-process Autolith operations only and
+  changes. The agenda lock serializes same-process Antaios operations only and
   does not provide interprocess safety. =memory:= resources expose the relevant,
   workspace, and global collections plus exact active stable IDs through canonical
   =memory:id/<percent-encoded-stable-id>= URIs using existing scope rules. This
@@ -403,7 +403,7 @@ a user-local init.lisp change, or a private image commit.
   remains bounded, and the complete 3,567-test repository check passes.
 - Removal condition: the command sandbox dependency natively captures bounded
   arbitrary-byte output with replacement decoding and exposes caller-selected
-  deadlines without an Autolith compatibility layer.
+  deadlines without an Antaios compatibility layer.
 
 ** Unlimited default child runtimes
 
@@ -411,7 +411,7 @@ a user-local init.lisp change, or a private image commit.
   discarding their live context and often leaving useful repository work without
   a terminal handoff.
 - Behavior: task jobs have no runtime deadline by default. A positive
-  =AUTOLITH_TASK_MAX_RUNTIME_MS= remains an operator opt-in to the existing shared
+  =ANTAIOS_TASK_MAX_RUNTIME_MS= remains an operator opt-in to the existing shared
   deadline monitor. User, parent, descendant, shutdown, and active-turn
   cancellation continue to interrupt live work, while progress and terminal
   retention remain bounded.
@@ -473,7 +473,7 @@ a user-local init.lisp change, or a private image commit.
   30-minute deadline. Failure or timeout prints bounded process and log
   diagnostics, then force-removes the complete container before the polling loop
   retries. The deadline is configurable with
-  =AUTOLITH_RELEASE_CONTAINER_TIMEOUT_SECONDS=.
+  =ANTAIOS_RELEASE_CONTAINER_TIMEOUT_SECONDS=.
 - Scope and location: tracked project work in =server/release-builder.lisp= and
   release-server regressions.
 - Verification: timeout command construction, managed naming, structured failure,
@@ -484,11 +484,11 @@ a user-local init.lisp change, or a private image commit.
 
 ** Extracted runtime library boundaries
 
-- Problem: Autolith carried duplicate implementations for compact identifiers,
+- Problem: Antaios carried duplicate implementations for compact identifiers,
   restricted native configuration parsing, retained generations, child-job
   scheduling, named SBCL worker validation, and macOS command-policy translation.
 - Behavior: pinned =idsmall=, =sexp-config=, =sbcl-generations=, =sbcl-workers=,
-  =cl-jobpond=, and =cl-exec-sandbox= now own those reusable mechanics. Autolith
+  =cl-jobpond=, and =cl-exec-sandbox= now own those reusable mechanics. Antaios
   retains its product-specific migration, validation, provenance, atomic state,
   authority, cancellation, and output policies. Pinned =sexp-config= =408fa90=
   handles standard keyword-to-string reader boundaries directly;
@@ -499,9 +499,9 @@ a user-local init.lisp change, or a private image commit.
   hosts retaining exclusion across that check and fork;
   and =cl-jobpond= =ee2e2eb= owns atomic four-limit pool policy publication,
   immediate worker and monitor capacity refresh, and the locked default-runtime
-  admission boundary. No pool-policy compatibility adapter remains in Autolith.
+  admission boundary. No pool-policy compatibility adapter remains in Antaios.
   Dependency lock materialization, exact Nix builds, and release builds validate
-  the three pin surfaces; Autolith carries no dependency metadata shape tests.
+  the three pin surfaces; Antaios carries no dependency metadata shape tests.
 - Scope and location: tracked project work in =src/conversation/=, =src/mcp/=,
   =src/skills/=, =src/state/generations.lisp=, =src/task/=,
   =src/tools/workspace.lisp=, =src/workers/lisp.lisp=, dependency locks, Nix
@@ -579,7 +579,7 @@ a user-local init.lisp change, or a private image commit.
   fast results, grace-period handoff, exactly-once side effects, synchronous shell
   authorization, bounded captured policy, shell process cancellation, named REPL
   affinity, Lisp cancellation and restart, system loading, and scratchpad loading
-  pass. The command sandbox passes 65 tests, and the complete Autolith repository
+  pass. The command sandbox passes 65 tests, and the complete Antaios repository
   check passes 3,835 tests.
 - Removal condition: a replacement execution protocol natively provides the same
   asynchronous default, explicit blocking, exactly-once handoff, session-scoped
@@ -607,7 +607,7 @@ a user-local init.lisp change, or a private image commit.
   results for issues, changes, or incomplete checks.
 - Scope and location: the generic scanner, bounded edit-warning composition, safe
   recursive checker, and 72 regression assertions live in the COLL-Attribution
-  Parenchek library pinned at revision =a7dc0a7=. Autolith retains one shared
+  Parenchek library pinned at revision =a7dc0a7=. Antaios retains one shared
   resource-file edit integration, imports two public functions, and provides a
   36-line tool adapter in =src/tools/lisp-paren-check.lisp= with exact ASDF,
   Qlot, and Nix pins.
@@ -615,11 +615,11 @@ a user-local init.lisp change, or a private image commit.
   file, three test-entry calls, and the remaining dedicated registry assertion
   were removed.
 - Verification: Parenchek's complete check passes 72 assertions. A fresh forced
-  Autolith test-system load passes, and registry smoke covers balanced and broken
+  Antaios test-system load passes, and registry smoke covers balanced and broken
   explicit checks, Common Lisp, Scheme, and Clojure =fs.write= warnings, and a
   Clojure scratchpad warning. Workspace tools, workspace-file resources, and
   scratchpad tools pass focused checks.
-  The exact Nix Autolith package builds with Parenchek. Autolith source falls by
+  The exact Nix Antaios package builds with Parenchek. Antaios source falls by
   1,266 lines, tests fall by 653 lines, and 48 local =test-assert= forms disappear.
   The complete repository check was intentionally not run under the release-only
   full-check policy.
@@ -667,7 +667,7 @@ a user-local init.lisp change, or a private image commit.
   rows. Interactive terminals emit exactly one OSC 133 =A=/=B=/=C=/=D;STATUS=
   block per foreground interaction and none for repaint or internal work.
   Generic marker construction and exact sequence coverage live in pinned Clinedi
-  =f7c158e=; Autolith retains interaction lifecycle, terminal gating, write,
+  =f7c158e=; Antaios retains interaction lifecycle, terminal gating, write,
   flush, and ordering policy.
 - Scope and location: tracked project work in =src/application/command.lisp=,
   =src/application/commands.lisp=, =src/application/operation.lisp=,
@@ -681,7 +681,7 @@ a user-local init.lisp change, or a private image commit.
 - Verification: direct evaluation, canonical startup tips, operation discovery
   and dispatch, ordinary noninteractive arity, interactive argument recovery,
   styled restart selection and abort, transcript equivalence, active-turn
-  admission, live-row ordering, Clinedi marker construction, Autolith marker
+  admission, live-row ordering, Clinedi marker construction, Antaios marker
   lifecycle and reader ordering, file-change numbering, and provider call
   rendering pass focused tests. User-operation
   persistence, forward-compatible replay, malformed and circular rejection,
@@ -720,18 +720,18 @@ a user-local init.lisp change, or a private image commit.
   semantic fields rather than displaying a speculative diff.
 - Scope and location: generic endpoint comparison, bounded numbered rows, semantic
   highlighting, and terminal-safe ANSI output live in pinned Colordiff revision
-  =9294574=. Autolith keeps only its terminal-span adapter, source preview,
+  =9294574=. Antaios keeps only its terminal-span adapter, source preview,
   mutation-domain projection, exact-preimage lookup, and fallback policy in
   =src/terminal/syntax-highlighting.lisp=,
   =src/application/change-viewer.lisp=,
   =src/application/change-presentation.lisp=, and
   =src/application/tool-presentation.lisp=.
-- Verification: Colordiff's 23 tests pass. Fresh-SBCL focused Autolith tests pass
+- Verification: Colordiff's 23 tests pass. Fresh-SBCL focused Antaios tests pass
   43 assertions covering numbered and syntax-highlighted file changes, live Lisp
   highlighting, native and revision-gated agenda and memory changes, exact
-  observed preimages, and structured fallback. The Nix Autolith package builds
+  observed preimages, and structured fallback. The Nix Antaios package builds
   with the pinned library, =git diff --check= passes, and independent review found
-  no defects. The extraction removes 247 Autolith source lines, 74 test lines,
+  no defects. The extraction removes 247 Antaios source lines, 74 test lines,
   and five =test-assert= forms. The complete repository check was intentionally
   not run because this is not a release.
 - Removal condition: a replacement mutation-presentation dependency provides the
@@ -741,26 +741,26 @@ a user-local init.lisp change, or a private image commit.
 
 ** Shared terminal Markdown renderer
 
-- Problem: Autolith carried a reusable line-oriented terminal Markdown parser,
+- Problem: Antaios carried a reusable line-oriented terminal Markdown parser,
   streaming renderer, semantic span model, table layout, syntax-highlighted code
   blocks, and their dedicated tests inside the application repository. This
   duplicated shelf-level behavior and made application tests own parser details.
 - Behavior: Markdown parsing and rendering now come from the COLL-Attribution
-  =cl-termdown= library pinned at revision =340579a=. Autolith uses the
+  =cl-termdown= library pinned at revision =340579a=. Antaios uses the
   qualified renderer type, constructor, and incremental line, partial-line, and
   inline entry points.
   Termdown's keyword-and-text semantic spans are directly compatible with the
-  existing terminal style pipeline. Autolith retains transcript-width selection,
+  existing terminal style pipeline. Antaios retains transcript-width selection,
   input sanitization, stream orchestration, and application presentation policy.
 - Scope and location: exact ASDF, Qlot lock, and Nix pins select the library;
   =src/terminal/markdown.lisp= and =tests/markdown-tests.lisp= are removed. The
   generic terminal-row text helper now lives in =tests/test-support.lisp=. No
-  Markdown rendering assertion remains in Autolith.
-- Verification: cl-termdown's isolated check passes 62 assertions. Autolith
+  Markdown rendering assertion remains in Antaios.
+- Verification: cl-termdown's isolated check passes 62 assertions. Antaios
   bootstrap materializes the exact revision and rebuilds both installed images.
   Fresh focused terminal and application suites pass 379 and 775 assertions,
   respectively; the complete repository check passes 4,372 tests; and the exact
-  Nix package builds with cl-termdown. The integration removes 578 net Autolith
+  Nix package builds with cl-termdown. The integration removes 578 net Antaios
   source lines, 331 net test lines, and 63 dynamically executed assertions.
 - Removal condition: a replacement terminal renderer provides equivalent bounded
   incremental Markdown behavior, semantic spans, code highlighting, tables,
@@ -777,11 +777,11 @@ a user-local init.lisp change, or a private image commit.
   where the user asked for the additional work.
 - Behavior: ordinary terminal prose and =(prompt CONTENT)= both invoke the
   canonical prompt operation. =(prompt CONTENT)= is exactly
-  =(prompt :to 'autolith CONTENT)=, while =(prompt (read-file PATH))= supports
+  =(prompt :to 'antaios CONTENT)=, while =(prompt (read-file PATH))= supports
   exact computed UTF-8 prompts. =:images= accepts one local image pathname or a
   proper list, validates every image, adds matching =[Image #N]= labels, and
   preserves rich image input through primary admission or child steering. The
-  case-insensitive target =autolith= is reserved exclusively for the primary.
+  case-insensitive target =antaios= is reserved exclusively for the primary.
   Every other =(prompt :to TARGET CONTENT)= resolves one child visible to the
   primary session by unique case-insensitive display name before visible job ID,
   accepts only a running job, and never spawns or revives one. Accepted child
@@ -790,7 +790,7 @@ a user-local init.lisp change, or a private image commit.
   and failed persistence leave tokens pending. The first later durable nonblank
   verbal response consumes the oldest token exactly once and appears in the
   primary window below an unconditional timestamped
-  =● autolith [child-name] YYYY-MM-DD HH:MM= header. The child name uses
+  =● antaios [child-name] YYYY-MM-DD HH:MM= header. The child name uses
   xterm-256 color 78 with a green fallback. Exact listener identity and a single
   presentation transaction exclude stale reconnect events. Promotion does not
   append a primary conversation record or expose hidden reasoning.
@@ -801,10 +801,10 @@ a user-local init.lisp change, or a private image commit.
   =src/terminal/style.lisp=, focused agent, task, operation, application,
   recovery-vault, and terminal regressions, and the guide. Original implementation
   commits are =94bb2a2=, =6aface1=, =abc34ed=, =67dc694=, =535b164=, and
-  =044e77c=; current tracked source supersedes the original =:to autolith=
+  =044e77c=; current tracked source supersedes the original =:to antaios=
   child-routing rule.
 - Verification: fresh-SBCL focused tests cover primary routing, the explicit
-  =autolith= alias, computed file prompts, validated primary and child images,
+  =antaios= alias, computed file prompts, validated primary and child images,
   circular image-list rejection, terminal prose delegation to canonical
   =prompt= with and without steering, visible-name and job-ID child resolution,
   rejection paths, FIFO steering, durable recovery ordering, observer ordering,

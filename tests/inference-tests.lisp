@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Recursive Inference Tests --
 
@@ -711,7 +711,7 @@ CACHED-TOKENS, when supplied, reports that share as prompt-cache reads."
     :type (integer 0)
     :documentation "The total provider requests served across all threads.")
    (count-lock
-    :initform (make-lock "Autolith map test provider")
+    :initform (make-lock "Antaios map test provider")
     :reader rlm-map-test-provider--count-lock
     :documentation "The lock serializing concurrent request counting."))
   (:documentation "A thread-safe provider answering from the request itself."))
@@ -757,7 +757,7 @@ CACHED-TOKENS, when supplied, reports that share as prompt-cache reads."
   (let* ((configuration (test-configuration))
          (provider (make-instance 'rlm-map-test-provider))
          (budget (rlm-budget-create :calls 10 :tokens 1000 :depth 1))
-         (activity-lock (make-lock "Autolith inference activity test"))
+         (activity-lock (make-lock "Antaios inference activity test"))
          (activities nil)
          (results
            (rlm-map (list "alpha"
@@ -986,7 +986,7 @@ CACHED-TOKENS, when supplied, reports that share as prompt-cache reads."
   (let* ((configuration (test-configuration))
          (conversation (conversation-create configuration
                                             :identifier "rlm-map-tool-test"))
-         (activity-lock (make-lock "Autolith inference tool activity test"))
+         (activity-lock (make-lock "Antaios inference tool activity test"))
          (activities nil)
          (observer
            (callback-agent-observer-create
@@ -1286,7 +1286,7 @@ CACHED-TOKENS, when supplied, reports that share as prompt-cache reads."
 
 (-> test-rlm-context-object-adapter () null)
 (defun test-rlm-context-object-adapter ()
-  "Test Autolith maps configurations to provider API context stores."
+  "Test Antaios maps configurations to provider API context stores."
   (let* ((configuration (test-configuration))
          (object (rlm-context-intern configuration "shared corpus"
                                      :label "corpus")))
@@ -1552,7 +1552,7 @@ CACHED-TOKENS, when supplied, reports that share as prompt-cache reads."
     :type list
     :documentation "The scripted root-model results in request order.")
    (lock
-    :initform (make-lock "Autolith litmus provider")
+    :initform (make-lock "Antaios litmus provider")
     :reader rlm-litmus-provider--lock
     :documentation "The lock guarding counters across handler threads."))
   (:documentation

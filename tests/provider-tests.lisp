@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Subsystem Tests --
 
@@ -1202,7 +1202,7 @@
                   (and
                    (not (typep condition 'provider-retryable-error))
                    (string=
-                    (autolith-error-message condition)
+                    (antaios-error-message condition)
                     "The provider TLS connection could not be established: certificate rejected [redacted]"))))
               "TLS failures append useful credential-redacted condition detail"))
            (let ((provider
@@ -1220,7 +1220,7 @@
                     nil)
                 (provider-error (condition)
                   (string=
-                   (autolith-error-message condition)
+                   (antaios-error-message condition)
                    "The provider TLS connection could not be established: compaction certificate expired")))
               "native compaction preserves TLS condition detail"))
            (let ((provider
@@ -1255,7 +1255,7 @@
                 (provider-error (condition)
                   (and (not (typep condition 'provider-retryable-error))
                        (string=
-                        (autolith-error-message condition)
+                        (antaios-error-message condition)
                         "The provider transport failed before a response was received: Synthetic provider transport failure."))))
               "a raw transport SIMPLE-ERROR becomes a terminal provider failure"))
            (let* ((stream
@@ -1811,7 +1811,7 @@
                                           :event-callback #'identity)
                     nil)
                 (authentication-error (condition)
-                  (search "run autolith auth retry-api-key"
+                  (search "run antaios auth retry-api-key"
                           (princ-to-string condition))))
               "a rejected static API key gives its direct authentication hint")
              (test-assert
@@ -2144,7 +2144,7 @@
                 (progn (sse-read-line stream) nil)
               (response-stream-error (condition)
                 (search "delivered nothing"
-                        (autolith-error-message condition))))
+                        (antaios-error-message condition))))
             "a stalled provider stream signals a retryable transport failure")
            (test-assert (< (- (get-universal-time) started) 30)
                         "the stalled stream gives up on its own deadline")
@@ -2188,7 +2188,7 @@
   (let ((count 0)
         (violations nil)
         (root (merge-pathnames "src/provider/"
-                               (asdf:system-source-directory :autolith))))
+                               (asdf:system-source-directory :antaios))))
     (labels ((walk (form deadline-p pathname)
                "Walk FORM under DEADLINE-P, recording violations from PATHNAME."
                (when (consp form)
@@ -2206,7 +2206,7 @@
       (dolist (pathname (directory (merge-pathnames "**/*.lisp" root)))
         (with-open-file (stream pathname :direction ':input)
           (let ((*read-eval* nil)
-                (*package* (find-package '#:autolith)))
+                (*package* (find-package '#:antaios)))
             (loop for form = (read stream nil stream)
                   until (eq form stream)
                   do (walk form nil pathname))))))
@@ -2345,7 +2345,7 @@
            (make-instance
             'grok-credential-manager
             :primary-source
-            (make-instance 'autolith-credential-source
+            (make-instance 'antaios-credential-source
                            :pathname (configuration-grok-auth-path configuration)))))
     (unwind-protect
          (test-call-with-function-replacements
@@ -2669,7 +2669,7 @@
                             (every (lambda (fragment)
                                      (or (null fragment)
                                          (search fragment
-                                                 (autolith-error-message condition))))
+                                                 (antaios-error-message condition))))
                                    fragments))
                        "an exhausted allowance is a terminal, explained failure")))
            (test-assert

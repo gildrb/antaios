@@ -57,12 +57,12 @@ jobs:
         run: |
           set -euo pipefail
           validation_drv=$(nix eval --raw \
-            '.#autolith.imageValidation.drvPath')
+            '.#antaios.imageValidation.drvPath')
           nix build "$validation_drv^*" --rebuild --no-link \
             --no-update-lock-file --print-build-logs
 
       - name: Build package
-        run: nix build .#autolith --no-update-lock-file --print-build-logs
+        run: nix build .#antaios --no-update-lock-file --print-build-logs
 
       - name: Smoke-test first run
         shell: bash
@@ -73,22 +73,22 @@ jobs:
           export XDG_CONFIG_HOME="$temporary_home/config"
           export XDG_DATA_HOME="$temporary_home/data"
           export XDG_STATE_HOME="$temporary_home/state"
-          mkdir -p "$XDG_STATE_HOME/autolith"
-          printf '%s\n' preserved > "$XDG_STATE_HOME/autolith/private-state"
+          mkdir -p "$XDG_STATE_HOME/antaios"
+          printf '%s\n' preserved > "$XDG_STATE_HOME/antaios/private-state"
 
           status=0
-          ./result/bin/autolith </dev/null \
+          ./result/bin/antaios </dev/null \
             >"$temporary_home/stdout" \
             2>"$temporary_home/stderr" &
-          autolith_process=$!
+          antaios_process=$!
           (
             sleep 600
-            if kill -0 "$autolith_process" 2>/dev/null; then
-              kill "$autolith_process" || true
+            if kill -0 "$antaios_process" 2>/dev/null; then
+              kill "$antaios_process" || true
             fi
           ) &
           watchdog_process=$!
-          wait "$autolith_process" || status=$?
+          wait "$antaios_process" || status=$?
           kill "$watchdog_process" 2>/dev/null || true
           wait "$watchdog_process" 2>/dev/null || true
 
@@ -111,53 +111,53 @@ jobs:
               tail -c 8000 "$temporary_home/stderr"
               printf '\nstdout:\n'
               tail -c 8000 "$temporary_home/stdout")
-            fail_smoke "Autolith first run exited with status $status" "$diagnostic"
+            fail_smoke "Antaios first run exited with status $status" "$diagnostic"
           fi
 
-          image_identity=$(nix eval --raw '.#autolith.imageIdentity.outPath')
-          image_directory="$XDG_DATA_HOME/autolith/nix/images/$(basename "$image_identity")"
+          image_identity=$(nix eval --raw '.#antaios.imageIdentity.outPath')
+          image_directory="$XDG_DATA_HOME/antaios/nix/images/$(basename "$image_identity")"
           if [ "$(cat "$image_directory/identity")" != "$image_identity" ]; then
-            fail_smoke "Autolith first run selected the wrong Nix image identity" \
+            fail_smoke "Antaios first run selected the wrong Nix image identity" \
               "$image_directory"
           fi
           for artifact in \
-            active/autolith-active.core active/manifest.sexp \
-            recovery/autolith-recovery.core recovery/manifest.sexp; do
+            active/antaios-active.core active/manifest.sexp \
+            recovery/antaios-recovery.core recovery/manifest.sexp; do
             if [ ! -f "$image_directory/$artifact" ] || \
                [ -L "$image_directory/$artifact" ]; then
-              fail_smoke "Autolith first run omitted a local Nix image artifact" \
+              fail_smoke "Antaios first run omitted a local Nix image artifact" \
                 "$image_directory/$artifact"
             fi
           done
-          if [ ! -w "$image_directory/active/autolith-active.core" ]; then
-            fail_smoke "Autolith Nix active image is not writable" \
-              "$image_directory/active/autolith-active.core"
+          if [ ! -w "$image_directory/active/antaios-active.core" ]; then
+            fail_smoke "Antaios Nix active image is not writable" \
+              "$image_directory/active/antaios-active.core"
           fi
-          if [ "$(cat "$XDG_STATE_HOME/autolith/private-state")" != preserved ]; then
-            fail_smoke "Autolith Nix image setup changed private state" \
-              "$XDG_STATE_HOME/autolith/private-state"
+          if [ "$(cat "$XDG_STATE_HOME/antaios/private-state")" != preserved ]; then
+            fail_smoke "Antaios Nix image setup changed private state" \
+              "$XDG_STATE_HOME/antaios/private-state"
           fi
 
           active_hash=$(nix hash file \
-            "$image_directory/active/autolith-active.core")
+            "$image_directory/active/antaios-active.core")
           recovery_hash=$(nix hash file \
-            "$image_directory/recovery/autolith-recovery.core")
-          ./result/bin/autolith --version > "$temporary_home/second-output"
+            "$image_directory/recovery/antaios-recovery.core")
+          ./result/bin/antaios --version > "$temporary_home/second-output"
           if [ "$active_hash" != "$(nix hash file \
-               "$image_directory/active/autolith-active.core")" ] || \
+               "$image_directory/active/antaios-active.core")" ] || \
              [ "$recovery_hash" != "$(nix hash file \
-               "$image_directory/recovery/autolith-recovery.core")" ]; then
-            fail_smoke "Autolith rebuilt a valid Nix image cache" \
+               "$image_directory/recovery/antaios-recovery.core")" ]; then
+            fail_smoke "Antaios rebuilt a valid Nix image cache" \
               "$image_directory"
           fi
           if grep -F 'Installed preloaded active image' \
                "$temporary_home/second-output" >/dev/null || \
              grep -F 'Installed pristine recovery image' \
                "$temporary_home/second-output" >/dev/null; then
-            fail_smoke "Autolith rebuilt Nix images on its second launch" \
+            fail_smoke "Antaios rebuilt Nix images on its second launch" \
               "$(cat "$temporary_home/second-output")"
           fi
-          if ! grep -F 'AUTOLITH v' "$temporary_home/stdout" >/dev/null; then
-            fail_smoke "Autolith first run omitted its startup marker" \
-              "AUTOLITH v"
+          if ! grep -F 'ANTAIOS v' "$temporary_home/stdout" >/dev/null; then
+            fail_smoke "Antaios first run omitted its startup marker" \
+              "ANTAIOS v"
           fi

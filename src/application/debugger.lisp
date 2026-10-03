@@ -1,9 +1,9 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Debugger Recovery --
 
 (defparameter *application-debugger-recovery-names*
-  '("AUTOLITH-RECOVERY-1" "AUTOLITH-RECOVERY-2" "AUTOLITH-RECOVERY-3")
+  '("ANTAIOS-RECOVERY-1" "ANTAIOS-RECOVERY-2" "ANTAIOS-RECOVERY-3")
   "The fixed restart names available to an application debugger session.")
 
 (defparameter *application-debugger-source* ""
@@ -83,11 +83,11 @@
    (backtrace :initarg :backtrace
               :reader application-debugger-backtrace
               :documentation "The argument-free owner-thread backtrace snapshot.")
-   (lock :initform (make-lock "Autolith application debugger")
+   (lock :initform (make-lock "Antaios application debugger")
          :reader application-debugger-lock
          :documentation "The diagnosis state lock.")
    (condition-variable :initform (make-condition-variable
-                                  :name "Autolith debugger state")
+                                  :name "Antaios debugger state")
                        :reader application-debugger-condition-variable
                        :documentation "The diagnosis state change notification.")
    (diagnosis-thread :initform nil
@@ -402,7 +402,7 @@
                            :complete))
                    (condition-notify
                     (application-debugger-condition-variable session))))))
-           :name "Autolith debugger diagnosis")))
+           :name "Antaios debugger diagnosis")))
   session)
 
 (-> application-debugger-cancel-diagnosis

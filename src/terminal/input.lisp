@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Application Paste Policy --
 
@@ -17,7 +17,7 @@
     t)
 (defun terminal--decode-editing-event
     (stream &key (escape-delay *terminal-escape-delay-seconds*))
-  "Decode one Clinedi event while retaining Autolith's literal Ctrl-V policy."
+  "Decode one Clinedi event while retaining Antaios's literal Ctrl-V policy."
   (let ((character (read-char stream nil nil)))
     (cond
       ((null character)

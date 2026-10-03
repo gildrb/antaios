@@ -1,9 +1,9 @@
-#+TITLE: Autolith MCP
+#+TITLE: Antaios MCP
 #+STARTUP: content
 
 * MCP
 
-Autolith is an MCP client. It supports MCP 2025-11-25 and 2025-06-18
+Antaios is an MCP client. It supports MCP 2025-11-25 and 2025-06-18
 through stdio and Streamable HTTP, using [[https://github.com/luciusmagn/mcparen][mcparen]]. It requests the newer
 revision and accepts either one the server selects.
 
@@ -14,7 +14,7 @@ Autolit's MCP configuration is an S-expression, see below.
 
 * Start with one server
 
-Create =${XDG_CONFIG_HOME:-~/.config}/autolith/mcp.sexp=:
+Create =${XDG_CONFIG_HOME:-~/.config}/antaios/mcp.sexp=:
 
 #+BEGIN_SRC lisp
 (:version 1
@@ -26,7 +26,7 @@ Create =${XDG_CONFIG_HOME:-~/.config}/autolith/mcp.sexp=:
     :arguments   ("--stdio")
     :directory   :workspace
     :environment
-    (("SERVICE_TOKEN" :environment "AUTOLITH_SERVICE_TOKEN")))
+    (("SERVICE_TOKEN" :environment "ANTAIOS_SERVICE_TOKEN")))
    :required-p              nil
    :startup-timeout-seconds 15
    :tool-timeout-seconds    60
@@ -48,7 +48,7 @@ Here is how a remote server with read-only approval would look:
  (:type                    :http
   :url                     "https://mcp.example.net/"
   :headers
-  (("Authorization" :environment "AUTOLITH_MCP_AUTHORIZATION"))
+  (("Authorization" :environment "ANTAIOS_MCP_AUTHORIZATION"))
   :connect-timeout-seconds 10)
  :approval                 :read-only
  :trusted-read-only-tools  ("lookup"))
@@ -70,17 +70,17 @@ server expects, such as =Bearer ...=.
 Do not put secrets into files you may share with others and/or the
 CCP.
 
-- Autolith reads every referenced source variable once at the start of
+- Antaios reads every referenced source variable once at the start of
   each credential-bearing MCP operation
 - A changed credential closes the old process before reconnecting
-- Stdio servers get a small baseline environment plus =AUTOLITH_MCP=1=.
-  They do not inherit Autolith's full environment. Add every other
+- Stdio servers get a small baseline environment plus =ANTAIOS_MCP=1=.
+  They do not inherit Antaios's full environment. Add every other
   value with =:environment=
 
 * Trust project configuration
 
 By default, a repository cannot turn on its own MCP server. To opt in,
-create =${XDG_CONFIG_HOME:-~/.config}/autolith/directory-scopes.sexp=:
+create =${XDG_CONFIG_HOME:-~/.config}/antaios/directory-scopes.sexp=:
 
 #+BEGIN_SRC lisp
 (:version     1
@@ -88,7 +88,7 @@ create =${XDG_CONFIG_HOME:-~/.config}/autolith/directory-scopes.sexp=:
 #+END_SRC
 
 When the workspace is that directory or a descendant,
-Autolith reads =<trusted-directory>/.autolith/mcp.sexp=.
+Antaios reads =<trusted-directory>/.antaios/mcp.sexp=.
 
 - Only exact manifest anchors count
 - A nested repository needs its own exact manifest entry
@@ -98,12 +98,12 @@ Autolith reads =<trusted-directory>/.autolith/mcp.sexp=.
 - Trusted-directory and user =init.lisp= registrations, plus live
   registrations, have higher precedence
 
-A trusted anchor may also supply =.autolith/init.lisp=. When a site
-configuration root is set, Autolith first loads its =init.lisp=. It then loads
+A trusted anchor may also supply =.antaios/init.lisp=. When a site
+configuration root is set, Antaios first loads its =init.lisp=. It then loads
 trusted directory files from outermost to nearest and finally
-=${XDG_CONFIG_HOME:-~/.config}/autolith/init.lisp=.
+=${XDG_CONFIG_HOME:-~/.config}/antaios/init.lisp=.
 
-They are full-power Common Lisp in the =AUTOLITH= package. They can
+They are full-power Common Lisp in the =ANTAIOS= package. They can
 register servers. Arbitrary side effects remain until you reverse them
 or restart. Workspace changes replace extension registrations, not
 arbitrary Lisp effects.
@@ -128,7 +128,7 @@ role permits that resulting tool.
 
 * Connect, inspect, and refresh
 
-Autolith connects effective servers and discovers tools while building
+Antaios connects effective servers and discovers tools while building
 its tool registry.
 
 - A =:required-p t= server makes startup or reload fail when
@@ -137,7 +137,7 @@ its tool registry.
   continue
 - Retry it with =mcp.refresh= or =/mcp refresh=
 
-Servers without tools may still provide resources or prompts. Autolith
+Servers without tools may still provide resources or prompts. Antaios
 validates advertised tool names and schemas before showing them to the
 model. Each server's tools appear under a deterministic =mcp__*=
 namespace.
@@ -167,10 +167,10 @@ As for commands:
 installs a fresh registry. =(cwd)= does the equivalent replacement before changing directory.
 
 A =notifications/tools/list_changed= notification marks one server
-stale. Autolith refreshes it before the next provider request.
+stale. Antaios refreshes it before the next provider request.
 
 Text, structured content, embedded resources, and supported images in
-MCP results become ordinary Autolith tool results, and will be recorded.
+MCP results become ordinary Antaios tool results, and will be recorded.
 
 * Register from Lisp
 

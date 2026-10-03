@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Default Tool Set --
 
@@ -316,7 +316,7 @@
           (list
            'fs-view-image-tool
            "fs" "view-image"
-           "View one local PNG, JPEG, GIF, or WebP image when visual inspection is needed; the image is returned directly to the model. It reads only images: read source, text, HTML, PDF, and every other file through resource.read with a workspace: URI instead. The path must lie inside the workspace or the Autolith source root, so save screenshots and renders into the workspace before viewing them."
+           "View one local PNG, JPEG, GIF, or WebP image when visual inspection is needed; the image is returned directly to the model. It reads only images: read source, text, HTML, PDF, and every other file through resource.read with a workspace: URI instead. The path must lie inside the workspace or the Antaios source root, so save screenshots and renders into the workspace before viewing them."
            (tool-object-schema
             (json-object
              "path" (tool-string-property
@@ -458,7 +458,7 @@
    (list
     'papercut-report-tool
     "papercut" "report"
-    "Report a concrete Autolith limitation, broken behavior, repeated friction, or blocker to the user. Use this only for a real problem that deserves prominent user attention, not routine progress or ordinary uncertainty. Include enough diagnostic context for the user to understand and reproduce the problem. Report each problem once: Autolith compares the report with the active papercuts of this workspace and answers with the existing report instead of recording a repeat, and the acknowledgement stays in the conversation."
+    "Report a concrete Antaios limitation, broken behavior, repeated friction, or blocker to the user. Use this only for a real problem that deserves prominent user attention, not routine progress or ordinary uncertainty. Include enough diagnostic context for the user to understand and reproduce the problem. Report each problem once: Antaios compares the report with the active papercuts of this workspace and answers with the existing report instead of recording a repeat, and the acknowledgement stays in the conversation."
     (tool-object-schema
      (json-object
       "title" (tool-string-property
@@ -600,7 +600,7 @@
                        "enum" #("worker" "self")
                        "description" "Inspect a worker by default, or the active image with self.")
              "package" (tool-string-property
-                        "The active-image reader package for an unqualified name; defaults to AUTOLITH.")
+                        "The active-image reader package for an unqualified name; defaults to ANTAIOS.")
              "repl" (tool-string-property
                      "The persistent REPL name; defaults to default."))
             '("designator")))
@@ -619,9 +619,9 @@
               "kind" (tool-string-property
                       "An optional SBCL definition kind, such as function, optimizer, transform, or vop.")
               "package" (tool-string-property
-                         "The active-image reader package for an unqualified name; defaults to AUTOLITH.")
+                         "The active-image reader package for an unqualified name; defaults to ANTAIOS.")
               "system" (tool-string-property
-                        "An optional direct Autolith ASDF dependency containing the active symbol.")
+                        "An optional direct Antaios ASDF dependency containing the active symbol.")
               "repl" (tool-string-property
                       "The persistent REPL name; defaults to default."))
              '("name")))
@@ -634,7 +634,7 @@
              "query" (tool-string-property
                       "One or more whitespace-separated name fragments that must all occur in the symbol name, matched without regard to case, for example \"retry provider\".")
              "package" (tool-string-property
-                        "The package to search; defaults to AUTOLITH. Dependency packages such as CL-LLM-PROVIDER-API are searched by name.")
+                        "The package to search; defaults to ANTAIOS. Dependency packages such as CL-LLM-PROVIDER-API are searched by name.")
              "kind" (json-object
                      "type" "string"
                      "enum" #("function" "macro" "generic-function" "class" "condition" "variable" "type")
@@ -702,7 +702,7 @@
   "Register active-image inspection and mutation tools in REGISTRY."
   (tool-registry-describe-namespace
    registry "self"
-   "Operations on the active Autolith Common Lisp image.")
+   "Operations on the active Antaios Common Lisp image.")
   (let ((empty-schema (tool-object-schema (json-object) nil)))
     (dolist
         (specification
@@ -726,7 +726,7 @@
              "definition" (tool-string-property
                            "A complete defining Common Lisp form.")
              "package" (tool-string-property
-                        "The active package in which to read and install the definition; defaults to AUTOLITH.")
+                        "The active package in which to read and install the definition; defaults to ANTAIOS.")
              "restart" (tool-restart-property)
              "restart-value" (tool-restart-value-property))
             '("definition")))
@@ -739,7 +739,7 @@
              "definition" (tool-string-property
                            "A complete defining Common Lisp form.")
              "package" (tool-string-property
-                        "The active package in which to read and install the definition; defaults to AUTOLITH.")
+                        "The active package in which to read and install the definition; defaults to ANTAIOS.")
              "restart" (tool-restart-property)
              "restart-value" (tool-restart-value-property))
             '("definition")))
@@ -785,7 +785,7 @@
           (list
            'self-persist-definition-tool
            "self" "persist-definition"
-           "Compile, install, check, and persist one complete definition in a private image commit backed by Autolith's private mutation-history Git repository. The tracked source repository is never modified."
+           "Compile, install, check, and persist one complete definition in a private image commit backed by Antaios's private mutation-history Git repository. The tracked source repository is never modified."
            (tool-object-schema
             (json-object
              "definition" (tool-string-property
@@ -826,7 +826,7 @@
           (list
            'self-commit-tool
            "self" "commit"
-           "Check and persist all pending self.redefine and self.set mutations as an immutable private image commit and complete Lisp replay script, then retain the snapshot in Autolith's private mutation-history Git repository. This never changes a workspace repository."
+           "Check and persist all pending self.redefine and self.set mutations as an immutable private image commit and complete Lisp replay script, then retain the snapshot in Antaios's private mutation-history Git repository. This never changes a workspace repository."
            (tool-object-schema
             (json-object
              "title" (tool-string-property
@@ -865,7 +865,7 @@
     (&key (:immutable-p boolean) (:configuration (option configuration)))
     tool-registry)
 (defun make-default-tool-registry (&key immutable-p configuration)
-  "Create Autolith's tool registry, omitting mutable self tools when requested.
+  "Create Antaios's tool registry, omitting mutable self tools when requested.
 
 LSP tools register only when CONFIGURATION enables a language server."
   (let ((registry (make-instance 'tool-registry))

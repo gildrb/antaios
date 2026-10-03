@@ -29,7 +29,7 @@ source_root=$(CDPATH= cd -P -- "$(dirname -- "$launcher_path")/.." && pwd)
 installation=${1:?usage: build-release-runtime INSTALLATION}
 bootstrap_version=2.4.0
 host_bootstrap_minimum=2.0.0
-unset AUTOLITH_HOST_BOOTSTRAP || true
+unset ANTAIOS_HOST_BOOTSTRAP || true
 
 os=$(uname -s)
 arch=$(uname -m)
@@ -50,9 +50,9 @@ case $os in
         "$ldd_output" >&2
       exit 1
     fi
-    if [[ -n ${AUTOLITH_LIBC:-} && ${AUTOLITH_LIBC} != "$detected_libc" ]]; then
+    if [[ -n ${ANTAIOS_LIBC:-} && ${ANTAIOS_LIBC} != "$detected_libc" ]]; then
       printf 'build-release-runtime expected %s but detected %s.\n' \
-        "$AUTOLITH_LIBC" "$detected_libc" >&2
+        "$ANTAIOS_LIBC" "$detected_libc" >&2
       exit 1
     fi
     case $arch in
@@ -112,8 +112,8 @@ sha256_verify()
 }
 
 if [[ $host_bootstrap == true ]]; then
-  if [[ -n ${AUTOLITH_SBCL:-} ]]; then
-    host_sbcl=$AUTOLITH_SBCL
+  if [[ -n ${ANTAIOS_SBCL:-} ]]; then
+    host_sbcl=$ANTAIOS_SBCL
   else
     host_sbcl=$(command -v sbcl || true)
   fi
@@ -144,8 +144,8 @@ if [[ $host_bootstrap == true ]]; then
       "$host_bootstrap_minimum" "$os" "$host_version" >&2
     exit 1
   fi
-  export AUTOLITH_HOST_BOOTSTRAP=1
-  export AUTOLITH_HOST_BOOTSTRAP_MINIMUM=$host_bootstrap_minimum
+  export ANTAIOS_HOST_BOOTSTRAP=1
+  export ANTAIOS_HOST_BOOTSTRAP_MINIMUM=$host_bootstrap_minimum
   printf 'Using host SBCL %s as the %s bootstrap compiler.\n' "$host_version" "$os"
   mkdir -p "$bootstrap_installation/bin"
   ln -s "$host_sbcl" "$bootstrap_installation/bin/sbcl"

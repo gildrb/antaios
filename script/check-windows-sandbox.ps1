@@ -26,7 +26,7 @@ function Remove-SandboxUserProfile {
   }
 }
 
-$name = "AutolithSandbox$PID"
+$name = "AntaiosSandbox$PID"
 $root = Join-Path $env:PUBLIC $name
 $password = ConvertTo-SecureString (([Guid]::NewGuid().ToString('N')) + '!aA1') -AsPlainText -Force
 $user = $null
@@ -38,7 +38,7 @@ try {
   if ($LASTEXITCODE -ne 0) { throw 'Cannot prepare standard-user sandbox test root.' }
   Expand-Archive -LiteralPath $Archive -DestinationPath $root
   $release = Join-Path $root ([IO.Path]::GetFileNameWithoutExtension($Archive))
-  $runner = Join-Path $release 'libexec\autolith\script\check-windows-sandbox-user.ps1'
+  $runner = Join-Path $release 'libexec\antaios\script\check-windows-sandbox-user.ps1'
   $credential = [Management.Automation.PSCredential]::new("$env:COMPUTERNAME\$name", $password)
   $process = Start-Process -FilePath (Get-Command pwsh.exe).Source -Credential $credential -LoadUserProfile -PassThru -WorkingDirectory $root -ArgumentList @('-NoProfile','-File',"`"$runner`"",'-Release',"`"$release`"",'-Root',"`"$root`"")
   if (-not $process.WaitForExit(1200000)) {

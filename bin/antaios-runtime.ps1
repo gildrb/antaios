@@ -1,9 +1,9 @@
-# Autolith runtime provisioning for Windows.
+# Antaios runtime provisioning for Windows.
 #
-# Usage: autolith-runtime.ps1 [--install] --script PATH [ARGUMENT...]
+# Usage: antaios-runtime.ps1 [--install] --script PATH [ARGUMENT...]
 #
 # Selects an SBCL that satisfies sbcl.version in the same order as
-# bin/autolith-runtime: AUTOLITH_SBCL, the recorded runtime command, the
+# bin/antaios-runtime: ANTAIOS_SBCL, the recorded runtime command, the
 # managed installation, then PATH. With --install and no compatible SBCL, it
 # downloads the pinned official Windows binary, verifies it against
 # sbcl-windows-releases.sha256, and unpacks it below the data root without
@@ -20,18 +20,18 @@ $archiveName = "sbcl-$runtimeRelease-x86-64-windows-binary.msi"
 $archiveUrl = "https://downloads.sourceforge.net/project/sbcl/sbcl/$runtimeRelease/$archiveName"
 
 function Fail([string]$message) {
-  [Console]::Error.WriteLine("Autolith runtime setup failed: $message")
+  [Console]::Error.WriteLine("Antaios runtime setup failed: $message")
   exit 1
 }
 
 function Get-DataRoot {
-  # Mirrors AUTOLITH-APPLICATION-ROOT for :data in script/roots.lisp.
+  # Mirrors ANTAIOS-APPLICATION-ROOT for :data in script/roots.lisp.
   $xdg = $env:XDG_DATA_HOME
   if ($xdg -and ($xdg -match '^([A-Za-z]:[\\/]|\\\\)')) {
-    return (Join-Path $xdg 'autolith')
+    return (Join-Path $xdg 'antaios')
   }
   if (-not $env:LOCALAPPDATA) { Fail 'LOCALAPPDATA is not set.' }
-  return (Join-Path $env:LOCALAPPDATA 'autolith\data')
+  return (Join-Path $env:LOCALAPPDATA 'antaios\data')
 }
 
 function Get-RuntimeVersion([string]$candidate) {
@@ -77,7 +77,7 @@ function Install-Runtime {
   New-Item -ItemType Directory -Force -Path $temporary | Out-Null
   try {
     $archive = Join-Path $temporary $archiveName
-    [Console]::Error.WriteLine("Installing pinned SBCL $runtimeRelease for Autolith.")
+    [Console]::Error.WriteLine("Installing pinned SBCL $runtimeRelease for Antaios.")
     & curl.exe --fail --location --show-error --retry 3 --progress-bar `
       --proto '=https' --tlsv1.2 --output $archive $archiveUrl
     if ($LASTEXITCODE -ne 0) { Fail 'the SBCL download failed.' }
@@ -114,10 +114,10 @@ function Install-Runtime {
 
 function Add-OpenSslDirectory {
   # cl+ssl loads OpenSSL 3 by name. A source checkout takes the DLLs from
-  # AUTOLITH_OPENSSL_DIRECTORY, a native\openssl directory beside the
+  # ANTAIOS_OPENSSL_DIRECTORY, a native\openssl directory beside the
   # sources, or Git for Windows, in that order.
   $candidates = @()
-  if ($env:AUTOLITH_OPENSSL_DIRECTORY) { $candidates += $env:AUTOLITH_OPENSSL_DIRECTORY }
+  if ($env:ANTAIOS_OPENSSL_DIRECTORY) { $candidates += $env:ANTAIOS_OPENSSL_DIRECTORY }
   $candidates += (Join-Path $sourceRoot 'native\openssl')
   $git = Resolve-Command 'git'
   if ($git) { $candidates += (Join-Path (Split-Path -Parent (Split-Path -Parent $git)) 'mingw64\bin') }
@@ -155,11 +155,11 @@ $managedPrefix = Join-Path (Join-Path $runtimesRoot $runtimeRelease) 'installati
 $managedSbcl = Join-Path $managedPrefix 'sbcl.exe'
 
 $sbclCommand = $null
-if ($env:AUTOLITH_SBCL) {
-  $resolved = $env:AUTOLITH_SBCL
-  if (-not (Test-Path -LiteralPath $resolved -PathType Leaf)) { $resolved = Resolve-Command $env:AUTOLITH_SBCL }
-  if (-not $resolved) { Fail 'AUTOLITH_SBCL does not name an executable.' }
-  if (-not (Test-RuntimeCompatible $resolved)) { Fail "AUTOLITH_SBCL does not satisfy SBCL $minimumVersion or newer." }
+if ($env:ANTAIOS_SBCL) {
+  $resolved = $env:ANTAIOS_SBCL
+  if (-not (Test-Path -LiteralPath $resolved -PathType Leaf)) { $resolved = Resolve-Command $env:ANTAIOS_SBCL }
+  if (-not $resolved) { Fail 'ANTAIOS_SBCL does not name an executable.' }
+  if (-not (Test-RuntimeCompatible $resolved)) { Fail "ANTAIOS_SBCL does not satisfy SBCL $minimumVersion or newer." }
   $sbclCommand = $resolved
 } elseif (Test-Path -LiteralPath $runtimeCommandPath -PathType Leaf) {
   $recorded = (Get-Content -LiteralPath $runtimeCommandPath -TotalCount 1)

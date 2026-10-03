@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Workspace Agendas --
 
@@ -17,8 +17,8 @@
 (defparameter *agenda-memory-identifier-limit* 128
   "The maximum characters in one linked memory identifier.")
 
-(defvar *agenda-lock* (make-recursive-lock "Autolith workspace agendas")
-  "Serialize same-process Autolith agenda reads and read-modify-write transactions.")
+(defvar *agenda-lock* (make-recursive-lock "Antaios workspace agendas")
+  "Serialize same-process Antaios agenda reads and read-modify-write transactions.")
 
 (deftype agenda-status ()
   "The lifecycle or informational role of one agenda item."
@@ -418,7 +418,7 @@ when REQUIRE-EXISTING-P is false, but it must still name an absolute path."
         (error 'agenda-error
                :message (format nil "Cannot validate linked memory ~A: ~A"
                                 identifier
-                                (autolith-error-message cause))
+                                (antaios-error-message cause))
                :pathname (configuration-agenda-path configuration)
                :operation ':validate-item
                :cause cause))))

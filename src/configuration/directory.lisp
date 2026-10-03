@@ -1,9 +1,9 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Directory-Scoped MCP Configuration --
 
 (defparameter *directory-configuration-version* 1
-  "The directory-scope trust manifest version accepted by Autolith.")
+  "The directory-scope trust manifest version accepted by Antaios.")
 
 (defparameter *directory-configuration-maximum-directories* 64
   "The maximum number of trusted directory anchors in one manifest.")
@@ -15,13 +15,13 @@
 (-> configuration-directory-mcp-path (pathname) pathname)
 (defun configuration-directory-mcp-path (directory)
   "Return the inherited native MCP pathname beneath trusted DIRECTORY."
-  (merge-pathnames ".autolith/mcp.sexp"
+  (merge-pathnames ".antaios/mcp.sexp"
                    (uiop:ensure-directory-pathname directory)))
 
 (-> configuration-directory-init-path (pathname) pathname)
 (defun configuration-directory-init-path (directory)
   "Return the inherited executable initialization path beneath trusted DIRECTORY."
-  (merge-pathnames ".autolith/init.lisp"
+  (merge-pathnames ".antaios/init.lisp"
                    (uiop:ensure-directory-pathname directory)))
 
 (-> directory-configuration--canonical-directory

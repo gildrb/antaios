@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Grok Authentication Tests --
 
@@ -101,7 +101,7 @@
       (test-assert
        (equal (oauth-credentials-source-path imported)
               (configuration-grok-auth-path configuration))
-       "bootstrap access is copied into Autolith's private Grok store"))
+       "bootstrap access is copied into Antaios's private Grok store"))
     (test-assert
      (handler-case
          (progn
@@ -110,7 +110,7 @@
            nil)
        (token-refresh-failed (condition)
          (test-object-contains-string-p condition
-                                        "run autolith auth grok")))
+                                        "run antaios auth grok")))
      "non-renewable Grok credentials point at the Grok device flow")
     (test-assert
      (handler-case

@@ -1,14 +1,14 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Portable User Data --
 
 (defparameter *data-transfer-version* 1
   "The portable user-data archive version.")
 
-(defvar *data-transfer-lock* (make-recursive-lock "Autolith data transfer")
+(defvar *data-transfer-lock* (make-recursive-lock "Antaios data transfer")
   "Serialize exports and imports in this process.")
 
-(define-condition data-transfer-error (autolith-error)
+(define-condition data-transfer-error (antaios-error)
   ((pathname
     :initarg :pathname
     :reader data-transfer-error-pathname
@@ -22,7 +22,7 @@
              (format stream "Data transfer ~A at ~A: ~A"
                      (data-transfer-error-reason condition)
                      (data-transfer-error-pathname condition)
-                     (autolith-error-message condition)))))
+                     (antaios-error-message condition)))))
 
 (define-condition data-transfer-conflict (data-transfer-error) ()
   (:documentation "An imported identity conflicts with existing or live data."))
@@ -43,7 +43,7 @@
 (-> data-transfer--configuration () configuration)
 (defun data-transfer--configuration ()
   "Return the active session configuration, or a deferred CLI configuration."
-  (let ((symbol (find-symbol "*ACTIVE-APPLICATION*" '#:autolith)))
+  (let ((symbol (find-symbol "*ACTIVE-APPLICATION*" '#:antaios)))
     (if (and symbol (boundp symbol) (symbol-value symbol))
         (application-configuration (symbol-value symbol))
         (configuration-create :defer-provider-validation-p t))))

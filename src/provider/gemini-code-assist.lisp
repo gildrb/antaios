@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Gemini Code Assist Protocol --
 
@@ -605,7 +605,7 @@ catalog follows the exact model identifiers consumed by streamGenerateContent."
 
 (-> gemini-code-assist--function-declarations (vector) vector)
 (defun gemini-code-assist--function-declarations (tool-namespaces)
-  "Flatten Autolith tools into Gemini function declarations."
+  "Flatten Antaios tools into Gemini function declarations."
   (coerce
    (loop for entry across tool-namespaces
          append

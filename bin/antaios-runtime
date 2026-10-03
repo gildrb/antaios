@@ -42,7 +42,7 @@ source_root=$(CDPATH= cd -P "$(dirname "$adapter_path")/.." && pwd)
 minimum_version=$(tr -d '[:space:]' < "$source_root/sbcl.version")
 source_checksums_path=$source_root/sbcl-source-releases.sha256
 data_home=$(xdg_base_directory "${XDG_DATA_HOME:-}" "$HOME/.local/share")
-runtimes_root=$data_home/autolith/runtimes
+runtimes_root=$data_home/antaios/runtimes
 runtime_command_path=$runtimes_root/command
 managed_prefix=$runtimes_root/$runtime_release/installation
 managed_sbcl=$managed_prefix/bin/sbcl
@@ -57,7 +57,7 @@ selected_version=
 
 fail()
 {
-  printf 'Autolith runtime setup failed: %s\n' "$1" >&2
+  printf 'Antaios runtime setup failed: %s\n' "$1" >&2
   exit 1
 }
 
@@ -168,7 +168,7 @@ source_install()
   local stale_source=
 
   [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] ||
-    fail "SBCL $version is not an official release with a published source archive; set AUTOLITH_SBCL to a release build."
+    fail "SBCL $version is not an official release with a published source archive; set ANTAIOS_SBCL to a release build."
   expected_sha256=$(source_checksum "$version") ||
     fail "SBCL $version has no tracked source archive identity."
   for command in curl tar; do
@@ -182,7 +182,7 @@ source_install()
   archive=$temporary_directory/sbcl-$version-source.tar.bz2
   distribution=$temporary_directory/sbcl-$version
 
-  printf 'Installing matching SBCL %s source for Autolith.\n' "$version" >&2
+  printf 'Installing matching SBCL %s source for Antaios.\n' "$version" >&2
   curl --fail --location --show-error --retry 3 --progress-bar \
     --proto '=https' --tlsv1.2 \
     --output "$archive" \
@@ -231,7 +231,7 @@ runtime_install()
   local stale_installation=
 
   [[ $(uname -s) == Linux && $(uname -m) == x86_64 ]] ||
-    fail "no SBCL $minimum_version or newer was found, and automatic runtime binary installation supports Linux x86-64 only. On macOS, install SBCL (for example: brew install sbcl) or set AUTOLITH_SBCL."
+    fail "no SBCL $minimum_version or newer was found, and automatic runtime binary installation supports Linux x86-64 only. On macOS, install SBCL (for example: brew install sbcl) or set ANTAIOS_SBCL."
   for command in curl tar; do
     command -v -- "$command" >/dev/null 2>&1 ||
       fail "automatic installation needs $command."
@@ -245,7 +245,7 @@ runtime_install()
   distribution=$temporary_directory/sbcl-$runtime_release-x86-64-linux
   installation=$temporary_directory/installation
 
-  printf 'Installing pinned SBCL %s for Autolith.\n' "$runtime_release" >&2
+  printf 'Installing pinned SBCL %s for Antaios.\n' "$runtime_release" >&2
   curl --fail --location --show-error --retry 3 --progress-bar \
     --proto '=https' --tlsv1.2 \
     --output "$archive" "$runtime_archive_url"
@@ -310,11 +310,11 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 
 sbcl_command=
-if [[ -n ${AUTOLITH_SBCL:-} ]]; then
-  sbcl_command=$(runtime_resolve_command "$AUTOLITH_SBCL") ||
-    fail "AUTOLITH_SBCL does not name an executable."
+if [[ -n ${ANTAIOS_SBCL:-} ]]; then
+  sbcl_command=$(runtime_resolve_command "$ANTAIOS_SBCL") ||
+    fail "ANTAIOS_SBCL does not name an executable."
   runtime_compatible "$sbcl_command" ||
-    fail "AUTOLITH_SBCL does not satisfy SBCL $minimum_version or newer."
+    fail "ANTAIOS_SBCL does not satisfy SBCL $minimum_version or newer."
 elif [[ -r "$runtime_command_path" ]]; then
   IFS= read -r recorded_command < "$runtime_command_path" || recorded_command=
   if [[ "$recorded_command" == /* ]] &&
@@ -354,15 +354,15 @@ if [[ "$install_requested" == true ]] && ! source_available; then
 fi
 
 runtime_record "$sbcl_command"
-export AUTOLITH_SBCL=$sbcl_command
-if [[ ${AUTOLITH_SBCL_SOURCE_ROOT:-} == /* &&
-      -f "$AUTOLITH_SBCL_SOURCE_ROOT/version.lisp-expr" ]] &&
+export ANTAIOS_SBCL=$sbcl_command
+if [[ ${ANTAIOS_SBCL_SOURCE_ROOT:-} == /* &&
+      -f "$ANTAIOS_SBCL_SOURCE_ROOT/version.lisp-expr" ]] &&
    grep -Fxq "\"$selected_version\"" \
-     "$AUTOLITH_SBCL_SOURCE_ROOT/version.lisp-expr"; then
-  export AUTOLITH_SBCL_SOURCE_ROOT
+     "$ANTAIOS_SBCL_SOURCE_ROOT/version.lisp-expr"; then
+  export ANTAIOS_SBCL_SOURCE_ROOT
 elif source_available; then
-  export AUTOLITH_SBCL_SOURCE_ROOT=$managed_source
+  export ANTAIOS_SBCL_SOURCE_ROOT=$managed_source
 else
-  unset AUTOLITH_SBCL_SOURCE_ROOT
+  unset ANTAIOS_SBCL_SOURCE_ROOT
 fi
 exec "$sbcl_command" --script "$script_path" ${script_arguments[@]+"${script_arguments[@]}"}

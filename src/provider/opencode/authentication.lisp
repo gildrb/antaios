@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 
 ;;;; -- OpenCode API Key Authentication --
@@ -6,9 +6,9 @@
 (define-static-api-key-provider opencode
   :display-name "OpenCode"
   :environment-variable "OPENCODE_API_KEY"
-  :source-class autolith-credential-source
+  :source-class antaios-credential-source
   :source-path (configuration-opencode-auth-path configuration)
-  :login-hint "run autolith auth opencode")
+  :login-hint "run antaios auth opencode")
 
 
 ;;;; -- OpenCode API Key Login --

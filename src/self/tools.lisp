@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Active Image Inspection --
 
@@ -10,13 +10,13 @@
 
 (-> self-resolve-package ((option string)) package)
 (defun self-resolve-package (name)
-  "Return existing package NAME, defaulting to the AUTOLITH package.
+  "Return existing package NAME, defaulting to the ANTAIOS package.
 
 NAME is accepted as written or upcased, so lowercase names resolve too."
   (let ((package (if (non-empty-string-p name)
                      (or (find-package name)
                          (find-package (string-upcase name)))
-                     (find-package '#:autolith))))
+                     (find-package '#:antaios))))
     (unless package
       (error 'source-mutation-error
              :message (format nil "No active Common Lisp package is named ~S."
@@ -41,7 +41,7 @@ NAME is accepted as written or upcased, so lowercase names resolve too."
     (string &key (:read-eval boolean) (:package package))
     t)
 (defun self-read-form
-    (source &key (read-eval t) (package (find-package '#:autolith)))
+    (source &key (read-eval t) (package (find-package '#:antaios)))
   "Read exactly one Common Lisp form from SOURCE relative to PACKAGE."
   (self-call-with-package-unlocked
    package
@@ -59,7 +59,7 @@ NAME is accepted as written or upcased, so lowercase names resolve too."
          form)))))
 
 (-> self-resolve-symbol (string &key (:package package)) symbol)
-(defun self-resolve-symbol (name &key (package (find-package '#:autolith)))
+(defun self-resolve-symbol (name &key (package (find-package '#:antaios)))
   "Resolve readable symbol NAME relative to PACKAGE.
 
 A quoted or function-quoted symbol, as in 'name or #'name, resolves to the
@@ -161,7 +161,7 @@ list is consulted before falling back to the expression."
 
 ;;;; -- Mutation Journal --
 
-(defvar *live-mutation-lock* (make-recursive-lock "Autolith live mutation")
+(defvar *live-mutation-lock* (make-recursive-lock "Antaios live mutation")
   "The process-wide lock serializing active-image and durable mutations.")
 
 (defvar *active-image-lineage-identifier* nil
@@ -204,7 +204,7 @@ list is consulted before falling back to the expression."
               (let ((*standard-output* stream)
                     (*error-output* stream)
                     (*trace-output* stream)
-                    (*package* (find-package '#:autolith)))
+                    (*package* (find-package '#:antaios)))
                 (setf result-values
                       (multiple-value-list (funcall function)))))))
       (values (mapcar #'sbcl-worker-render-value result-values) output))))
@@ -224,7 +224,7 @@ list is consulted before falling back to the expression."
 (defun self--selectable-restarts (condition)
   "Return (NAME . REPORT) pairs for CONDITION's invokable restarts.
 
-The ABORT restart is excluded because invoking it would unwind Autolith's own
+The ABORT restart is excluded because invoking it would unwind Antaios's own
 event loop instead of correcting the failed operation."
   (loop for restart in (compute-restarts condition)
         for name = (restart-name restart)
@@ -711,7 +711,7 @@ generic function and are not skipped merely because its ownership changed."
 
 (-> self--install-definition (list string &key (:package package)) t)
 (defun self--install-definition
-    (definition source &key (package (find-package '#:autolith)))
+    (definition source &key (package (find-package '#:antaios)))
   "Compile and install parsed DEFINITION in PACKAGE, retaining complete SOURCE."
   (self-call-with-definition-unlocked
    definition package
@@ -895,7 +895,7 @@ authoritative; entries without the record are judged by source revision."
     (configuration string &key (:package package))
     t)
 (defun self-install-definition
-    (configuration source &key (package (find-package '#:autolith)))
+    (configuration source &key (package (find-package '#:antaios)))
   "Compile and install one exploratory SOURCE definition in PACKAGE."
   (with-live-mutation
     (let ((definition (self-read-form source
@@ -1086,7 +1086,7 @@ authoritative; entries without the record are judged by source revision."
     :initarg :relative-pathname
     :reader tracked-definition-relative-pathname
     :type non-empty-string
-    :documentation "The definition file relative to Autolith's source root.")
+    :documentation "The definition file relative to Antaios's source root.")
    (source-form
     :initarg :source-form
     :reader tracked-definition-source-form
@@ -1146,7 +1146,7 @@ authoritative; entries without the record are judged by source revision."
 
 (-> source-read-forms (string &key (:package package)) list)
 (defun source-read-forms
-    (source &key (package (find-package '#:autolith)))
+    (source &key (package (find-package '#:antaios)))
   "Read complete top-level forms and exact spans from SOURCE in PACKAGE."
   (let ((stream (make-string-input-stream source))
         (position 0)
@@ -1235,19 +1235,19 @@ dependency), which counts only when its feature expression holds."
 
 (-> self-source--dependency-system (package (option string)) (option t))
 (defun self-source--dependency-system (package requested-name)
-  "Return the direct Autolith dependency selected by PACKAGE or REQUESTED-NAME."
+  "Return the direct Antaios dependency selected by PACKAGE or REQUESTED-NAME."
   (block nil
     (let* ((name
              (if (non-empty-string-p requested-name)
                  requested-name
                  (string-downcase (package-name package))))
            (dependencies
-             (self-source--dependency-names (asdf:find-system '#:autolith))))
+             (self-source--dependency-names (asdf:find-system '#:antaios))))
       (unless (member name dependencies :test #'string-equal)
         (when (non-empty-string-p requested-name)
           (error 'source-mutation-error
                  :message
-                 (format nil "~S is not a direct Autolith ASDF dependency."
+                 (format nil "~S is not a direct Antaios ASDF dependency."
                          requested-name)
                  :tool-name "lisp.source"
                  :pathname nil))
@@ -1262,7 +1262,7 @@ dependency), which counts only when its feature expression holds."
     (symbol package &key (:system-name (option string)))
     list)
 (defun self-dependency-definitions (symbol package &key system-name)
-  "Return SYMBOL definitions from one direct, loaded Autolith dependency."
+  "Return SYMBOL definitions from one direct, loaded Antaios dependency."
   (let ((system (self-source--dependency-system package system-name)))
     (when system
       (let ((root (asdf:system-source-directory system)))
@@ -1279,7 +1279,7 @@ dependency), which counts only when its feature expression holds."
 
 Such a file is not loaded in this image and may not even read on this host,
 as the POSIX adapter does not on Windows."
-  (let* ((system (asdf:find-system "autolith"))
+  (let* ((system (asdf:find-system "antaios"))
          (root (asdf:system-source-directory system)))
     (labels ((collect (component withheld-p)
                "Return the withheld files below COMPONENT, all of them when WITHHELD-P."
@@ -1310,7 +1310,7 @@ Files the system withholds from this image through :IF-FEATURE are left out."
                           :test #'string=))
                 (source-lisp-pathnames editable-root))
      :root source-root
-     :package (find-package '#:autolith)
+     :package (find-package '#:antaios)
      :symbol symbol)))
 
 (-> self-tracked-definition (configuration list) (option tracked-definition))
@@ -1393,7 +1393,7 @@ Files the system withholds from this image through :IF-FEATURE are left out."
                (error 'tool-error
                       :message (format nil "~S: ~A"
                                        symbol
-                                       (autolith-error-message condition))
+                                       (antaios-error-message condition))
                       :tool-name "lisp.source")))
          (declare (ignore values))
          (tool-success output))))))

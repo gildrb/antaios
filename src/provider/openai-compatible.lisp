@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- OpenAI-Compatible Chat Completions Provider --
 
@@ -142,7 +142,7 @@
                   (list (credential-source-pathname source))))
          (api-key-credential-manager-save-key manager api-key)
          (format nil
-                 "~A API key was saved in Autolith's private credential store."
+                 "~A API key was saved in Antaios's private credential store."
                  provider-name))))))
 
 (defmethod provider-authenticate ((provider openai-compatible-provider)
@@ -275,7 +275,7 @@ advertises one, :CONTEXT-WINDOW."
   (if (= status 401)
       (error 'authentication-error
              :message
-             (format nil "~A rejected Autolith's ~A; ~A."
+             (format nil "~A rejected Antaios's ~A; ~A."
                      provider-name
                      (credential-manager-credential-description manager)
                      (credential-manager-login-hint manager)))
@@ -374,7 +374,7 @@ manager from PROVIDER-NAME."
       (source (provider--current-registration-source)))
   "Register an OpenAI-compatible Chat Completions provider.
 
-The provider resolves its bearer key from Autolith's private API-key store using
+The provider resolves its bearer key from Antaios's private API-key store using
 NAME, or, when API-KEY-FILE names an absolute file, reads the key from that file
 on every request so an externally rotated key needs no re-authentication.
 MODELS contains optional static strings or model property lists accepted by

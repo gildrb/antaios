@@ -37,6 +37,6 @@ jobs:
             gh release create "$tag" \
               --verify-tag \
               --notes-file "$notes" \
-              --title "Autolith ${tag#v}"
+              --title "Antaios ${tag#v}"
             printf 'Created GitHub release %s.\n' "$tag"
           done

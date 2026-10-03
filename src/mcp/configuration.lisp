@@ -1,9 +1,9 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Native MCP Configuration --
 
 (defparameter *mcp-configuration-version* 1
-  "The only native MCP configuration version accepted by Autolith.")
+  "The only native MCP configuration version accepted by Antaios.")
 
 (defparameter *mcp-configuration-maximum-bytes* (* 256 1024)
   "The maximum byte length of one native MCP configuration file.")
@@ -113,7 +113,7 @@
     :reader mcp-configuration-error-cause
     :type t
     :documentation "The underlying reader or validation failure, when any."))
-  (:documentation "A native Autolith MCP configuration is malformed."))
+  (:documentation "A native Antaios MCP configuration is malformed."))
 
 
 ;;;; -- Immutable Configuration Objects --
@@ -197,7 +197,7 @@
     :initform nil
     :reader mcp-server-configuration-required-p
     :type boolean
-    :documentation "Whether discovery failure prevents Autolith startup.")
+    :documentation "Whether discovery failure prevents Antaios startup.")
    (startup-timeout-seconds
     :initarg :startup-timeout-seconds
     :initform *mcp-default-startup-timeout-seconds*
@@ -229,7 +229,7 @@
     :reader mcp-server-configuration-child-tools
     :type list
     :documentation "Exact raw MCP tool names explicitly granted to child agents."))
-  (:documentation "One complete native Autolith MCP server definition."))
+  (:documentation "One complete native Antaios MCP server definition."))
 
 (defclass mcp-server-registration ()
   ((configuration
@@ -1090,7 +1090,7 @@ bound policy takes effect without reloading this file."
 ;;;; -- Layered Server Registry --
 
 (defvar *mcp-server-registry-lock*
-  (make-lock "Autolith MCP server registry")
+  (make-lock "Antaios MCP server registry")
   "The lock protecting live MCP server registration layers.")
 
 (defvar *mcp-server-registrations* nil

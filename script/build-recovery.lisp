@@ -23,8 +23,8 @@
        (child-p (and arguments (string= (first arguments) "--child")))
        (home (user-homedir-pathname))
        (default-core
-         (merge-pathnames "recovery/autolith-recovery.core"
-                          (autolith-application-root :data)))
+         (merge-pathnames "recovery/antaios-recovery.core"
+                          (antaios-application-root :data)))
        (core-pathname
          (pathname
           (or (if child-p (second arguments) (first arguments))
@@ -35,7 +35,7 @@
                            project-setup
                            user-setup)))
   (load (merge-pathnames "script/runtime-requirement.lisp" source-root))
-  (autolith-require-minimum-runtime version-pathname)
+  (antaios-require-minimum-runtime version-pathname)
   (labels ((load-recovery-source ()
              "Load only the packages needed to compile the recovery runtime."
              (unless (probe-file quicklisp-setup)
@@ -43,8 +43,8 @@
              (load quicklisp-setup)
              (uiop:symbol-call '#:ql '#:quickload :serapeum :silent t)
              (uiop:symbol-call '#:ql '#:quickload :sbcl-generations :silent t)
-             (let ((package (or (find-package "AUTOLITH")
-                                (make-package "AUTOLITH" :use '("CL")))))
+             (let ((package (or (find-package "ANTAIOS")
+                                (make-package "ANTAIOS" :use '("CL")))))
                (export (mapcar (lambda (name) (intern name package))
                                '("RECOVERY-MAIN" "RECOVERY-IMAGE-SAVE"))
                        package))
@@ -72,9 +72,9 @@
                              "script/build-recovery.lisp"
                              "recovery/runtime.lisp"
                              "recovery/launcher.lisp"
-                             "bin/autolith"
-                             "bin/autolith-active"
-                             "bin/autolith-runtime"
+                             "bin/antaios"
+                             "bin/antaios-active"
+                             "bin/antaios-runtime"
                              "script/check"
                              "script/check.lisp"
                              "qlfile.lock"
@@ -90,11 +90,11 @@
                      (source-blob "script/build-recovery.lisp")
                      :source-launcher-blob
                      (source-blob "recovery/launcher.lisp")
-                     :stable-launcher-blob (source-blob "bin/autolith")
+                     :stable-launcher-blob (source-blob "bin/antaios")
                      :active-source-launcher-blob
-                     (source-blob "bin/autolith-active")
+                     (source-blob "bin/antaios-active")
                      :runtime-adapter-blob
-                     (source-blob "bin/autolith-runtime")
+                     (source-blob "bin/antaios-runtime")
                      :check-blob (source-blob "script/check")
                      :check-source-blob (source-blob "script/check.lisp")
                      :dependency-lock-blob (source-blob "qlfile.lock")
@@ -164,18 +164,18 @@
                           stream)
                    (terpri stream)
                    (finish-output stream)))
-               (autolith-script-set-file-mode temporary #o444)
-               (autolith-script-replace-file temporary manifest))))
+               (antaios-script-set-file-mode temporary #o444)
+               (antaios-script-replace-file temporary manifest))))
     (if child-p
         (progn
           (load-recovery-source)
-          (uiop:symbol-call '#:autolith '#:recovery-image-save core-pathname))
+          (uiop:symbol-call '#:antaios '#:recovery-image-save core-pathname))
         (let* ((directory (uiop:pathname-directory-pathname core-pathname))
                (temporary
                  (merge-pathnames
-                  (format nil ".autolith-recovery.~D.core" (sb-posix:getpid))
+                  (format nil ".antaios-recovery.~D.core" (sb-posix:getpid))
                   directory))
-               (sbcl-command (or (uiop:getenv "AUTOLITH_SBCL") "sbcl"))
+               (sbcl-command (or (uiop:getenv "ANTAIOS_SBCL") "sbcl"))
                (identity-before (source-identity)))
           (ensure-directories-exist core-pathname)
           (when (probe-file temporary)
@@ -197,8 +197,8 @@
             (unless (equal identity-before identity-after)
               (error "Recovery image inputs changed while the core was built.")))
           (when (probe-file core-pathname)
-            (autolith-script-set-file-mode core-pathname #o600))
-          (autolith-script-replace-file temporary core-pathname)
-          (autolith-script-set-file-mode core-pathname #o444)
+            (antaios-script-set-file-mode core-pathname #o600))
+          (antaios-script-replace-file temporary core-pathname)
+          (antaios-script-set-file-mode core-pathname #o444)
           (write-manifest core-pathname identity-before)
           (format t "~&Installed pristine recovery image at ~A.~%" core-pathname)))))

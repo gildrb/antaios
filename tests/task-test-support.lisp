@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- In-Process Task Orchestration Tests --
 
@@ -47,7 +47,7 @@
 
 (defclass task-test-blocking-tool (task-test-child-safe-tool)
   ((lock
-    :initform (make-lock "Autolith blocking tool test")
+    :initform (make-lock "Antaios blocking tool test")
     :reader task-test-blocking-tool-lock
     :documentation "The lock protecting the test barrier.")
    (condition-variable
@@ -68,7 +68,7 @@
 
 (defclass task-test-publication-barrier ()
   ((lock
-    :initform (make-lock "Autolith publication print test")
+    :initform (make-lock "Antaios publication print test")
     :reader task-test-publication-barrier-lock
     :documentation "The lock protecting the publication barrier.")
    (condition-variable
@@ -149,7 +149,7 @@
     :type boolean
     :documentation "Whether reconfigured child providers opt into inherited history.")
    (lock
-    :initform (make-lock "Autolith task test provider")
+    :initform (make-lock "Antaios task test provider")
     :reader task-test-provider-lock
     :documentation "The lock protecting deterministic request counters.")
    (mode
@@ -306,7 +306,7 @@
                   (json-object
                    "status" "failed"
                    "text" "The final manifest child failed."
-                   "error" "AUTOLITH-LAST-MANIFEST-CHILD-FAILED"))))
+                   "error" "ANTAIOS-LAST-MANIFEST-CHILD-FAILED"))))
                (t
                 (agent-test-call
                  :call-id (format nil "yield-~D" request-number)

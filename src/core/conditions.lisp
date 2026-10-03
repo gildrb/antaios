@@ -1,28 +1,28 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Base Conditions --
 
-(define-condition autolith-control-condition (condition)
+(define-condition antaios-control-condition (condition)
   ((message
     :initarg :message
-    :reader autolith-control-condition-message
+    :reader antaios-control-condition-message
     :type string
     :documentation "A concise explanation of the requested control transfer."))
-  (:documentation "The base condition for non-error Autolith control transfers.")
+  (:documentation "The base condition for non-error Antaios control transfers.")
   (:report (lambda (condition stream)
-             (write-string (autolith-control-condition-message condition) stream))))
+             (write-string (antaios-control-condition-message condition) stream))))
 
-(define-condition autolith-error (error)
+(define-condition antaios-error (error)
   ((message
     :initarg :message
-    :reader autolith-error-message
+    :reader antaios-error-message
     :type string
     :documentation "A concise explanation suitable for the terminal."))
-  (:documentation "The base condition for expected Autolith failures.")
+  (:documentation "The base condition for expected Antaios failures.")
   (:report (lambda (condition stream)
-             (write-string (autolith-error-message condition) stream))))
+             (write-string (antaios-error-message condition) stream))))
 
-(define-condition configuration-error (autolith-error)
+(define-condition configuration-error (antaios-error)
   ()
   (:documentation "A failure caused by invalid or unavailable configuration."))
 
@@ -42,7 +42,7 @@
     :reader user-init-error-cause
     :type serious-condition
     :documentation "The underlying condition signaled while loading the file."))
-  (:documentation "Loading one executable Autolith configuration layer failed."))
+  (:documentation "Loading one executable Antaios configuration layer failed."))
 
 (define-condition working-directory-error (configuration-error)
   ((requested-path
@@ -73,7 +73,7 @@
     :documentation "A secondary failure while restoring the previous workspace."))
   (:documentation "Changing the active process and tool workspace failed."))
 
-(define-condition application-runtime-replacement-error (autolith-error)
+(define-condition application-runtime-replacement-error (antaios-error)
   ((operation
     :initarg :operation
     :reader application-runtime-replacement-error-operation
@@ -98,7 +98,7 @@
   (:documentation
    "A live application runtime replacement failed during retirement or installation."))
 
-(define-condition rollback-requested (autolith-control-condition)
+(define-condition rollback-requested (antaios-control-condition)
   ((generation-id
     :initarg :generation-id
     :reader rollback-requested-generation-id
@@ -106,7 +106,7 @@
     :documentation "The retained generation selected for the next process."))
   (:documentation "A control condition requesting rollback to a retained generation."))
 
-(define-condition update-requested (autolith-control-condition)
+(define-condition update-requested (antaios-control-condition)
   ((tag
     :initarg :tag
     :reader update-requested-tag
@@ -144,7 +144,7 @@
 
 ;;;; -- Authentication and Provider Conditions --
 
-(define-condition authentication-error (autolith-error)
+(define-condition authentication-error (antaios-error)
   ()
   (:documentation "The base condition for authentication failures."))
 
@@ -185,7 +185,7 @@
 
 ;;;; -- Persistence and Tool Conditions --
 
-(define-condition search-error (autolith-error)
+(define-condition search-error (antaios-error)
   ((operation
     :initarg :operation
     :reader search-error-operation
@@ -205,7 +205,7 @@
     :documentation "The underlying native or Lisp failure, when available."))
   (:documentation "The private fff search library could not complete an operation."))
 
-(define-condition image-input-error (autolith-error)
+(define-condition image-input-error (antaios-error)
   ((pathname
     :initarg :pathname
     :reader image-input-error-pathname
@@ -224,7 +224,7 @@
     :documentation "The underlying image or filesystem failure, when available."))
   (:documentation "A local image could not become provider-visible user input."))
 
-(define-condition preferences-error (autolith-error)
+(define-condition preferences-error (antaios-error)
   ((pathname
     :initarg :pathname
     :reader preferences-error-pathname
@@ -259,7 +259,7 @@
                      (preferences-load-warning-pathname condition)
                      (preferences-load-warning-cause condition)))))
 
-(define-condition project-adaptation-error (autolith-error)
+(define-condition project-adaptation-error (antaios-error)
   ((pathname
     :initarg :pathname
     :reader project-adaptation-error-pathname
@@ -278,7 +278,7 @@
     :documentation "The underlying failure, when available."))
   (:documentation "Project adaptation notes or offer state could not be handled."))
 
-(define-condition permissions-error (autolith-error)
+(define-condition permissions-error (antaios-error)
   ((pathname
     :initarg :pathname
     :reader permissions-error-pathname
@@ -296,7 +296,7 @@
     :documentation "The underlying persistence failure, when available."))
   (:documentation "Persistent command permissions could not be read or written."))
 
-(define-condition command-authorization-unavailable (autolith-error)
+(define-condition command-authorization-unavailable (antaios-error)
   ((command
     :initarg :command
     :reader command-authorization-unavailable-command
@@ -327,7 +327,7 @@
                      (permissions-load-warning-cause condition))))
   (:documentation "Malformed command permissions were ignored to fail closed."))
 
-(define-condition agenda-error (autolith-error)
+(define-condition agenda-error (antaios-error)
   ((pathname
     :initarg :pathname
     :reader agenda-error-pathname
@@ -362,7 +362,7 @@
                      (agenda-load-warning-cause condition))))
   (:documentation "Malformed workspace-agenda state was ignored during startup."))
 
-(define-condition conversation-error (autolith-error)
+(define-condition conversation-error (antaios-error)
   ((pathname
     :initarg :pathname
     :reader conversation-error-pathname
@@ -391,9 +391,9 @@
     :type pathname
     :documentation "The process-shared lease file whose lock is held."))
   (:documentation
-   "A live Autolith process already owns the requested conversation."))
+   "A live Antaios process already owns the requested conversation."))
 
-(define-condition conversation-identifier-error (autolith-error)
+(define-condition conversation-identifier-error (antaios-error)
   ((value
     :initarg :value
     :reader conversation-identifier-error-value
@@ -424,7 +424,7 @@
     :documentation "The underlying migration failure, when available."))
   (:documentation "Legacy conversation identifiers could not be migrated safely."))
 
-(define-condition memory-error (autolith-error)
+(define-condition memory-error (antaios-error)
   ((pathname
     :initarg :pathname
     :reader memory-error-pathname
@@ -438,7 +438,7 @@
     :documentation "The memory identifier involved in the failure, when known."))
   (:documentation "Persistent memory data is invalid or cannot be updated."))
 
-(define-condition papercut-error (autolith-error)
+(define-condition papercut-error (antaios-error)
   ((pathname
     :initarg :pathname
     :reader papercut-error-pathname
@@ -452,7 +452,7 @@
     :documentation "The papercut identifier involved in the failure, when known."))
   (:documentation "Persistent papercut data is invalid or cannot be updated."))
 
-(define-condition tool-error (autolith-error)
+(define-condition tool-error (antaios-error)
   ((tool-name
     :initarg :tool-name
     :reader tool-error-tool-name
@@ -509,7 +509,7 @@ Codes let tests and callers discriminate failures without pinning prose.")
   (:documentation
    "A private live-image mutation commit could not be validated or published."))
 
-(define-condition self-correctable-error (autolith-error)
+(define-condition self-correctable-error (antaios-error)
   ((restart-names
     :initarg :restart-names
     :reader self-correctable-error-restart-names
@@ -518,7 +518,7 @@ Codes let tests and callers discriminate failures without pinning prose.")
   (:documentation
    "An active-image operation failed while offering selectable restarts."))
 
-(define-condition active-image-corruption (autolith-error)
+(define-condition active-image-corruption (antaios-error)
   ((original-condition
     :initarg :original-condition
     :reader active-image-corruption-original-condition
@@ -531,7 +531,7 @@ Codes let tests and callers discriminate failures without pinning prose.")
     :documentation "The second failure that prevented image restoration."))
   (:documentation "A failed mutation could not restore the preceding active definition."))
 
-(define-condition active-image-build-error (autolith-error)
+(define-condition active-image-build-error (antaios-error)
   ((stage
     :initarg :stage
     :reader active-image-build-error-stage
@@ -545,7 +545,7 @@ Codes let tests and callers discriminate failures without pinning prose.")
   (:documentation
    "A preloaded active image could not be validated, saved, or published."))
 
-(define-condition checkpoint-error (autolith-error)
+(define-condition checkpoint-error (antaios-error)
   ((stage
     :initarg :stage
     :reader checkpoint-error-stage
@@ -585,7 +585,7 @@ Codes let tests and callers discriminate failures without pinning prose.")
       (checkpoint-runtime-resume-warning-generation-id condition)))))
 
 
-(defmethod autolith-error-message
+(defmethod antaios-error-message
     ((condition cl-llm-provider-api:provider-api-error))
   "Return the portable provider failure explanation."
   (cl-llm-provider-api:provider-api-error-message condition))

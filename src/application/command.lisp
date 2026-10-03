@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Interactive Command Protocol --
 
@@ -358,7 +358,7 @@
   "Canonical command names and aliases mapped to effective command objects.")
 
 (defvar *application-command-lock*
-  (make-lock "Autolith application commands")
+  (make-lock "Antaios application commands")
   "The lock protecting all application command registry projections.")
 
 

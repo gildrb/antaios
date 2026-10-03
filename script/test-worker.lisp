@@ -40,10 +40,10 @@
             (check--fail "Invalid test worker request."))
           (check--load-tests source-root)
           (let* ((names (getf request :cases))
-                 (cases (uiop:symbol-call '#:autolith '#:tests-select :tests names)))
+                 (cases (uiop:symbol-call '#:antaios '#:tests-select :tests names)))
             (unless (equal (mapcar #'string-downcase cases) names)
               (check--fail "Worker selection does not match its assigned cases."))
-            (let ((result (uiop:symbol-call '#:autolith '#:tests-run-cases cases
+            (let ((result (uiop:symbol-call '#:antaios '#:tests-run-cases cases
                                             :temporary-root (getf request :temporary-root))))
               (check--validate-result result names)
               (test-worker--report-live-threads)

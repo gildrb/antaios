@@ -1,58 +1,9 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Lisp-Machine Startup and Login --
 
-(defparameter *terminal-ui-boot-mascot-rows*
-  '(
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠄⠀⠀⠀⠐⠐⠀⠰⠀⠄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠂⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-    "⠀⠀⠀⠀⠀⢀⠴⡶⠠⠀⢀⠀⠀⠀⠀⠀⠀⠂⠀⠀⠀⠀⠈⠁⠀⠁⠀⠀⠀⠠⡀⠀⠀⠀⠀⠀⢀⢡⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-    "⠀⠀⠠⣐⣬⡴⣶⣚⡾⠒⠓⠺⠷⠦⠄⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠀⠀⠰⠁⠀⡂⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-    "⡴⠟⠋⠁⠀⠀⠸⡹⡃⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠒⠒⠀⢠⢀⠀⠐⠒⠒⠀⠀⠀⡀⠀⡀⡀⠑⠀⠀⢆⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-    "⠀⠀⠀⠀⠀⠀⠀⡄⡆⠀⠀⠀⠀⠀⠀⠀⠂⠀⠀⠺⠀⠀⣄⣾⠀⠀⠰⠆⠀⠀⠀⡀⠀⠀⠁⠀⠀⠈⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-    "⠀⠀⠀⠀⠀⠀⠀⠃⡅⠀⠀⠀⠀⠀⠀⢨⠀⠀⠀⠀⠀⠀⠉⠁⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⢠⡀⠀⡂⠀⠀⠀⠀⠀⠀⠀⠀"
-    "⠀⠀⠀⠀⠀⠀⢠⣇⠇⡀⠀⠀⠀⠀⠀⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⡠⡀⠄⠀⠓⠅⠀⠀⠀⠀⠀⠀⠀⠀"
-    "⠀⠀⠀⠀⠀⠀⠸⡿⣷⠠⡀⠀⠀⠀⠀⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⢐⠀⠀⠀⠠⠀⠀⠀⠀⠀⠀⠀⠀"
-    "⠀⠀⠀⠀⠀⠀⠀⡅⢼⢄⠈⠂⠤⠠⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⡀⠀⠄⡇⠀⡅⡀⣠⣾⠀⠀⠀⠀⠀⠀⠀⠀"
-    "⠀⠀⠀⠀⠀⠀⠀⠲⣺⠀⠉⠒⠒⠒⠛⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⣀⣀⣴⡧⠀⣿⣿⣟⣾⡇⠀⠀⠀⠀⠀⠀⠀"
-    "⠀⠀⠀⠀⠀⠀⠀⠈⠉⠀⠀⠀⠀⠀⠄⠀⠀⠀⠠⠀⠀⠀⠀⠀⠀⢀⣁⣴⣶⠒⡢⢶⣿⣿⣿⠀⢽⣿⣿⡏⠀⠀⠀⠀⠀⠀⠀⠀"
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢆⠀⠀⠀⠄⠀⠀⠀⣀⣠⣴⣿⡟⣿⣿⣽⣾⣏⣬⣿⣿⠀⣸⣿⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠒⣄⡀⡅⢀⣵⣿⣻⣿⣻⣾⣿⣿⣿⡿⣿⣿⣿⡿⠿⠀⠘⠋⠀⠀⠀⢐⠱⠄⢀⡠⠐⠂"
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠁⢩⠟⢿⠀⠈⠉⠉⠉⢩⠿⢿⠀⠀⠀⢺⣰⠆⠀⣀⢀⣐⣱⡶⢞⡁⠰⠂⠀"
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠔⠁⠡⡀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀⠀⢀⠀⠨⡀⡀⠀⠀⠄⠀⠊⠀⠀⢀⠠⢂⠈⠡⢲⡦⠀"
-    "⠀⠀⠀⠀⠀⠀⠀⠀⡠⠉⡂⠏⣢⠘⢄⢀⣄⣀⠀⠀⡀⠀⡇⠀⠄⢄⢐⠀⠸⠀⠸⠀⡠⡶⢄⠄⠁⠀⠂⢠⡀⠲⡒⢌⠉⣉⡀⠀"
-    "⠀⠀⠀⠀⠀⠀⠀⠊⡀⠠⢰⣺⣷⡼⠦⠟⠙⠉⠁⠁⣰⣤⣧⠀⠈⡠⣀⡀⠨⣀⣸⡀⠈⠈⠉⠀⣀⠀⢠⠃⢅⡀⠼⣮⡇⠈⠀⠀"
-    "⠀⢀⠀⠴⠻⠲⠑⠇⠖⠚⠛⠌⠀⠀⠐⠂⠈⠀⠁⢀⢸⣿⣿⢀⢌⣈⢕⣈⢌⣿⣿⣇⠠⣄⢠⠠⠉⠤⠃⠳⠧⣗⣀⠿⠋⠀⠀⠀"
-    "⠀⠀⠀⠀⠀⢀⡊⣿⣲⣌⠀⠀⠚⠛⠀⠀⠀⠀⠴⡿⠿⠿⡛⠓⢋⠪⢌⣭⣿⣿⢿⠿⠕⢋⣑⠈⠐⠉⠓⠑⠚⠋⠅⠀⠀⠀⠀⠀"
-    "⠀⠀⠀⠀⠐⠀⠉⠀⠁⠁⠀⠀⠀⠀⣀⢁⠀⠂⠠⠖⢀⠤⠦⢄⠀⠀⠀⠀⠁⠀⠀⠠⠐⠻⠛⠂⠀⠀⠂⠁⠀⠀⠀⠀⠀⠀⠀⠀"
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠁⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-    )
-  "A dithered braille rendering of the Autolith rock mascot, for the boot panel.")
-
-(defparameter *terminal-ui-boot-almighty-rows*
-  '(" █████  ██      ███    ███ ██  ██████  ██   ██ ████████ ██    ██"
-    "██   ██ ██      ████  ████ ██ ██       ██   ██    ██     ██  ██ "
-    "███████ ██      ██ ████ ██ ██ ██   ███ ███████    ██      ████  "
-    "██   ██ ██      ██  ██  ██ ██ ██    ██ ██   ██    ██       ██   "
-    "██   ██ ███████ ██      ██ ██  ██████  ██   ██    ██       ██   "
-    ""
-    "██      ██ ████████ ██   ██"
-    "██      ██    ██    ██   ██"
-    "██      ██    ██    ███████"
-    "██      ██    ██    ██   ██"
-    "███████ ██    ██    ██   ██")
-  "The ALMIGHTY LITH mark in FIGlet's ANSI Regular font, for Micah's theme.")
-
-(defparameter *terminal-ui-boot-almighty-panel-width* 72
-  "The Almighty boot panel's width; its block mark needs more room than the rock.")
-
 (defparameter *terminal-ui-boot-panel-width* 64
-  "The default boot panel's width.")
-
-(defparameter *terminal-ui-boot-mascot-styles*
-  #(:brand-gradient-1 :brand-gradient-2 :brand-gradient-3
-    :brand-gradient-4 :brand-gradient-5 :brand-gradient-6)
-  "Row styles cycling top-to-bottom across the boot mark art.")
+  "The boot panel's width.")
 
 (defparameter *terminal-ui-boot-linger-p* nil
   "Whether the boot screen currently advertises Space to start the session.")
@@ -62,44 +13,27 @@
 
 (-> terminal-ui--boot-panel-width (integer) integer)
 (defun terminal-ui--boot-panel-width (columns)
-  "Return the boot panel width for the installed theme within COLUMNS."
-  (min (if (eq (terminal-theme-name *terminal-theme*) ':almighty)
-           *terminal-ui-boot-almighty-panel-width*
-           *terminal-ui-boot-panel-width*)
-       (max 1 (- columns 4))))
+  "Return the boot panel width within COLUMNS."
+  (min *terminal-ui-boot-panel-width* (max 1 (- columns 4))))
 
-(-> terminal-ui--boot-art () (values list string string))
-(defun terminal-ui--boot-art ()
-  "Return the installed theme's boot mark rows, panel title, and tagline."
+(-> terminal-ui--boot-heading () (values string string))
+(defun terminal-ui--boot-heading ()
+  "Return the installed theme's boot panel title and tagline."
   (ecase (terminal-theme-name *terminal-theme*)
-    (:autolith
-     (values *terminal-ui-boot-mascot-rows*
-             "A U T O L I T H  /  LISP MACHINE"
+    (:antaios
+     (values "Antaios / Lisp machine"
              "READ . EVAL . PRINT . LOOP"))
     (:almighty
-     (values *terminal-ui-boot-almighty-rows*
-             "A L M I G H T Y  L I T H  /  LISP MACHINE"
+     (values "Antaios / Almighty Lisp machine"
              "ALMIGHTY TOOLS FOR ALMIGHTY PROGRAMMERS"))))
 
-(-> terminal-ui--boot-mascot-row-style (integer integer) terminal-style)
-(defun terminal-ui--boot-mascot-row-style (row total)
-  "Return ROW's gradient style out of TOTAL rows of boot mark art."
-  (let ((styles *terminal-ui-boot-mascot-styles*))
-    (aref styles (min (1- (length styles))
-                      (floor (* row (length styles)) (max 1 total))))))
-
 (-> terminal-ui--boot-screen-panel
-    ((or string symbol) (option string) integer &key (:mark-rows list))
+    ((or string symbol) (option string) integer)
     list)
-(defun terminal-ui--boot-screen-panel (phase detail columns &key mark-rows)
-  "Return horizontally centered styled rows for the actual PHASE and DETAIL.
-
-MARK-ROWS are the already height-limited rows of the theme's boot mark. They
-are centered as one block, so rows of unequal width stay aligned."
+(defun terminal-ui--boot-screen-panel (phase detail columns)
+  "Return horizontally centered styled rows for the actual PHASE and DETAIL."
   (let* ((width (terminal-ui--boot-panel-width columns))
          (inside (max 0 (- width 4)))
-         (mark-width (loop for text in mark-rows maximize (text-cell-width text)))
-         (mark-indent (max 0 (floor (- inside mark-width) 2)))
          (left (make-string (max 0 (floor (- columns width) 2))
                             :initial-element #\Space))
          (top-border
@@ -110,45 +44,32 @@ are centered as one block, so rows of unequal width stay aligned."
                                                  :initial-element #\─) "┤"))
          (bottom-border
            (concatenate 'string "└" (make-string (max 0 (- width 2))
-                                                 :initial-element #\─) "┘"))
-         (mascot-count (length mark-rows)))
-    (multiple-value-bind (art title tagline) (terminal-ui--boot-art)
-      (declare (ignore art))
-    (labels ((row (style text)
-               (list (terminal-span ':plain left)
-                     (terminal-span style (layout-fit-text text width))))
+                                                 :initial-element #\─) "┘")))
+    (multiple-value-bind (title tagline) (terminal-ui--boot-heading)
+      (labels ((row (style text)
+                 (list (terminal-span ':plain left)
+                       (terminal-span style (layout-fit-text text width))))
 
-             (boxed (style text)
-               (let* ((safe (layout-fit-text (sanitize-text text :single-line-p t) inside))
-                      (padding (make-string (max 0 (- inside (text-cell-width safe)))
-                                            :initial-element #\Space)))
-                 (row style (format nil "│ ~A~A │" safe padding))))
-
-             (mascot-row (index text)
-               (boxed (terminal-ui--boot-mascot-row-style index mascot-count)
-                      (format nil "~A~A"
-                              (make-string mark-indent :initial-element #\Space)
-                              text))))
-      (append
-       (list (row ':brand top-border))
-       (loop for index from 0
-             for mascot-line in mark-rows
-             collect (mascot-row index mascot-line))
-       (list (row ':brand mid-border)
-             (boxed ':brand title)
-             (boxed ':hint tagline)
-             (boxed ':plain "")
-             (boxed ':plain (format nil "(boot :image ~S)"
-                                    (format nil "~A ~A" (lisp-implementation-type)
-                                            (lisp-implementation-version))))
-             (boxed ':brand (format nil ";; ~A" (string-upcase (string phase))))
-             (boxed ':plain (or detail "Awaiting operator input."))
-             (boxed ':plain "")
-             (boxed ':hint
-                    (if *terminal-ui-boot-linger-p*
-                        "[ SYSTEM CONSOLE ]          Space: start   Ctrl-C: halt"
-                        "[ SYSTEM CONSOLE ]                         Ctrl-C: halt"))
-             (row ':brand bottom-border)))))))
+               (boxed (style text)
+                 (let* ((safe (layout-fit-text (sanitize-text text :single-line-p t) inside))
+                        (padding (make-string (max 0 (- inside (text-cell-width safe)))
+                                              :initial-element #\Space)))
+                   (row style (format nil "│ ~A~A │" safe padding)))))
+        (list (row ':brand top-border)
+              (boxed ':brand title)
+              (boxed ':hint tagline)
+              (row ':brand mid-border)
+              (boxed ':plain (format nil "(boot :image ~S)"
+                                     (format nil "~A ~A" (lisp-implementation-type)
+                                             (lisp-implementation-version))))
+              (boxed ':brand (format nil ";; ~A" (string-upcase (string phase))))
+              (boxed ':plain (or detail "Awaiting operator input."))
+              (boxed ':plain "")
+              (boxed ':hint
+                     (if *terminal-ui-boot-linger-p*
+                         "[ SYSTEM CONSOLE ]          Space: start   Ctrl-C: halt"
+                         "[ SYSTEM CONSOLE ]                         Ctrl-C: halt"))
+              (row ':brand bottom-border))))))
 
 (-> terminal-ui--boot-tip-rows (terminal-ui integer) list)
 (defun terminal-ui--boot-tip-rows (ui columns)
@@ -171,8 +92,8 @@ are centered as one block, so rows of unequal width stay aligned."
 (defun terminal-ui--boot-screen-frame (ui &key phase detail height)
   "Return a centered boot panel and tip, reserving a row for direct input.
 
-While the boot screen waits for the operator, a bold call to action follows
-the tip."
+While the boot screen waits for the operator, a call to action follows the
+tip."
   (let* ((terminal (terminal-ui-terminal ui))
          (columns (max 1 (terminal-columns terminal)))
          (tip (terminal-ui--boot-tip-rows ui columns))
@@ -189,15 +110,8 @@ the tip."
                                   :initial-element #\Space))
                                 (terminal-span ':strong *terminal-ui-boot-linger-prompt*))))))
          (available (max 0 (1- height)))
-         ;; Keep status and advice visible before allocating rows to the mascot.
-         (mascot-limit (max 0 (- available 11
-                                 (if tip (1+ (length tip)) 0)
-                                 (length prompt))))
-         (art (terminal-ui--boot-art))
-         (mark-rows (subseq art 0 (min mascot-limit (length art))))
          (panel (mapcar (lambda (row) (terminal--render-spans terminal row))
-                        (terminal-ui--boot-screen-panel phase detail columns
-                                                        :mark-rows mark-rows)))
+                        (terminal-ui--boot-screen-panel phase detail columns)))
          (rows (append panel (when tip (cons "" tip)) prompt))
          (visible (subseq rows 0 (min (length rows) available)))
          (top (max 0 (floor (- height (length visible)) 2))))
@@ -258,9 +172,9 @@ window instead of judging interactivity before it could possibly happen."
 (defun terminal-ui-boot-sequence-duration ()
   "Return the boot sequence's total animation duration in seconds.
 
-Reads AUTOLITH_BOOT_DURATION when set, else
+Reads ANTAIOS_BOOT_DURATION when set, else
 *TERMINAL-UI-BOOT-SEQUENCE-DEFAULT-DURATION*."
-  (environment-positive-real "AUTOLITH_BOOT_DURATION"
+  (environment-positive-real "ANTAIOS_BOOT_DURATION"
                              *terminal-ui-boot-sequence-default-duration*))
 
 (defparameter *terminal-ui-boot-linger-poll-seconds* 0.05

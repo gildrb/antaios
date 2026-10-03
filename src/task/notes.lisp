@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Child Task Notes --
 
@@ -15,7 +15,7 @@ Keys are bounded by the conversations one process serves, and each list
 is bounded by *TASK-NOTE-MAXIMUM-PENDING*, so the table stays small for
 the process lifetime.")
 
-(defvar *task-note-lock* (make-lock "Autolith task notes")
+(defvar *task-note-lock* (make-lock "Antaios task notes")
   "The lock guarding the pending child note queues.")
 
 (-> task-note-post (string string string) keyword)

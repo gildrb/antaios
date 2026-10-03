@@ -1,9 +1,9 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Defaults --
 
-(defparameter *autolith-version* "0.57.0"
-  "The user-visible Autolith version.")
+(defparameter *antaios-version* "0.57.0"
+  "The user-visible Antaios version.")
 
 (defparameter *default-model* "gpt-6.1-sol"
   "The default model requested from the subscription provider.")
@@ -37,7 +37,7 @@
     "api.connectors.invoke")
   "The scopes requested by ChatGPT browser OAuth.")
 
-(defparameter *openai-oauth-originator* "autolith"
+(defparameter *openai-oauth-originator* "antaios"
   "The honest client originator sent during ChatGPT browser OAuth.")
 
 (defparameter *chatgpt-oauth-callback-ports* '(1455 1457)
@@ -54,7 +54,7 @@
 
 ;; Gemini CLI OAuth behavior inspected at google-gemini/gemini-cli commit
 ;; 0bd1d439751478771c45d3d0895a6a9760554bf4. The installed application uses
-;; PKCE as a public client. Autolith deliberately does not embed its client
+;; PKCE as a public client. Antaios deliberately does not embed its client
 ;; secret; deployments that require one may provide it through the environment.
 (defparameter *gemini-oauth-client-id*
   "681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com"
@@ -80,13 +80,13 @@
 (-> gemini-oauth-client-id () string)
 (defun gemini-oauth-client-id ()
   "Return the configured Google installed-app OAuth client identifier."
-  (let ((override (uiop:getenv "AUTOLITH_GEMINI_OAUTH_CLIENT_ID")))
+  (let ((override (uiop:getenv "ANTAIOS_GEMINI_OAUTH_CLIENT_ID")))
     (if (non-empty-string-p override) override *gemini-oauth-client-id*)))
 
 (-> gemini-oauth-client-secret () (option string))
 (defun gemini-oauth-client-secret ()
   "Return an optional configured Google installed-app client secret."
-  (let ((secret (uiop:getenv "AUTOLITH_GEMINI_OAUTH_CLIENT_SECRET")))
+  (let ((secret (uiop:getenv "ANTAIOS_GEMINI_OAUTH_CLIENT_SECRET")))
     (and (non-empty-string-p secret) secret)))
 
 ;; The subscription proxy serving Grok Build sessions, read from grok-build
@@ -103,11 +103,11 @@
 
 ;; The proxy gates requests on this protocol revision and rejects missing or
 ;; older versions as HTTP 426; on 2026-10-02 the proxy required 1.0.13 or
-;; later. Autolith implements the wire dialect of grok-build 1.0.13,
+;; later. Antaios implements the wire dialect of grok-build 1.0.13,
 ;; reference commit bb7f39d5, while reporting its own identity through
 ;; User-Agent and x-grok-client-identifier.
 (defparameter *grok-client-protocol-version* "1.0.13"
-  "The grok-build release whose Grok proxy wire protocol Autolith implements.")
+  "The grok-build release whose Grok proxy wire protocol Antaios implements.")
 
 
 ;; Nous Portal authentication and inference behavior verified against Hermes
@@ -128,7 +128,7 @@
 (-> nous-portal-url () string)
 (defun nous-portal-url ()
   "Return the configured Nous Research portal URL."
-  (let ((override (uiop:getenv "AUTOLITH_NOUS_PORTAL_URL")))
+  (let ((override (uiop:getenv "ANTAIOS_NOUS_PORTAL_URL")))
     (string-right-trim
      '(#\/)
      (if (non-empty-string-p override) override *nous-portal-url*))))
@@ -136,7 +136,7 @@
 (-> nous-inference-base-url () string)
 (defun nous-inference-base-url ()
   "Return the configured Nous Research inference API base URL."
-  (let ((override (uiop:getenv "AUTOLITH_NOUS_INFERENCE_BASE_URL")))
+  (let ((override (uiop:getenv "ANTAIOS_NOUS_INFERENCE_BASE_URL")))
     (string-right-trim
      '(#\/)
      (if (non-empty-string-p override)
@@ -189,7 +189,7 @@
   "The OpenCode models endpoint used for dynamic model discovery.")
 
 (defparameter *opencode-models-environment-variable*
-  "AUTOLITH_OPENCODE_MODELS_ENDPOINT"
+  "ANTAIOS_OPENCODE_MODELS_ENDPOINT"
   "The environment variable overriding OpenCode dynamic model discovery.")
 
 (-> opencode-models-endpoint () string)
@@ -214,7 +214,7 @@
 (-> openrouter-models-endpoint () string)
 (defun openrouter-models-endpoint ()
   "Return the configured OpenRouter model discovery endpoint."
-  (let ((override (uiop:getenv "AUTOLITH_OPENROUTER_MODELS_ENDPOINT")))
+  (let ((override (uiop:getenv "ANTAIOS_OPENROUTER_MODELS_ENDPOINT")))
     (if (non-empty-string-p override)
         override
         *openrouter-models-endpoint*)))
@@ -244,18 +244,18 @@
 (-> mistral-models-endpoint () string)
 (defun mistral-models-endpoint ()
   "Return the configured Mistral model discovery endpoint."
-  (let ((override (uiop:getenv "AUTOLITH_MISTRAL_MODELS_ENDPOINT")))
+  (let ((override (uiop:getenv "ANTAIOS_MISTRAL_MODELS_ENDPOINT")))
     (if (non-empty-string-p override)
         override
         *mistral-models-endpoint*)))
 
 (defparameter *supported-reasoning-efforts*
   '("none" "low" "medium" "high" "xhigh" "max" "ultra")
-  "Reasoning effort names accepted by Autolith configuration.")
+  "Reasoning effort names accepted by Antaios configuration.")
 
 (defparameter *supported-web-search-modes*
   '("cached" "indexed" "live" "disabled")
-  "Standalone web search modes accepted by Autolith configuration.")
+  "Standalone web search modes accepted by Antaios configuration.")
 
 ;; DEFVAR, deliberately: the provider registry rewrites this table at
 ;; runtime with every registered model, so a self-reload through
@@ -414,7 +414,7 @@ read-time evaluation form; the parsed value must still be a positive real."
 
 (-> configuration--default-config-root () pathname)
 (defun configuration--default-config-root ()
-  "Return Autolith's default configuration directory for this host."
+  "Return Antaios's default configuration directory for this host."
   (platform-application-root *platform* ':config))
 
 (-> configuration--default-grok-bootstrap-path () pathname)
@@ -431,36 +431,36 @@ read-time evaluation form; the parsed value must still be a positive real."
 (defun configuration--provider-endpoint-for (model)
   "Return MODEL's environment override, registered endpoint, or family default.
 
-AUTOLITH_PROVIDER_ENDPOINT overrides the Codex family endpoint,
-AUTOLITH_GROK_PROVIDER_ENDPOINT overrides the Grok family endpoint,
-AUTOLITH_NOUS_PROVIDER_ENDPOINT overrides the Nous family endpoint,
-AUTOLITH_FIREWORKS_PROVIDER_ENDPOINT overrides the Fireworks family endpoint,
-AUTOLITH_OPENCODE_PROVIDER_ENDPOINT overrides the OpenCode family endpoint,
-AUTOLITH_OPENROUTER_PROVIDER_ENDPOINT overrides the OpenRouter family endpoint,
-and AUTOLITH_MISTRAL_PROVIDER_ENDPOINT overrides the Mistral family endpoint."
+ANTAIOS_PROVIDER_ENDPOINT overrides the Codex family endpoint,
+ANTAIOS_GROK_PROVIDER_ENDPOINT overrides the Grok family endpoint,
+ANTAIOS_NOUS_PROVIDER_ENDPOINT overrides the Nous family endpoint,
+ANTAIOS_FIREWORKS_PROVIDER_ENDPOINT overrides the Fireworks family endpoint,
+ANTAIOS_OPENCODE_PROVIDER_ENDPOINT overrides the OpenCode family endpoint,
+ANTAIOS_OPENROUTER_PROVIDER_ENDPOINT overrides the OpenRouter family endpoint,
+and ANTAIOS_MISTRAL_PROVIDER_ENDPOINT overrides the Mistral family endpoint."
   (let* ((family (model-family model))
          (override
            (case family
              (:codex
-              (uiop:getenv "AUTOLITH_PROVIDER_ENDPOINT"))
+              (uiop:getenv "ANTAIOS_PROVIDER_ENDPOINT"))
              (:grok
-              (uiop:getenv "AUTOLITH_GROK_PROVIDER_ENDPOINT"))
+              (uiop:getenv "ANTAIOS_GROK_PROVIDER_ENDPOINT"))
              (:nous
-              (or (uiop:getenv "AUTOLITH_NOUS_PROVIDER_ENDPOINT")
-                  (let ((base (uiop:getenv "AUTOLITH_NOUS_INFERENCE_BASE_URL")))
+              (or (uiop:getenv "ANTAIOS_NOUS_PROVIDER_ENDPOINT")
+                  (let ((base (uiop:getenv "ANTAIOS_NOUS_INFERENCE_BASE_URL")))
                     (and (non-empty-string-p base)
                          (concatenate
                           'string
                           (string-right-trim '(#\/) base)
                           "/chat/completions")))))
              (:fireworks
-              (uiop:getenv "AUTOLITH_FIREWORKS_PROVIDER_ENDPOINT"))
+              (uiop:getenv "ANTAIOS_FIREWORKS_PROVIDER_ENDPOINT"))
              (:opencode
-              (uiop:getenv "AUTOLITH_OPENCODE_PROVIDER_ENDPOINT"))
+              (uiop:getenv "ANTAIOS_OPENCODE_PROVIDER_ENDPOINT"))
              (:openrouter
-              (uiop:getenv "AUTOLITH_OPENROUTER_PROVIDER_ENDPOINT"))
+              (uiop:getenv "ANTAIOS_OPENROUTER_PROVIDER_ENDPOINT"))
              (:mistral
-              (uiop:getenv "AUTOLITH_MISTRAL_PROVIDER_ENDPOINT"))))
+              (uiop:getenv "ANTAIOS_MISTRAL_PROVIDER_ENDPOINT"))))
          (registered
            (and (fboundp 'provider-model-endpoint)
                 (provider-model-endpoint model))))
@@ -495,10 +495,10 @@ and AUTOLITH_MISTRAL_PROVIDER_ENDPOINT overrides the Mistral family endpoint."
 (defun configuration--context-window-for (model)
   "Return MODEL's context window from the environment, registry, or fallback.
 
-AUTOLITH_CONTEXT_WINDOW wins when set. Otherwise the registered window is used:
+ANTAIOS_CONTEXT_WINDOW wins when set. Otherwise the registered window is used:
 a declared model :context-window, else the catalog window, else the default."
   (environment-positive-integer
-   "AUTOLITH_CONTEXT_WINDOW"
+   "ANTAIOS_CONTEXT_WINDOW"
    (or (and (fboundp 'provider-model-context-window-for)
             (provider-model-context-window-for model))
        (rest (assoc model *model-context-windows* :test #'string=))
@@ -507,12 +507,12 @@ a declared model :context-window, else the catalog window, else the default."
 (-> configuration--compaction-threshold () integer)
 (defun configuration--compaction-threshold ()
   "Return the validated compaction threshold percentage from the environment."
-  (let ((override (uiop:getenv "AUTOLITH_COMPACTION_THRESHOLD")))
+  (let ((override (uiop:getenv "ANTAIOS_COMPACTION_THRESHOLD")))
     (if (non-empty-string-p override)
         (let ((parsed (parse-integer override :junk-allowed t)))
           (unless (and parsed (<= 1 parsed 95))
             (error 'configuration-error
-                   :message (format nil "AUTOLITH_COMPACTION_THRESHOLD must be ~
+                   :message (format nil "ANTAIOS_COMPACTION_THRESHOLD must be ~
                                          a percentage between 1 and 95, not ~S."
                                     override)))
           parsed)

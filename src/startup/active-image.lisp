@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Preloaded Active Image --
 
@@ -6,7 +6,7 @@
   "The installed active-image handshake version.")
 
 (defparameter *active-image-probe-argument*
-  "--autolith-internal-active-image-probe"
+  "--antaios-internal-active-image-probe"
   "The private argument requesting active-image validation.")
 
 (defvar *active-image-build-record* nil
@@ -40,14 +40,14 @@
            (mapcar (lambda (pathname)
                      (enough-namestring pathname source-root))
                    (source-lisp-pathnames source-directory))))
-    (sort (append '("bin/autolith"
-                    "bin/autolith-active"
-                    "bin/autolith-search-worker"
-                    "bin/autolith-runtime"
+    (sort (append '("bin/antaios"
+                    "bin/antaios-active"
+                    "bin/antaios-search-worker"
+                    "bin/antaios-runtime"
                     "script/build-active"
                     "script/build-active.lisp"
                     "script/restart-publisher.lisp"
-                    "autolith.asd"
+                    "antaios.asd"
                     "qlfile"
                     "qlfile.lock"
                     "sbcl.version")
@@ -147,7 +147,7 @@
 (-> active-image-probe-record (list) list)
 (defun active-image-probe-record (build-record)
   "Return the exact public handshake for BUILD-RECORD."
-  (list :autolith-active-image
+  (list :antaios-active-image
         :version *active-image-protocol-version*
         :source-commit (getf (rest build-record) :source-commit)))
 
@@ -221,11 +221,11 @@ the exact source and runtime comparison needs no extra boot of the image."
 
 (-> active-image-process-command (configuration list) list)
 (defun active-image-process-command (configuration arguments)
-  "Return the argv running a fresh Autolith with command-line ARGUMENTS.
+  "Return the argv running a fresh Antaios with command-line ARGUMENTS.
 
 The process boots the current active core when one matches the source, which
 takes a fraction of a second, and otherwise loads the system from source."
-  (let* ((configured-command (uiop:getenv "AUTOLITH_SBCL"))
+  (let* ((configured-command (uiop:getenv "ANTAIOS_SBCL"))
          (sbcl-command (if (non-empty-string-p configured-command)
                            configured-command
                            "sbcl"))
@@ -241,7 +241,7 @@ takes a fraction of a second, and otherwise loads the system from source."
         (list* sbcl-command
                "--noinform"
                "--script"
-               (namestring (merge-pathnames "bin/autolith-active" source-root))
+               (namestring (merge-pathnames "bin/antaios-active" source-root))
                arguments))))
 
 
@@ -249,7 +249,7 @@ takes a fraction of a second, and otherwise loads the system from source."
 
 (-> active-image-main () null)
 (defun active-image-main ()
-  "Validate a probe or run Autolith from a preloaded active image."
+  "Validate a probe or run Antaios from a preloaded active image."
   (sb-ext:disable-debugger)
   (let ((arguments (uiop:command-line-arguments)))
     (handler-case
@@ -279,14 +279,14 @@ takes a fraction of a second, and otherwise loads the system from source."
                     :stage ':entry
                     :pathname nil))
             (t
-             (platform-setenv "AUTOLITH_SOURCE_ROOT" (namestring source-root))
+             (platform-setenv "ANTAIOS_SOURCE_ROOT" (namestring source-root))
              (restart-case
                  (main (rest arguments))
                (abort ()
-                 :report "Exit the preloaded Autolith image."
+                 :report "Exit the preloaded Antaios image."
                  nil)))))
       (serious-condition (condition)
-        (format *error-output* "Autolith's preloaded active image failed: ~A~%"
+        (format *error-output* "Antaios's preloaded active image failed: ~A~%"
                 condition)
         (uiop:quit 1))))
   nil)
@@ -358,7 +358,7 @@ against its own build record."
 (-> active-image--probe-core (pathname pathname list) null)
 (defun active-image--probe-core (core-pathname source-root build-record)
   "Boot CORE-PATHNAME and require its exact BUILD-RECORD handshake."
-  (let* ((configured-command (uiop:getenv "AUTOLITH_SBCL"))
+  (let* ((configured-command (uiop:getenv "ANTAIOS_SBCL"))
          (sbcl-command (if (non-empty-string-p configured-command)
                            configured-command
                            "sbcl"))

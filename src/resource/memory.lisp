@@ -1,8 +1,8 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Memory Resource Conditions --
 
-(define-condition memory-resource-not-found (autolith-error)
+(define-condition memory-resource-not-found (antaios-error)
   ((identifier
     :initarg :identifier
     :reader memory-resource-not-found-identifier

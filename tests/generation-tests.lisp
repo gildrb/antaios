@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Probe Test Boundary --
 
@@ -29,9 +29,9 @@
     (make-instance 'generation
                    :identifier identifier
                    :directory directory
-                   :core-pathname (merge-pathnames "autolith.core" directory)
+                   :core-pathname (merge-pathnames "antaios.core" directory)
                    :temporary-core-pathname
-                   (merge-pathnames ".autolith.core.tmp" directory)
+                   (merge-pathnames ".antaios.core.tmp" directory)
                    :manifest-pathname
                    (merge-pathnames "manifest.sexp" directory)
                    :metadata
@@ -84,10 +84,10 @@
          (runtime-identity (list ':checkpoint-runtime))
          (close-count 0)
          (resume-count 0)
-         (secret-lock (make-lock "Autolith checkpoint secret drain"))
+         (secret-lock (make-lock "Antaios checkpoint secret drain"))
          (secret-condition
            (make-condition-variable
-            :name "Autolith checkpoint secret drain"))
+            :name "Antaios checkpoint secret drain"))
          (secret-ready-p nil)
          (release-secret-p nil)
          (secret-thread nil)
@@ -126,7 +126,7 @@
                     (loop until release-secret-p
                           do (condition-wait
                               secret-condition secret-lock))))))
-             :name "Autolith checkpoint active secret test"))
+             :name "Antaios checkpoint active secret test"))
            (with-lock-held (secret-lock)
              (loop until secret-ready-p
                    do (condition-wait secret-condition secret-lock)))
@@ -270,10 +270,10 @@
   "Test checkpoint preparation refuses an undrained provider secret scope."
   (let* ((configuration (test-configuration))
          (root (test-configuration-root configuration))
-         (barrier-lock (make-lock "Autolith checkpoint provider secret"))
+         (barrier-lock (make-lock "Antaios checkpoint provider secret"))
          (barrier
            (make-condition-variable
-            :name "Autolith checkpoint provider secret"))
+            :name "Antaios checkpoint provider secret"))
          (ready-p nil)
          (release-p nil)
          (thread
@@ -286,7 +286,7 @@
                    (condition-notify barrier)
                    (loop until release-p
                          do (condition-wait barrier barrier-lock))))))
-            :name "Autolith active provider secret test"))
+            :name "Antaios active provider secret test"))
          (backend
            (checkpoint-backend-create configuration nil
                                       :tool-registry nil)))
@@ -320,7 +320,7 @@
                       (eq (checkpoint-error-stage condition) ':fork)
                       (search
                        "retained a secret"
-                       (autolith-error-message condition)))))))
+                       (antaios-error-message condition)))))))
               "checkpoint preparation refuses an active provider secret scope")))
       (with-lock-held (barrier-lock)
         (setf release-p t)
@@ -588,8 +588,8 @@
   "Test only a forked active-image saver requires one live Lisp thread."
   (let* ((configuration (test-configuration))
          (root          (test-configuration-root configuration))
-         (source-root   (asdf:system-source-directory :autolith))
-         (core-pathname (merge-pathnames "active/autolith.core" root)))
+         (source-root   (asdf:system-source-directory :antaios))
+         (core-pathname (merge-pathnames "active/antaios.core" root)))
     (flet ((install-stage (saver)
              "Install with SAVER on a multi-threaded host; return its failure stage and pathname."
              (test-call-with-function-replacements
@@ -621,9 +621,9 @@
         (platform-delete-directory-tree *platform* root :validate t :if-does-not-exist ':ignore))))
   nil)
 
-(-> generation-tests--test-autolith-error-translation () null)
-(defun generation-tests--test-autolith-error-translation ()
-  "Test generation translation preserves structured Autolith failures."
+(-> generation-tests--test-antaios-error-translation () null)
+(defun generation-tests--test-antaios-error-translation ()
+  "Test generation translation preserves structured Antaios failures."
   (let* ((cause
            (make-condition 'image-commit-error
                            :message "Private replay failed."
@@ -643,7 +643,7 @@
            nil)
        (image-commit-error (condition)
          (eq condition cause)))
-     "checkpoint translation preserves a structured Autolith cause"))
+     "checkpoint translation preserves a structured Antaios cause"))
   nil)
 
 ;;;; -- Subsystem Tests --
@@ -671,7 +671,7 @@
         (list 'platform-set-environment-variable
               (lambda (platform name value)
                 (declare (ignore platform))
-                (when (string= name "AUTOLITH_SESSION_STYLE")
+                (when (string= name "ANTAIOS_SESSION_STYLE")
                   (push value style-events)))))
        (lambda ()
          (checkpoint-resume-main '("--localgroup-handoff" "consumed"))))
@@ -726,7 +726,7 @@
     (generation-tests--test-active-provider-secret-refusal)
     (generation-tests--test-checkpoint-worker-detachment))
   (generation-tests--test-active-image-single-thread-check)
-  (generation-tests--test-autolith-error-translation)
+  (generation-tests--test-antaios-error-translation)
   (let* ((configuration (test-configuration))
          (root (test-configuration-root configuration))
          (generation
@@ -757,7 +757,7 @@
                       nil)
                   (checkpoint-error (condition)
                     (search "while a checkpoint publishes"
-                            (autolith-error-message condition)))))
+                            (antaios-error-message condition)))))
               "rollback selection cannot race asynchronous publication")
              (test-assert (= (generation-journal-position loaded) 27)
                           "generation manifests preserve mutation journal position")
@@ -767,7 +767,7 @@
              (test-assert
               (and (generation-reconstruction-pathname loaded)
                    (probe-file (generation-reconstruction-pathname loaded))
-                   (search "Autolith image reconstruction script"
+                   (search "Antaios image reconstruction script"
                            (uiop:read-file-string
                             (generation-reconstruction-pathname loaded))))
               "generation manifests retain a complete reconstruction script")
@@ -782,7 +782,7 @@
          (directory (merge-pathnames "legacy-generation/"
                                      (generation-root configuration)))
          (manifest (merge-pathnames "manifest.sexp" directory))
-         (core (merge-pathnames "autolith.core" directory)))
+         (core (merge-pathnames "antaios.core" directory)))
     (unwind-protect
          (progn
            (snapshot-write
@@ -906,16 +906,16 @@
            (merge-pathnames
             "recovery-session-pointers/test-launch.sexp"
             (config :state-root configuration)))
-         (previous-pointer (uiop:getenv "AUTOLITH_CRASH_POINTER"))
+         (previous-pointer (uiop:getenv "ANTAIOS_CRASH_POINTER"))
          (previous-session-pointer
-           (uiop:getenv "AUTOLITH_RECOVERY_SESSION_POINTER")))
+           (uiop:getenv "ANTAIOS_RECOVERY_SESSION_POINTER")))
     (unwind-protect
          (progn
            (conversation-append-user-message conversation "preserve crash context")
            (setf (application-rendered-sequence application) 42
                  (application-history-floor-sequence application) 7)
-           (platform-setenv "AUTOLITH_CRASH_POINTER" (namestring pointer))
-           (platform-setenv "AUTOLITH_RECOVERY_SESSION_POINTER"
+           (platform-setenv "ANTAIOS_CRASH_POINTER" (namestring pointer))
+           (platform-setenv "ANTAIOS_RECOVERY_SESSION_POINTER"
                             (namestring session-pointer))
            (application-publish-recovery-session application)
            (let ((record (read-portable-form session-pointer)))
@@ -927,12 +927,12 @@
                    (= (getf (rest record) :rendered-sequence) 42)
                    (= (getf (rest record) :history-floor-sequence) 7))
               "the per-launch session pointer preserves transcript position"))
-           (test-assert (string= (uiop:getenv "AUTOLITH_CRASH_POINTER")
+           (test-assert (string= (uiop:getenv "ANTAIOS_CRASH_POINTER")
                                  (namestring pointer))
                         "the launch pointer is visible in the active environment")
            (test-assert (uiop:subpathp pointer
                                        (config :state-root configuration))
-                        "the launch pointer is contained by private Autolith state")
+                        "the launch pointer is contained by private Antaios state")
            (let* ((capsule
                     (application-write-crash-capsule
                      application
@@ -982,12 +982,12 @@
               (not (probe-file session-pointer))
               "an empty active conversation clears stale recovery correlation")))
       (if previous-pointer
-          (platform-setenv "AUTOLITH_CRASH_POINTER" previous-pointer)
-          (platform-unsetenv "AUTOLITH_CRASH_POINTER"))
+          (platform-setenv "ANTAIOS_CRASH_POINTER" previous-pointer)
+          (platform-unsetenv "ANTAIOS_CRASH_POINTER"))
       (if previous-session-pointer
-          (platform-setenv "AUTOLITH_RECOVERY_SESSION_POINTER"
+          (platform-setenv "ANTAIOS_RECOVERY_SESSION_POINTER"
                            previous-session-pointer)
-          (platform-unsetenv "AUTOLITH_RECOVERY_SESSION_POINTER"))
+          (platform-unsetenv "ANTAIOS_RECOVERY_SESSION_POINTER"))
       (platform-delete-directory-tree *platform* root :validate t :if-does-not-exist ':ignore)))
   nil)
 

@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Persistent Papercuts --
 
@@ -38,7 +38,7 @@ so its repeats share fewer words than reports from different sessions do.")
 (defparameter *papercut-clock* #'get-universal-time
   "The function returning the universal time stamped on new reports.")
 
-(defvar *papercut-lock* (make-lock "Autolith persistent papercuts")
+(defvar *papercut-lock* (make-lock "Antaios persistent papercuts")
   "The process-local lock serializing papercut reads and appends.")
 
 (defclass papercut ()
@@ -87,7 +87,7 @@ so its repeats share fewer words than reports from different sessions do.")
     :reader papercut-source-conversation
     :type (option string)
     :documentation "The conversation that most recently reported the papercut."))
-  (:documentation "One persistent user-visible report of an Autolith problem."))
+  (:documentation "One persistent user-visible report of an Antaios problem."))
 
 
 ;;;; -- Validation and Records --
@@ -163,7 +163,7 @@ so its repeats share fewer words than reports from different sessions do.")
          note "assessment note" *papercut-assessment-note-limit*)
       (papercut-error (condition)
         (error 'papercut-error
-               :message (autolith-error-message condition)
+               :message (antaios-error-message condition)
                :pathname pathname
                :identifier identifier)))
     (list identifier verdict note assessed-at)))
@@ -187,7 +187,7 @@ so its repeats share fewer words than reports from different sessions do.")
          resolution "closure resolution" *papercut-resolution-limit*)
       (papercut-error (condition)
         (error 'papercut-error
-               :message (autolith-error-message condition)
+               :message (antaios-error-message condition)
                :pathname pathname
                :identifier identifier)))
     identifier))
@@ -224,7 +224,7 @@ so its repeats share fewer words than reports from different sessions do.")
                        :source-conversation source-conversation)
       (papercut-error (condition)
         (error 'papercut-error
-               :message (autolith-error-message condition)
+               :message (antaios-error-message condition)
                :pathname pathname
                :identifier identifier)))))
 

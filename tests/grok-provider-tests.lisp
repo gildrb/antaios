@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Grok Provider Tests --
 
@@ -160,8 +160,8 @@
                           "the Grok transport requests authenticated responses")
              (test-assert (string= (header "x-grok-model-override") "grok-4.7")
                           "the Grok transport pins the requested model")
-             (test-assert (string= (header "x-grok-agent-id") "autolith")
-                          "the Grok transport identifies Autolith to the proxy")
+             (test-assert (string= (header "x-grok-agent-id") "antaios")
+                          "the Grok transport identifies Antaios to the proxy")
              (test-assert (string= (header "x-grok-client-version")
                                    *grok-client-protocol-version*)
                           "the Grok transport passes the proxy version gate")

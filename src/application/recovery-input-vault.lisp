@@ -1,8 +1,8 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Recovery Input Vault Conditions --
 
-(define-condition recovery-input-vault-error (autolith-error)
+(define-condition recovery-input-vault-error (antaios-error)
   ((pathname
     :initarg :pathname
     :reader recovery-input-vault-error-pathname

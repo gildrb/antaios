@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Skill Selection Tool --
 
@@ -25,7 +25,7 @@
 (defclass skill-load-tool (tool)
   ()
   (:documentation
-   "Select one discovered Autolith skill for the active logical turn."))
+   "Select one discovered Antaios skill for the active logical turn."))
 
 (defmethod tool-child-safe-p ((tool skill-load-tool))
   "Permit child agents to select skills from their own request context."
@@ -70,7 +70,7 @@
        (bounded-string
         (if newly-selected-p
             (format nil
-                    "Selected skill ~A for this logical turn. Autolith will inject its current :instructions string ephemerally into subsequent provider requests in this turn."
+                    "Selected skill ~A for this logical turn. Antaios will inject its current :instructions string ephemerally into subsequent provider requests in this turn."
                     name)
             (format nil
                     "Skill ~A is already selected for this logical turn. Its current :instructions string remains available ephemerally."
@@ -79,11 +79,11 @@
 
 (-> skill-augment-tool-registry (tool-registry) tool-registry)
 (defun skill-augment-tool-registry (registry)
-  "Register Autolith's native request-local skill selector in REGISTRY."
+  "Register Antaios's native request-local skill selector in REGISTRY."
   (unless (tool-registry-find registry "skill" "load")
     (tool-registry-describe-namespace
      registry "skill"
-     "Request-local loading of discovered Autolith Skills.")
+     "Request-local loading of discovered Antaios Skills.")
     (tool-registry-register
      registry
      (make-instance
@@ -91,7 +91,7 @@
       :namespace "skill"
       :name "load"
       :description
-      "Select one discovered Autolith skill by exact name. Use this when a request names a skill or matches catalog metadata instead of reading SKILL.sexp; Autolith injects only the complete current :instructions string ephemerally into subsequent provider requests in the logical turn."
+      "Select one discovered Antaios skill by exact name. Use this when a request names a skill or matches catalog metadata instead of reading SKILL.sexp; Antaios injects only the complete current :instructions string ephemerally into subsequent provider requests in the logical turn."
       :parameters
       (tool-object-schema
        (json-object
@@ -108,7 +108,7 @@
   "The maximum source text accepted by one skill.edit call.")
 
 (defclass skill-edit-tool (tool) ()
-  (:documentation "Create or replace one validated global Autolith skill."))
+  (:documentation "Create or replace one validated global Antaios skill."))
 
 (defmethod tool-execute ((tool skill-edit-tool) (context tool-context) (arguments hash-table))
   "Validate then atomically replace one global SKILL.md source file."
@@ -149,7 +149,7 @@
   "Register global skill authoring independently of skill.load availability."
   (unless (tool-registry-find registry "skill" "edit")
     (tool-registry-describe-namespace
-     registry "skill" "Request-local loading and global authoring of Autolith Skills.")
+     registry "skill" "Request-local loading and global authoring of Antaios Skills.")
     (tool-registry-register
      registry
      (make-instance

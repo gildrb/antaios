@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Subsystem Tests --
 
@@ -1241,7 +1241,7 @@
                              :writer writer
                              :index index))))
                   :name (format nil
-                                "Autolith conversation writer ~D"
+                                "Antaios conversation writer ~D"
                                 writer)))))
     (unwind-protect
          (progn
@@ -1276,7 +1276,7 @@
 (-> test-conversation--sbcl-command () string)
 (defun test-conversation--sbcl-command ()
   "Return the SBCL command used to spawn isolated lease children."
-  (or (uiop:getenv "AUTOLITH_SBCL")
+  (or (uiop:getenv "ANTAIOS_SBCL")
       (namestring sb-ext:*runtime-pathname*)
       "sbcl"))
 
@@ -1313,14 +1313,14 @@
   "Return the locked project setup loaded by fresh test children."
   (let ((pathname
           (merge-pathnames ".qlot/setup.lisp"
-                           (asdf:system-source-directory :autolith))))
+                           (asdf:system-source-directory :antaios))))
     (or (probe-file pathname)
-        (error "Autolith child tests need locked dependencies at ~A" pathname))))
+        (error "Antaios child tests need locked dependencies at ~A" pathname))))
 
 (-> test-conversation--child-command (string) list)
 (defun test-conversation--child-command (form)
-  "Return a fresh-SBCL command loading locked Autolith dependencies and FORM."
-  (let ((source-root (asdf:system-source-directory :autolith)))
+  "Return a fresh-SBCL command loading locked Antaios dependencies and FORM."
+  (let ((source-root (asdf:system-source-directory :antaios)))
     (list (test-conversation--sbcl-command)
           "--noinform"
           "--no-sysinit"
@@ -1333,8 +1333,8 @@
                   (namestring (test-conversation--child-project-setup)))
           "--eval"
           (format nil "(asdf:load-asd (pathname ~S))"
-                  (namestring (merge-pathnames "autolith.asd" source-root)))
-          "--eval" "(asdf:load-system :autolith)"
+                  (namestring (merge-pathnames "antaios.asd" source-root)))
+          "--eval" "(asdf:load-system :antaios)"
           "--eval" form
           "--quit")))
 
@@ -1348,7 +1348,7 @@
 
 (-> test-conversation-child-project-setup () null)
 (defun test-conversation-child-project-setup ()
-  "Test fresh children load Autolith through the locked project setup."
+  "Test fresh children load Antaios through the locked project setup."
   (let* ((configuration (test-configuration))
          (root (test-configuration-root configuration))
          (home (merge-pathnames "isolated-home/" root)))
@@ -1369,7 +1369,7 @@
              (test-assert
               (zerop status)
               (format nil
-                      "the clean child loads locked Autolith dependencies:~%~A"
+                      "the clean child loads locked Antaios dependencies:~%~A"
                       output))))
       (platform-delete-directory-tree *platform* root
                                       :validate t
@@ -2639,8 +2639,8 @@ assistant needle"))
                  (conversation-create configuration :identifier "titles")))
            (test-assert
             (string= (conversation-title-derive
-                      "add titles to autolith sessions. Make them automatic.")
-                     "Add titles to autolith sessions")
+                      "add titles to antaios sessions. Make them automatic.")
+                     "Add titles to antaios sessions")
             "initial titles use the leading prompt sentence")
            (test-assert
             (and (string= (conversation-title-normalize "# Title: automatic session titles")
@@ -2682,10 +2682,10 @@ assistant needle"))
               "an image-only first turn gets a local title and provider context"))
            (conversation-append-user-message
             conversation
-            "add titles to autolith sessions. Make them automatic.")
+            "add titles to antaios sessions. Make them automatic.")
            (test-assert
             (and (string= (conversation-title conversation)
-                          "Add titles to autolith sessions")
+                          "Add titles to antaios sessions")
                  (eq (conversation-title-source conversation) ':initial))
             "the first user prompt immediately names a conversation")
            (let* ((pathname (conversation-pathname conversation))
@@ -2693,12 +2693,12 @@ assistant needle"))
                   (metadata (conversation-picker-metadata-read pathname)))
              (test-assert
               (string= (getf (rest header) :title)
-                       "Add titles to autolith sessions")
+                       "Add titles to antaios sessions")
               "the initial title is published in the first chunk header")
              (test-assert
               (and metadata
                    (string= (conversation-picker-metadata-title metadata)
-                            "Add titles to autolith sessions"))
+                            "Add titles to antaios sessions"))
               "picker metadata publishes the initial title"))
            (test-assert
             (not (conversation-title-refresh-due-p conversation))

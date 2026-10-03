@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Tool Metadata --
 
@@ -51,11 +51,11 @@
 
 (defclass self-tool (tool)
   ()
-  (:documentation "A tool whose operation targets the active Autolith image."))
+  (:documentation "A tool whose operation targets the active Antaios image."))
 
 (defclass mutable-self-tool (self-tool)
   ()
-  (:documentation "A self tool omitted when Autolith runs in immutable mode."))
+  (:documentation "A self tool omitted when Antaios runs in immutable mode."))
 
 (defclass lisp-eval-tool (lisp-tool)
   ()
@@ -174,7 +174,7 @@
    "Return ordered label and exact value pairs identifying TOOL for approval."))
 
 (defmethod tool-authorization-identity-fields ((tool tool))
-  "Identify an ordinary TOOL by its canonical Autolith name."
+  "Identify an ordinary TOOL by its canonical Antaios name."
   (list (list "tool" (tool-canonical-name tool))))
 
 (-> tool-object-schema (json-object list) json-object)
@@ -225,7 +225,7 @@
   (or (gethash namespace (tool-registry-namespace-descriptions registry))
       (if (uiop:string-prefix-p "mcp__" namespace)
           "Tools supplied by one configured external MCP server."
-          "Autolith operations.")))
+          "Antaios operations.")))
 
 (-> tool-provider-schema (tool) json-object)
 (defun tool-provider-schema (tool)

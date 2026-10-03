@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Localgroup Discovery Client --
 
@@ -371,12 +371,12 @@ HEADER-P renders field labels rather than status values."
   (if (null statuses)
       (localgroup--write-styled-line
        stream
-       (list (terminal-span ':notice "No local Autolith sessions are running."))
+       (list (terminal-span ':notice "No local Antaios sessions are running."))
        styled-p)
       (let* ((columns (max 4 columns))
              (inner-width (- columns 2))
              (fields (localgroup--status-table-fields columns))
-             (title "Local Autolith sessions"))
+             (title "Local Antaios sessions"))
         (localgroup--write-styled-line
          stream
          (localgroup--status-box-border #\Box_Drawings_Light_Down_And_Right
@@ -649,7 +649,7 @@ that action to the controlling terminal."
   "Return the localgroup status sub-command definition."
   (make-command
    :name "status"
-   :description "list detached Autolith sessions"
+   :description "list detached Antaios sessions"
    :options (list (make-option ':flag
                                :long-name "sexp"
                                :key ':sexp
@@ -740,7 +740,7 @@ that action to the controlling terminal."
   "Return the localgroup command definition and its sub-commands."
   (make-command
    :name "localgroup"
-   :description "inspect and control detached Autolith sessions"
+   :description "inspect and control detached Antaios sessions"
    :sub-commands
    (list (localgroup--status-command)
          (localgroup--tell-command)

@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Non-interactive Job Boundary Tests --
 
@@ -19,7 +19,7 @@
        (prompt "Return the answer.")
        (input '(:value "opaque")))
   "Return one valid generic job form for tests."
-  (list :autolith-job :version 1 :id "job-1" :role role
+  (list :antaios-job :version 1 :id "job-1" :role role
         :prompt prompt :input input
         :output-contract contract :timeout-seconds 30))
 
@@ -27,7 +27,7 @@
 (defun run-job-tests--temporary-directory ()
   "Create and return one isolated RUN-JOB test directory."
   (let ((directory
-          (merge-pathnames (format nil "autolith-run-job-~A/" (make-identifier))
+          (merge-pathnames (format nil "antaios-run-job-~A/" (make-identifier))
                            (uiop:temporary-directory))))
     (ensure-directories-exist directory)
     directory))
@@ -112,12 +112,12 @@
           (equal (getf (run-job-request-output-contract request) :type) :object))
      "run-job validates one complete version-one envelope"))
   (dolist (source
-           '("(:autolith-job :version 1) (:extra)"
+           '("(:antaios-job :version 1) (:extra)"
              "#.(progn :executed)"
-             "(quote (:autolith-job))"
-             "(:autolith-job :version 1 :version 1)"
-             "(:autolith-job :version 2 :id \"x\" :role \"task\" :prompt \"x\" :input nil :output-contract (:type :string) :timeout-seconds 1)"
-             "(:autolith-job :version 1 :id \"x\" :role \"task\" :prompt \"x\" :input foo:bar :output-contract (:type :string) :timeout-seconds 1)"))
+             "(quote (:antaios-job))"
+             "(:antaios-job :version 1 :version 1)"
+             "(:antaios-job :version 2 :id \"x\" :role \"task\" :prompt \"x\" :input nil :output-contract (:type :string) :timeout-seconds 1)"
+             "(:antaios-job :version 1 :id \"x\" :role \"task\" :prompt \"x\" :input foo:bar :output-contract (:type :string) :timeout-seconds 1)"))
     (test-assert
      (handler-case
          (progn (run-job-validate-envelope (run-job-read-string source)) nil)
@@ -221,7 +221,7 @@
    (string= (command-name (main--run-job-command)) "run-job")
    "the CLI exposes the non-interactive run-job subcommand")
   (let* ((root (run-job-tests--temporary-directory))
-         (agents (merge-pathnames ".autolith/agents/" root))
+         (agents (merge-pathnames ".antaios/agents/" root))
          (input (merge-pathnames "job.sexp" root))
          (output (merge-pathnames "result.sexp" root)))
     (unwind-protect

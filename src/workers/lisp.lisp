@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- SBCL Worker Adapters --
 
@@ -24,7 +24,7 @@
 
 (-> lisp-worker--tool-name ((or string keyword null)) string)
 (defun lisp-worker--tool-name (operation)
-  "Return Autolith's dotted tool name for library OPERATION."
+  "Return Antaios's dotted tool name for library OPERATION."
   (case operation
     (:change-working-directory "lisp.cwd")
     (:workers "lisp.repls")
@@ -57,7 +57,7 @@
 (-> lisp-worker-sbcl-command () string)
 (defun lisp-worker-sbcl-command ()
   "Return the configured SBCL executable used by disposable workers."
-  (let ((configured-command (uiop:getenv "AUTOLITH_SBCL")))
+  (let ((configured-command (uiop:getenv "ANTAIOS_SBCL")))
     (if (non-empty-string-p configured-command)
         configured-command
         "sbcl")))
@@ -145,7 +145,7 @@
 
 (-> lisp-worker-pool-configuration (lisp-worker-pool) configuration)
 (defun lisp-worker-pool-configuration (pool)
-  "Return the Autolith configuration currently associated with POOL."
+  "Return the Antaios configuration currently associated with POOL."
   (sbcl-worker-environment-context
    (sbcl-worker-pool-environment pool)))
 
@@ -674,10 +674,10 @@ that worker, while cancellation after a completed request leaves the REPL intact
 (defun worker-source (name kind)
   "Return exact matching SBCL source for NAME and optional KIND."
   (sbcl-worker-runtime-configure
-   :evaluation-package "AUTOLITH"
-   :protocol-tag ':autolith-worker
+   :evaluation-package "ANTAIOS"
+   :protocol-tag ':antaios-worker
    :protocol-version 2
-   :source-root-environment-variable "AUTOLITH_SBCL_SOURCE_ROOT")
+   :source-root-environment-variable "ANTAIOS_SBCL_SOURCE_ROOT")
   (lisp-worker--call
    (lambda ()
      (sbcl-worker-source name kind))))
@@ -686,17 +686,17 @@ that worker, while cancellation after a completed request leaves the REPL intact
 (defun worker-handle-request (request)
   "Execute one portable worker REQUEST through sbcl-workers."
   (sbcl-worker-runtime-configure
-   :evaluation-package "AUTOLITH"
-   :protocol-tag ':autolith-worker
+   :evaluation-package "ANTAIOS"
+   :protocol-tag ':antaios-worker
    :protocol-version 2
-   :source-root-environment-variable "AUTOLITH_SBCL_SOURCE_ROOT")
+   :source-root-environment-variable "ANTAIOS_SBCL_SOURCE_ROOT")
   (sbcl-worker-handle-request request))
 
 (-> worker-main () null)
 (defun worker-main ()
-  "Run Autolith's isolated worker protocol until standard-input reaches EOF."
+  "Run Antaios's isolated worker protocol until standard-input reaches EOF."
   (sbcl-worker-main
-   :evaluation-package "AUTOLITH"
-   :protocol-tag ':autolith-worker
+   :evaluation-package "ANTAIOS"
+   :protocol-tag ':antaios-worker
    :protocol-version 2
-   :source-root-environment-variable "AUTOLITH_SBCL_SOURCE_ROOT"))
+   :source-root-environment-variable "ANTAIOS_SBCL_SOURCE_ROOT"))

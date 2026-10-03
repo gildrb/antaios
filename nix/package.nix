@@ -460,11 +460,11 @@ let
     ];
   };
 
-  autolithSystem = pkgs.sbcl.buildASDFSystem {
-    pname = "autolith";
+  antaiosSystem = pkgs.sbcl.buildASDFSystem {
+    pname = "antaios";
     version = "0.57.0";
     inherit src;
-    systems = [ "autolith" "autolith/tests" ];
+    systems = [ "antaios" "antaios/tests" ];
     lispLibs = with pkgs.sbclPackages; [
       agentcomms
       argo
@@ -518,8 +518,8 @@ let
       mkdir -p "$out/.qlot"
       cat > "$out/.qlot/setup.lisp" <<'LISP'
       (require :asdf)
-      (let* ((source-root (uiop:getenv "AUTOLITH_NIX_SOURCE_ROOT"))
-             (cache-root  (uiop:getenv "AUTOLITH_ASDF_CACHE")))
+      (let* ((source-root (uiop:getenv "ANTAIOS_NIX_SOURCE_ROOT"))
+             (cache-root  (uiop:getenv "ANTAIOS_ASDF_CACHE")))
         (when (and source-root cache-root)
           (let* ((source
                    (uiop:ensure-directory-pathname source-root))
@@ -554,17 +554,17 @@ let
       chmod u+w "$out/.gitignore"
       printf '\n/nix-support/\n' >> "$out/.gitignore"
 
-      # Autolith records source provenance with Git. Flake source archives do
+      # Antaios records source provenance with Git. Flake source archives do
       # not contain .git, so create a deterministic, read-only repository.
       git init --quiet --initial-branch=master "$out"
-      git -C "$out" config user.name "Autolith Nix build"
+      git -C "$out" config user.name "Antaios Nix build"
       git -C "$out" config user.email "nix-build@localhost"
       git -C "$out" config gc.auto 0
       git -C "$out" config maintenance.auto false
       git -C "$out" add --all
       GIT_AUTHOR_DATE='2000-01-01T00:00:00Z' \
         GIT_COMMITTER_DATE='2000-01-01T00:00:00Z' \
-        git -C "$out" commit --quiet --message "Autolith source"
+        git -C "$out" commit --quiet --message "Antaios source"
 
       # A stat-less index does not need refreshing when Git reads it from the
       # immutable Nix store at runtime.
@@ -577,13 +577,13 @@ let
     '';
   };
 
-  imageIdentity = pkgs.writeText "autolith-image-identity" ''
-    ${autolithSystem}
+  imageIdentity = pkgs.writeText "antaios-image-identity" ''
+    ${antaiosSystem}
   '';
 
-  runtime = pkgs.sbcl.withPackages (_: [ autolithSystem ]);
+  runtime = pkgs.sbcl.withPackages (_: [ antaiosSystem ]);
 
-  sbclSource = pkgs.runCommand "autolith-sbcl-${expectedSbclVersion}-source" {
+  sbclSource = pkgs.runCommand "antaios-sbcl-${expectedSbclVersion}-source" {
     nativeBuildInputs = [ pkgs.bzip2 pkgs.coreutils pkgs.gnutar ];
   } ''
     actual_hash=$(sha256sum ${pkgs.sbcl.src} | cut -d ' ' -f 1)
@@ -609,43 +609,43 @@ let
   # SBCL saved cores are intentionally transient here. Their bytes are not
   # reproducible, so the derivation publishes only a deterministic proof that
   # the complete Nix closure can build and probe both required images.
-  imageValidation = pkgs.runCommand "autolith-image-validation-${expectedSbclVersion}" {
+  imageValidation = pkgs.runCommand "antaios-image-validation-${expectedSbclVersion}" {
     nativeBuildInputs = [ pkgs.git ];
   } ''
     export HOME="$TMPDIR/home"
     export XDG_CONFIG_HOME="$TMPDIR/config"
     export XDG_DATA_HOME="$TMPDIR/data"
     export XDG_STATE_HOME="$TMPDIR/state"
-    export AUTOLITH_SBCL="${runtime}/bin/sbcl"
-    export AUTOLITH_SBCL_SOURCE_ROOT="${sbclSource}"
-    export AUTOLITH_ASDF_CACHE="$TMPDIR/asdf-cache"
-    export AUTOLITH_NIX_SOURCE_ROOT="${autolithSystem}/"
-    export AUTOLITH_INSTALLATION_KIND=nix
+    export ANTAIOS_SBCL="${runtime}/bin/sbcl"
+    export ANTAIOS_SBCL_SOURCE_ROOT="${sbclSource}"
+    export ANTAIOS_ASDF_CACHE="$TMPDIR/asdf-cache"
+    export ANTAIOS_NIX_SOURCE_ROOT="${antaiosSystem}/"
+    export ANTAIOS_INSTALLATION_KIND=nix
     export COLORLISP_NATIVE_LIBRARY="${colorlispNativeLibrary}/lib/libcolorlisp-tree-sitter${sharedLibrary}"
-    export AUTOLITH_FFF_LIBRARY="${fffLibrary}/lib/libfff_c${sharedLibrary}"
+    export ANTAIOS_FFF_LIBRARY="${fffLibrary}/lib/libfff_c${sharedLibrary}"
     ${sandboxEnvironment}
     export GIT_CONFIG_COUNT=1
     export GIT_CONFIG_KEY_0=safe.directory
-    export GIT_CONFIG_VALUE_0="${autolithSystem}"
+    export GIT_CONFIG_VALUE_0="${antaiosSystem}"
     export GIT_OPTIONAL_LOCKS=0
 
     image_root="$TMPDIR/images"
-    mkdir -p "$HOME" "$AUTOLITH_ASDF_CACHE" \
+    mkdir -p "$HOME" "$ANTAIOS_ASDF_CACHE" \
       "$image_root/active" "$image_root/recovery"
-    "$AUTOLITH_SBCL" --script "${autolithSystem}/script/build-recovery.lisp" \
-      "$image_root/recovery/autolith-recovery.core"
-    "$AUTOLITH_SBCL" --script "${autolithSystem}/script/build-active.lisp" \
-      "$image_root/active/autolith-active.core"
-    test -f "$image_root/recovery/autolith-recovery.core"
+    "$ANTAIOS_SBCL" --script "${antaiosSystem}/script/build-recovery.lisp" \
+      "$image_root/recovery/antaios-recovery.core"
+    "$ANTAIOS_SBCL" --script "${antaiosSystem}/script/build-active.lisp" \
+      "$image_root/active/antaios-active.core"
+    test -f "$image_root/recovery/antaios-recovery.core"
     test -f "$image_root/recovery/manifest.sexp"
-    test -f "$image_root/active/autolith-active.core"
+    test -f "$image_root/active/antaios-active.core"
     test -f "$image_root/active/manifest.sexp"
 
     mkdir -p "$out"
     printf '%s\n' validated > "$out/image-validation"
   '';
 
-  imageLockRunner = pkgs.writeText "autolith-image-lock.pl" ''
+  imageLockRunner = pkgs.writeText "antaios-image-lock.pl" ''
     use strict;
     use warnings;
     use Fcntl qw(LOCK_EX);
@@ -659,7 +659,7 @@ let
     exit($status >> 8);
   '';
 
-  imageMaterializer = pkgs.writeShellScript "autolith-materialize-nix-images" ''
+  imageMaterializer = pkgs.writeShellScript "antaios-materialize-nix-images" ''
     set -eu
 
     image_root=$1
@@ -681,18 +681,18 @@ let
         [ ! -L "$directory/active" ] &&
         [ -d "$directory/recovery" ] &&
         [ ! -L "$directory/recovery" ] &&
-        [ -f "$directory/active/autolith-active.core" ] &&
-        [ ! -L "$directory/active/autolith-active.core" ] &&
+        [ -f "$directory/active/antaios-active.core" ] &&
+        [ ! -L "$directory/active/antaios-active.core" ] &&
         [ -f "$directory/active/manifest.sexp" ] &&
         [ ! -L "$directory/active/manifest.sexp" ] &&
-        [ -f "$directory/recovery/autolith-recovery.core" ] &&
-        [ ! -L "$directory/recovery/autolith-recovery.core" ] &&
+        [ -f "$directory/recovery/antaios-recovery.core" ] &&
+        [ ! -L "$directory/recovery/antaios-recovery.core" ] &&
         [ -f "$directory/recovery/manifest.sexp" ] &&
         [ ! -L "$directory/recovery/manifest.sexp" ] &&
         [ -r "$directory/identity" ] &&
-        [ -r "$directory/active/autolith-active.core" ] &&
+        [ -r "$directory/active/antaios-active.core" ] &&
         [ -r "$directory/active/manifest.sexp" ] &&
-        [ -r "$directory/recovery/autolith-recovery.core" ] &&
+        [ -r "$directory/recovery/antaios-recovery.core" ] &&
         [ -r "$directory/recovery/manifest.sexp" ]
     }
 
@@ -706,14 +706,14 @@ let
         ${pkgs.gnugrep}/bin/grep -Eq \
           '^\(:RECOVERY-IMAGE :VERSION 2([[:space:]]|$)' \
           "$directory/recovery/manifest.sexp" &&
-        "$AUTOLITH_SBCL" --noinform \
-          --core "$directory/recovery/autolith-recovery.core" \
-          --end-runtime-options "${autolithSystem}/" --probe \
+        "$ANTAIOS_SBCL" --noinform \
+          --core "$directory/recovery/antaios-recovery.core" \
+          --end-runtime-options "${antaiosSystem}/" --probe \
           >/dev/null 2>&1 &&
-        "$AUTOLITH_SBCL" --noinform \
-          --core "$directory/active/autolith-active.core" \
-          --end-runtime-options "${autolithSystem}/" \
-          --autolith-internal-active-image-probe >/dev/null 2>&1
+        "$ANTAIOS_SBCL" --noinform \
+          --core "$directory/active/antaios-active.core" \
+          --end-runtime-options "${antaiosSystem}/" \
+          --antaios-internal-active-image-probe >/dev/null 2>&1
     }
 
     cleanup()
@@ -745,13 +745,13 @@ let
     export XDG_DATA_HOME="$work/data"
     export XDG_STATE_HOME="$work/state"
 
-    "$AUTOLITH_SBCL" --script "${autolithSystem}/script/build-recovery.lisp" \
-      "$stage/recovery/autolith-recovery.core"
-    "$AUTOLITH_SBCL" --script "${autolithSystem}/script/build-active.lisp" \
-      "$stage/active/autolith-active.core"
+    "$ANTAIOS_SBCL" --script "${antaiosSystem}/script/build-recovery.lisp" \
+      "$stage/recovery/antaios-recovery.core"
+    "$ANTAIOS_SBCL" --script "${antaiosSystem}/script/build-active.lisp" \
+      "$stage/active/antaios-active.core"
     printf '%s\n' "$expected_identity" > "$stage/identity"
     image_set_valid "$stage"
-    chmod u+w "$stage/active/autolith-active.core" \
+    chmod u+w "$stage/active/antaios-active.core" \
       "$stage/active/manifest.sexp"
 
     if [ -e "$final" ] || [ -L "$final" ]; then
@@ -776,7 +776,7 @@ assert with pkgs.stdenv.hostPlatform;
   (isLinux && (isx86_64 || isAarch64)) || (isDarwin && isAarch64);
 assert pkgs.sbcl.version == expectedSbclVersion;
 pkgs.writeShellApplication {
-  name = "autolith";
+  name = "antaios";
   runtimeInputs = [
     pkgs.bash
     pkgs.coreutils
@@ -787,8 +787,8 @@ pkgs.writeShellApplication {
   ] ++ lib.optionals pkgs.stdenv.isLinux [ pkgs.bubblewrap ];
     text = ''
       # shellcheck source=/dev/null
-      source "${autolithSystem}/script/launcher-cli.sh"
-      autolith_launcher_parse nix "$@"
+      source "${antaiosSystem}/script/launcher-cli.sh"
+      antaios_launcher_parse nix "$@"
       xdg_base_directory()
       {
         case ''${1:-} in
@@ -799,30 +799,30 @@ pkgs.writeShellApplication {
 
       home="''${HOME:-/home/user}"
       data_home=$(xdg_base_directory "''${XDG_DATA_HOME:-}" "$home/.local/share")
-    export AUTOLITH_SBCL="${runtime}/bin/sbcl"
-    export AUTOLITH_SBCL_SOURCE_ROOT="${sbclSource}"
+    export ANTAIOS_SBCL="${runtime}/bin/sbcl"
+    export ANTAIOS_SBCL_SOURCE_ROOT="${sbclSource}"
     export COLORLISP_NATIVE_LIBRARY="${colorlispNativeLibrary}/lib/libcolorlisp-tree-sitter${sharedLibrary}"
-    export AUTOLITH_FFF_LIBRARY="${fffLibrary}/lib/libfff_c${sharedLibrary}"
+    export ANTAIOS_FFF_LIBRARY="${fffLibrary}/lib/libfff_c${sharedLibrary}"
     ${sandboxEnvironment}
 
     # The packaged source repository is root-owned in /nix/store. Permit Git
     # provenance reads without weakening safe.directory globally.
     export GIT_CONFIG_COUNT=1
     export GIT_CONFIG_KEY_0=safe.directory
-    export GIT_CONFIG_VALUE_0="${autolithSystem}"
+    export GIT_CONFIG_VALUE_0="${antaiosSystem}"
     export GIT_OPTIONAL_LOCKS=0
 
     # Keep Nix-managed image and ASDF state separate from source installs while
     # retaining the user's conversations and private mutation history.
-    nix_root="$data_home/autolith/nix"
+    nix_root="$data_home/antaios/nix"
     identity_name="${builtins.baseNameOf (toString imageIdentity)}"
     image_root="$nix_root/images"
     image_directory="$image_root/$identity_name"
     asdf_cache="$nix_root/asdf-cache/$identity_name"
     mkdir -p "$image_root" "$asdf_cache"
-    export AUTOLITH_ASDF_CACHE="$asdf_cache"
-    export AUTOLITH_NIX_SOURCE_ROOT="${autolithSystem}/"
-    export AUTOLITH_INSTALLATION_KIND=nix
+    export ANTAIOS_ASDF_CACHE="$asdf_cache"
+    export ANTAIOS_NIX_SOURCE_ROOT="${antaiosSystem}/"
+    export ANTAIOS_INSTALLATION_KIND=nix
 
     # Nix validates image construction at package-build time, but SBCL cores
     # are machine-local mutable state rather than reproducible store outputs.
@@ -830,7 +830,7 @@ pkgs.writeShellApplication {
     # complete directory so upgrades never expose or reuse a partial image pair.
     test -f "${imageValidation}/image-validation"
     image_output_fd=1
-    # Assigned by autolith_launcher_parse in the sourced launcher.
+    # Assigned by antaios_launcher_parse in the sourced launcher.
     # shellcheck disable=SC2154
     if [ "$acp_requested" = true ]; then
       image_output_fd=2
@@ -839,23 +839,23 @@ pkgs.writeShellApplication {
       "$image_root/.materialize.lock" \
       "${imageMaterializer}" "$image_root" "$image_directory" >&"$image_output_fd"
 
-    export AUTOLITH_ACTIVE_CORE="$image_directory/active/autolith-active.core"
-    export AUTOLITH_RECOVERY_CORE="$image_directory/recovery/autolith-recovery.core"
+    export ANTAIOS_ACTIVE_CORE="$image_directory/active/antaios-active.core"
+    export ANTAIOS_RECOVERY_CORE="$image_directory/recovery/antaios-recovery.core"
 
-    exec ${pkgs.bash}/bin/bash "${autolithSystem}/bin/autolith" "$@"
+    exec ${pkgs.bash}/bin/bash "${antaiosSystem}/bin/antaios" "$@"
   '';
 
   meta = {
     description = "A live, self-modifying Common Lisp agent";
-    homepage = "https://github.com/luciusmagn/autolith";
+    homepage = "https://github.com/gildrb/theseus";
     license = lib.licenses.mit;
-    mainProgram = "autolith";
+    mainProgram = "antaios";
     platforms = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
   };
 
   passthru = {
     inherit qlotGitSources;
-    inherit autolithSystem clColorist clExecSandbox clifff clinedi clJobpond
+    inherit antaiosSystem clColorist clExecSandbox clifff clinedi clJobpond
       colorlisp colorlispNativeLibrary fffLibrary idsmall imageIdentity
       imageValidation runtime sandboxHelper sbclGenerations sbclSource mcparen
       sbclWorkers sexpConfig sexpStore;

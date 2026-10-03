@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Runtime Test Boundary --
 
@@ -686,13 +686,13 @@
                 "fs.view-image reports the prepared image metadata"))
              (let ((result (run "shell" "run"
                                "command" (test-fixture-shell-command
-                                          *platform* "echo autolith-shell-works && exit 3"
-                                          "Write-Output autolith-shell-works; exit 3"))))
+                                          *platform* "echo antaios-shell-works && exit 3"
+                                          "Write-Output antaios-shell-works; exit 3"))))
                (test-assert (tool-result-success-p result)
                             "shell.run reports command completion")
                (test-assert (search "exit 3" (tool-result-content result))
                             "shell.run reports nonzero exit codes")
-               (test-assert (search "autolith-shell-works"
+               (test-assert (search "antaios-shell-works"
                                     (tool-result-content result))
                             "shell.run captures combined output"))
              (test-assert
@@ -751,7 +751,7 @@
              (let* ((inside (merge-pathnames "sandboxed-command.txt" root))
                     (outside
                       (merge-pathnames
-                       (format nil "autolith-blocked-~A.txt" (make-identifier))
+                       (format nil "antaios-blocked-~A.txt" (make-identifier))
                        (user-homedir-pathname)))
                     (sandbox-configuration
                       (configuration-copy configuration

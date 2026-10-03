@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Task Child Execution Tests --
 
@@ -360,7 +360,7 @@
                 (task-error ()
                   t))
               (second case)))
-           (let* ((agent-directory (merge-pathnames ".autolith/agents/" root))
+           (let* ((agent-directory (merge-pathnames ".antaios/agents/" root))
                   (agent-path      (merge-pathnames "scout.sexp" agent-directory))
                   (project-configuration
                     (configuration-copy configuration :working-directory root)))

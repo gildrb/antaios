@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- User Operation Test Tool --
 
@@ -164,20 +164,20 @@
                     (test-assert
                      (and (eq (first receipt) ':prompt)
                           (getf (rest receipt) :accepted-p)
-                          (eq (getf (rest receipt) :target) ':autolith)
+                          (eq (getf (rest receipt) :target) ':antaios)
                           (eq (getf (rest receipt) :delivery) ':queued))
                      "PROMPT returns a portable primary acceptance receipt"))
                   (let ((receipt
-                          (prompt :to 'autolith "explicit primary prompt")))
+                          (prompt :to 'antaios "explicit primary prompt")))
                     (test-assert
-                     (eq (getf (rest receipt) :target) ':autolith)
-                     ":TO AUTOLITH explicitly targets the primary agent"))
+                     (eq (getf (rest receipt) :target) ':antaios)
+                     ":TO ANTAIOS explicitly targets the primary agent"))
                   (let ((receipt
-                          (prompt :to "AuToLiTh"
+                          (prompt :to "AnTaIoS"
                                   "case-insensitive primary prompt")))
                     (test-assert
-                     (eq (getf (rest receipt) :target) ':autolith)
-                     "string AUTOLITH targets the primary case-insensitively"))
+                     (eq (getf (rest receipt) :target) ':antaios)
+                     "string ANTAIOS targets the primary case-insensitively"))
                   (let ((receipt
                           (prompt :images (list prompt-image) "image prompt")))
                     (test-assert
@@ -852,7 +852,7 @@
                    (make-instance
                     'installation-provenance
                     :method ':release
-                    :current-tag (format nil "v~A" *autolith-version*)))
+                    :current-tag (format nil "v~A" *antaios-version*)))
              (test-assert
               (handler-case
                   (progn

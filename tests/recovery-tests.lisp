@@ -1,9 +1,9 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (unless (fboundp 'recovery-context-create)
     (load (merge-pathnames "recovery/runtime.lisp"
-                           (asdf:system-source-directory :autolith)))))
+                           (asdf:system-source-directory :antaios)))))
 
 
 ;;;; -- Recovery Runtime Tests --
@@ -26,12 +26,12 @@
 (-> recovery-tests--context (pathname) recovery-context)
 (defun recovery-tests--context (root)
   "Return a recovery context isolated below test ROOT."
-  (let ((state-root (merge-pathnames "state/autolith/" root)))
+  (let ((state-root (merge-pathnames "state/antaios/" root)))
     (make-instance
      'recovery-context
-     :source-root (asdf:system-source-directory :autolith)
-     :generation-root (merge-pathnames "data/autolith/generations/" root)
-     :worktree-root (merge-pathnames "data/autolith/recovery-worktrees/" root)
+     :source-root (asdf:system-source-directory :antaios)
+     :generation-root (merge-pathnames "data/antaios/generations/" root)
+     :worktree-root (merge-pathnames "data/antaios/recovery-worktrees/" root)
      :state-root state-root
      :current-pathname (merge-pathnames "current-generation.sexp" state-root))))
 
@@ -46,9 +46,9 @@
      'sbcl-generations:generation
      :identifier identifier
      :directory directory
-     :core-pathname (merge-pathnames "autolith.core" directory)
+     :core-pathname (merge-pathnames "antaios.core" directory)
      :temporary-core-pathname
-     (merge-pathnames ".autolith.core.tmp" directory)
+     (merge-pathnames ".antaios.core.tmp" directory)
      :manifest-pathname (merge-pathnames "manifest.sexp" directory)
      :metadata (list :git-commit commit
                      :sbcl-version (lisp-implementation-version)
@@ -85,7 +85,7 @@
   "Test recovery ignores empty and relative XDG directory values."
   (let* ((configuration (test-configuration))
          (root (test-configuration-root configuration))
-         (source-root (asdf:system-source-directory :autolith))
+         (source-root (asdf:system-source-directory :antaios))
          (saved-data (uiop:getenv "XDG_DATA_HOME"))
          (saved-state (uiop:getenv "XDG_STATE_HOME")))
     (unwind-protect
@@ -116,11 +116,11 @@
              (let ((context (recovery-context-create source-root)))
                (test-assert
                 (equal (recovery-context-generation-root context)
-                       (merge-pathnames "autolith/generations/" data-home))
+                       (merge-pathnames "antaios/generations/" data-home))
                 "recovery accepts an absolute XDG data home")
                (test-assert
                 (equal (recovery-context-state-root context)
-                       (merge-pathnames "autolith/" state-home))
+                       (merge-pathnames "antaios/" state-home))
                 "recovery accepts an absolute XDG state home"))))
       (recovery-tests--restore-environment "XDG_DATA_HOME" saved-data)
       (recovery-tests--restore-environment "XDG_STATE_HOME" saved-state)
@@ -267,12 +267,12 @@
          (legacy "cb472f21-969d-48f5-9c1e-e793d19054b9")
          (session-id "96kpbjY")
          (capsule-id "K8vQ2mp")
-         (pointer-name "AUTOLITH_RECOVERY_SESSION_POINTER")
-         (conversation-name "AUTOLITH_RECOVERY_CONVERSATION_ID")
-         (sequence-name "AUTOLITH_RECOVERY_RENDERED_SEQUENCE")
+         (pointer-name "ANTAIOS_RECOVERY_SESSION_POINTER")
+         (conversation-name "ANTAIOS_RECOVERY_CONVERSATION_ID")
+         (sequence-name "ANTAIOS_RECOVERY_RENDERED_SEQUENCE")
          (history-floor-name
-           "AUTOLITH_RECOVERY_HISTORY_FLOOR_SEQUENCE")
-         (crash-pointer-name "AUTOLITH_CRASH_POINTER")
+           "ANTAIOS_RECOVERY_HISTORY_FLOOR_SEQUENCE")
+         (crash-pointer-name "ANTAIOS_CRASH_POINTER")
          (previous-pointer (uiop:getenv pointer-name))
          (previous-conversation (uiop:getenv conversation-name))
          (previous-sequence (uiop:getenv sequence-name))
@@ -411,7 +411,7 @@
   "Run the stable launcher over a fake SBCL that exits with status 64."
   (let* ((configuration (test-configuration))
          (root (test-configuration-root configuration))
-         (source-root (asdf:system-source-directory :autolith))
+         (source-root (asdf:system-source-directory :antaios))
          (fake-sbcl (merge-pathnames "bin/fake-sbcl" root))
          (log (merge-pathnames "calls.log" root))
          (data-home (merge-pathnames "data/" root))
@@ -422,21 +422,21 @@
             fake-sbcl
             "#!/bin/sh
 set -eu
-printf 'call\\n' >> \"$AUTOLITH_TEST_LOG\"
+printf 'call\\n' >> \"$ANTAIOS_TEST_LOG\"
 exit 64
 ")
            (multiple-value-bind (output error-output status)
                (uiop:run-program
                 (list "env"
-                      (format nil "AUTOLITH_SBCL=~A"
+                      (format nil "ANTAIOS_SBCL=~A"
                               (namestring fake-sbcl))
-                      (format nil "AUTOLITH_TEST_LOG=~A"
+                      (format nil "ANTAIOS_TEST_LOG=~A"
                               (namestring log))
                       (format nil "XDG_DATA_HOME=~A"
                               (namestring data-home))
                       (format nil "XDG_STATE_HOME=~A"
                               (namestring state-home))
-                      (namestring (merge-pathnames "bin/autolith" source-root))
+                      (namestring (merge-pathnames "bin/antaios" source-root))
                       "--from-source")
                 :ignore-error-status t
                 :output nil

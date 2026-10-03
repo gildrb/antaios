@@ -32,20 +32,20 @@ xdg_base_directory()
   esac
 }
 
-release_latest_url=${AUTOLITH_RELEASE_LATEST_URL:-https://sh.lambda-symbolics.com/releases/latest}
+release_latest_url=${ANTAIOS_RELEASE_LATEST_URL:-${ANTAIOS_RELEASE_BASE_URL:+$ANTAIOS_RELEASE_BASE_URL/latest}}
 launcher_path=$(resolve_path "${BASH_SOURCE[0]}")
 release_root=$(CDPATH= cd -P -- "$(dirname -- "$launcher_path")/.." && pwd)
 release_record=$release_root/RELEASE
-source_root=$release_root/libexec/autolith
+source_root=$release_root/libexec/antaios
 # shellcheck source=../script/launcher-cli.sh
 source "$source_root/script/launcher-cli.sh"
-autolith_launcher_parse release "$@"
+antaios_launcher_parse release "$@"
 if [[ $uninstall_requested == true ]]; then
   uninstall_root=
   if [[ $(basename -- "$(dirname -- "$release_root")") == releases ]]; then
     uninstall_root=$(CDPATH= cd -P -- "$release_root/../.." && pwd)
   fi
-  autolith_uninstall release "$uninstall_root" "$release_root"
+  antaios_uninstall release "$uninstall_root" "$release_root"
   exit $?
 fi
 runtime_root=$release_root/runtime
@@ -55,13 +55,13 @@ sandbox_helper=$release_root/libexec/cl-exec-sandbox-helper
 process_group_helper=$release_root/libexec/cl-exec-sandbox-process-group
 home=${HOME:-}
 data_home=$(xdg_base_directory "${XDG_DATA_HOME:-}" "$home/.local/share")
-active_core=$data_home/autolith/active/autolith-active.core
-recovery_core=$data_home/autolith/recovery/autolith-recovery.core
-image_marker=$data_home/autolith/release-images
+active_core=$data_home/antaios/active/antaios-active.core
+recovery_core=$data_home/antaios/recovery/antaios-recovery.core
+image_marker=$data_home/antaios/release-images
 
 fail()
 {
-  printf 'Autolith release failed: %s\n' "$1" >&2
+  printf 'Antaios release failed: %s\n' "$1" >&2
   exit 1
 }
 
@@ -129,8 +129,13 @@ release_update()
   local -a install_arguments
 
   if [[ -z $requested_tag ]]; then
+    if [[ -z $release_latest_url ]]; then
+      printf 'Antaios has no default release service. Set ANTAIOS_RELEASE_BASE_URL to a release service you trust, or update through Nix (nix run github:gildrb/theseus) or a source checkout. Keeping %s installed.\n' \
+        "$release_version" >&2
+      return 1
+    fi
     if ! requested_tag=$(release_latest_tag); then
-      printf 'Autolith could not check the latest release. Keeping %s installed.\n' \
+      printf 'Antaios could not check the latest release. Keeping %s installed.\n' \
         "$release_version" >&2
       return 1
     fi
@@ -138,33 +143,33 @@ release_update()
   release_tag_valid_p "$requested_tag" ||
     fail "the requested release tag is malformed."
   if ! semantic_version_newer_p "${requested_tag#v}" "$release_version"; then
-    printf 'Autolith %s is already the newest release.\n' "$release_version" >&2
+    printf 'Antaios %s is already the newest release.\n' "$release_version" >&2
     return 0
   fi
   install_arguments=(--without-command-link --version "$requested_tag")
   if [[ $release_platform == *-linux-musl ]]; then
     install_arguments=(--musl "${install_arguments[@]}")
   fi
-  if ! AUTOLITH_INSTALL_ROOT="$install_root" \
+  if ! ANTAIOS_INSTALL_ROOT="$install_root" \
        "$source_root/script/install" "${install_arguments[@]}"; then
-    printf 'Autolith could not install %s. Keeping %s installed.\n' \
+    printf 'Antaios could not install %s. Keeping %s installed.\n' \
       "${requested_tag#v}" "$release_version" >&2
     return 1
   fi
 
-  updated_launcher=$install_root/current/bin/autolith
+  updated_launcher=$install_root/current/bin/antaios
   [[ -x $updated_launcher ]] ||
     fail "the updater did not publish a runnable release."
-  printf 'Autolith %s is installed.\n' "${requested_tag#v}" >&2
+  printf 'Antaios %s is installed.\n' "${requested_tag#v}" >&2
 }
 
 release_restart()
 {
-  local launcher=$install_root/current/bin/autolith
+  local launcher=$install_root/current/bin/antaios
 
   [[ -x $launcher ]] || fail "the selected release launcher is unavailable."
-  export AUTOLITH_NO_UPDATE_CHECK=1
-  export AUTOLITH_SUPPRESS_UPDATE_OFFER=1
+  export ANTAIOS_NO_UPDATE_CHECK=1
+  export ANTAIOS_SUPPRESS_UPDATE_OFFER=1
   exec "$launcher" ${remaining_arguments[@]+"${remaining_arguments[@]}"}
 }
 
@@ -187,7 +192,7 @@ release_images_usable_p()
     --end-runtime-options "$source_root" --probe >/dev/null 2>&1 || return 1
   "$sbcl_command" --noinform --core "$active_core" \
     --end-runtime-options "$source_root" \
-    --autolith-internal-active-image-probe >/dev/null 2>&1
+    --antaios-internal-active-image-probe >/dev/null 2>&1
 }
 
 release_images_build()
@@ -195,7 +200,7 @@ release_images_build()
   local marker_directory
   local temporary_marker
 
-  printf 'Building Autolith images for this machine. This happens once per release.\n' >&2
+  printf 'Building Antaios images for this machine. This happens once per release.\n' >&2
   "$sbcl_command" --script "$source_root/script/build-recovery.lisp" \
     "$recovery_core"
   "$sbcl_command" --script "$source_root/script/build-active.lisp" \
@@ -285,8 +290,8 @@ fi
 [[ -x $sbcl_command ]] || fail "the bundled SBCL runtime is missing."
 [[ -f $runtime_source_root/version.lisp-expr ]] ||
   fail "the bundled SBCL source is missing."
-[[ -f $source_root/autolith.asd && -f $source_root/.qlot/setup.lisp ]] ||
-  fail "the bundled Autolith source or dependencies are missing."
+[[ -f $source_root/antaios.asd && -f $source_root/.qlot/setup.lisp ]] ||
+  fail "the bundled Antaios source or dependencies are missing."
 [[ -x $source_root/script/install ]] || fail "the bundled installer is missing."
 if [[ $release_platform == *-linux* ]]; then
   [[ -x $sandbox_helper ]] || fail "the private sandbox helper is missing."
@@ -314,18 +319,18 @@ if [[ (${release_root##*/} == "$release_tag" ||
   selected_release_p=true
 fi
 
-unset AUTOLITH_INSTALLATION_KIND AUTOLITH_RELEASE_ROOT
+unset ANTAIOS_INSTALLATION_KIND ANTAIOS_RELEASE_ROOT
 if [[ $selected_release_p == true ]]; then
-  export AUTOLITH_INSTALLATION_KIND=release
-  export AUTOLITH_RELEASE_ROOT=$release_root
+  export ANTAIOS_INSTALLATION_KIND=release
+  export ANTAIOS_RELEASE_ROOT=$release_root
 fi
 
-export AUTOLITH_SBCL=$sbcl_command
-export AUTOLITH_SBCL_SOURCE_ROOT=$runtime_source_root
-export AUTOLITH_FFF_LIBRARY=$fff_library
+export ANTAIOS_SBCL=$sbcl_command
+export ANTAIOS_SBCL_SOURCE_ROOT=$runtime_source_root
+export ANTAIOS_FFF_LIBRARY=$fff_library
 export COLORLISP_NATIVE_LIBRARY=$colorlisp_library
-export AUTOLITH_ACTIVE_CORE=$active_core
-export AUTOLITH_RECOVERY_CORE=$recovery_core
+export ANTAIOS_ACTIVE_CORE=$active_core
+export ANTAIOS_RECOVERY_CORE=$recovery_core
 # The image build compiles the sandbox helpers into the source tree unless
 # packaged copies are named here. The release tree is read-only.
 export CL_EXEC_SANDBOX_PROCESS_GROUP_HELPER=$process_group_helper
@@ -337,7 +342,7 @@ fi
 export GIT_OPTIONAL_LOCKS=0
 
 remaining_arguments=("$@")
-if [[ ${1:-} == --autolith-release-probe ]]; then
+if [[ ${1:-} == --antaios-release-probe ]]; then
   printf 'version=%s\ntag=%s\ncommit=%s\nplatform=%s\nsource=%s\nruntime=%s\n' \
     "$release_version" "$release_tag" "$release_commit" "$release_platform" \
     "$source_root" "$sbcl_command"
@@ -345,7 +350,7 @@ if [[ ${1:-} == --autolith-release-probe ]]; then
 fi
 if [[ $update_requested == true ]]; then
   [[ $selected_release_p == true ]] ||
-    fail "only the selected packaged release can update itself. Run the installed autolith command."
+    fail "only the selected packaged release can update itself. Run the installed antaios command."
   release_update
   exit $?
 fi
@@ -354,7 +359,7 @@ if ! release_images_usable_p; then
   release_images_build
 fi
 
-if "$source_root/bin/autolith" "$@"; then
+if "$source_root/bin/antaios" "$@"; then
   status=0
 else
   status=$?

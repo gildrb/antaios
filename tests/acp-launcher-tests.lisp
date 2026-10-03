@@ -1,16 +1,16 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- ACP Launcher --
 
 (defun acp-launcher-tests--run-parser (&rest arguments)
   "Run the shared shell launcher parser and return its exported state."
-  (let* ((script (asdf:system-relative-pathname :autolith
+  (let* ((script (asdf:system-relative-pathname :antaios
                                                "script/launcher-cli.sh"))
          (quoted (mapcar (lambda (argument)
                            (format nil "'~A'" argument))
                          arguments))
          (command (format nil
-                          "source ~A; autolith_launcher_parse source ~{~A ~}; printf '%s\\n' \"$from_source_requested\" \"$recovery_requested\" \"$update_requested\" \"$uninstall_requested\" \"$data_requested\" \"$acp_requested\" \"${remaining_arguments[*]}\""
+                          "source ~A; antaios_launcher_parse source ~{~A ~}; printf '%s\\n' \"$from_source_requested\" \"$recovery_requested\" \"$update_requested\" \"$uninstall_requested\" \"$data_requested\" \"$acp_requested\" \"${remaining_arguments[*]}\""
                           (namestring script) quoted)))
     (uiop:run-program (list "bash" "-c" command)
                       :output :string
@@ -70,9 +70,9 @@
          (list "XDG_DATA_HOME" (namestring (merge-pathnames "data/" root)))
          (list "XDG_STATE_HOME" (namestring (merge-pathnames "state/" root)))
          (list "XDG_CACHE_HOME" (namestring (merge-pathnames "cache/" root)))
-         (list "AUTOLITH_SITE_CONFIG_ROOT" nil)
-         (list "AUTOLITH_RECOVERED" nil)
-         (list "AUTOLITH_SBCL" (lisp-worker-sbcl-command)))
+         (list "ANTAIOS_SITE_CONFIG_ROOT" nil)
+         (list "ANTAIOS_RECOVERED" nil)
+         (list "ANTAIOS_SBCL" (lisp-worker-sbcl-command)))
    function))
 
 (define-condition acp-launcher-test-failure (error)
@@ -135,11 +135,11 @@
                 (lisp-worker-sbcl-command)
                 :arguments (list "--noinform" "--no-sysinit" "--no-userinit" "--script"
                                  (namestring (asdf:system-relative-pathname
-                                              :autolith "script/launcher.lisp"))
+                                              :antaios "script/launcher.lisp"))
                                  "--from-source" "--pristine" "acp")
                 :directory root)))
          (test-assert
-          (equal "autolith" (agentcomms:json-get
+          (equal "antaios" (agentcomms:json-get
                              (agentcomms:json-get result "agentInfo") "name"))
           "the source launcher emits JSON-RPC without preceding diagnostics")
          (test-assert
@@ -160,7 +160,7 @@
            (uiop:run-program
             (list (lisp-worker-sbcl-command) "--noinform" "--no-sysinit" "--no-userinit"
                   "--script" (namestring (asdf:system-relative-pathname
-                                          :autolith "script/launcher.lisp"))
+                                          :antaios "script/launcher.lisp"))
                   "--from-source" "--pristine" "acp" "--permissions" "invalid")
             :directory root :input nil :output ':string :error-output ':string
             :ignore-error-status t)

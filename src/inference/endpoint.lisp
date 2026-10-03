@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Recursive Inference Host Endpoint --
 
@@ -34,7 +34,7 @@
     :type (option function)
     :documentation "An optional function receiving compact proxied activity.")
    (activity-lock
-    :initform (make-recursive-lock "Autolith inference endpoint activity")
+    :initform (make-recursive-lock "Antaios inference endpoint activity")
     :reader rlm-endpoint--activity-lock
     :type t
     :documentation "The lock serializing activity publication with revocation.")

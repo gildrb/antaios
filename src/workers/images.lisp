@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Saved Lisp Worker Image Adapters --
 
@@ -37,7 +37,7 @@
 
 (-> lisp-worker--environment (configuration) sbcl-worker-environment)
 (defun lisp-worker--environment (configuration)
-  "Convert Autolith CONFIGURATION into an sbcl-workers host environment.
+  "Convert Antaios CONFIGURATION into an sbcl-workers host environment.
 
 Each pristine start recomputes its command, so a worker boots the active core
 only while that core still matches the source."
@@ -47,17 +47,17 @@ only while that core still matches the source."
                        (active-image-process-command configuration '("--worker")))
    :working-directory (config :working-directory configuration)
    :image-root (configuration-lisp-image-root configuration)
-   :evaluation-package "AUTOLITH"
-   :protocol-tag ':autolith-worker
+   :evaluation-package "ANTAIOS"
+   :protocol-tag ':antaios-worker
    :protocol-version 2
-   :source-root-environment-variable "AUTOLITH_SBCL_SOURCE_ROOT"
+   :source-root-environment-variable "ANTAIOS_SBCL_SOURCE_ROOT"
    :source-revision-function (lambda ()
                                (lisp-worker--source-commit configuration))
    :context configuration))
 
 (-> lisp-image--tool-name ((or string keyword null)) string)
 (defun lisp-image--tool-name (operation)
-  "Return Autolith's tool name for library image OPERATION."
+  "Return Antaios's tool name for library image OPERATION."
   (case operation
     (:save-image "lisp.save-image")
     (:start "lisp.start")
@@ -66,7 +66,7 @@ only while that core still matches the source."
 
 (-> lisp-image--call (function) t)
 (defun lisp-image--call (function)
-  "Call FUNCTION and translate sbcl-workers image conditions for Autolith."
+  "Call FUNCTION and translate sbcl-workers image conditions for Antaios."
   (handler-case
       (funcall function)
     (sbcl-worker-image-error (condition)

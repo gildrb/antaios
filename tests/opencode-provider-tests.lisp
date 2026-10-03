@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- OpenCode Chat Completions Provider Tests --
 
@@ -33,7 +33,7 @@
   (let* ((registry-snapshot (provider--registry-snapshot))
          (configuration (test-configuration))
          (root (test-configuration-root configuration))
-         (saved-chat (uiop:getenv "AUTOLITH_OPENCODE_PROVIDER_ENDPOINT"))
+         (saved-chat (uiop:getenv "ANTAIOS_OPENCODE_PROVIDER_ENDPOINT"))
          (saved-models
            (uiop:getenv *opencode-models-environment-variable*)))
     (unwind-protect
@@ -48,7 +48,7 @@
               (declare (ignore reasoning-summaries-p))
               (opencode-provider-create selected))
             :source ':runtime)
-           (platform-setenv "AUTOLITH_OPENCODE_PROVIDER_ENDPOINT" "")
+           (platform-setenv "ANTAIOS_OPENCODE_PROVIDER_ENDPOINT" "")
            (platform-setenv *opencode-models-environment-variable* "")
            (let ((selected
                    (configuration-copy
@@ -60,7 +60,7 @@
              (test-assert
               (string= (opencode-models-endpoint) *opencode-models-endpoint*)
               "OpenCode uses its default models endpoint"))
-           (platform-setenv "AUTOLITH_OPENCODE_PROVIDER_ENDPOINT"
+           (platform-setenv "ANTAIOS_OPENCODE_PROVIDER_ENDPOINT"
                             "https://chat.invalid/v1/chat/completions")
            (platform-setenv *opencode-models-environment-variable*
                             "https://models.invalid/v1/models")
@@ -102,7 +102,7 @@
                        "https://models.invalid/v1/models")
               "the models override remains independent of the chat endpoint")))
       (opencode-provider-test--restore-environment
-       "AUTOLITH_OPENCODE_PROVIDER_ENDPOINT" saved-chat)
+       "ANTAIOS_OPENCODE_PROVIDER_ENDPOINT" saved-chat)
       (opencode-provider-test--restore-environment
        *opencode-models-environment-variable* saved-models)
       (provider--registry-restore registry-snapshot)
@@ -181,7 +181,7 @@
                  manager
                  :stream (make-string-output-stream)
                  :input *standard-input*)
-                "OpenCode authentication was saved by Autolith.")
+                "OpenCode authentication was saved by Antaios.")
                 "OpenCode login reports successful private persistence"))
             (setf stored
                   (credential-source-load
@@ -263,7 +263,7 @@
                      (declare
                       (ignore manager stream input input-file-descriptor))
                      (setf login-called-p t)
-                     "OpenCode authentication was saved by Autolith.")))
+                     "OpenCode authentication was saved by Antaios.")))
             (lambda ()
               (let* ((provider
                        (provider-authentication-provider
@@ -279,7 +279,7 @@
                 (test-assert
                  (and login-called-p
                       (string= message
-                               "OpenCode authentication was saved by Autolith."))
+                               "OpenCode authentication was saved by Antaios."))
                  "named OpenCode authentication dispatches to hidden-key login"))))
            (test-assert
             (and discovery-called-p

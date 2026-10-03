@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 (-> openai-compatible-provider-tests--save-key
     (configuration string string)
@@ -25,8 +25,8 @@
          (configuration (test-configuration))
          (root (test-configuration-root configuration))
          (model "bootstrap/chat-model")
-         (old-environment-model (uiop:getenv "AUTOLITH_MODEL"))
-         (old-environment-effort (uiop:getenv "AUTOLITH_REASONING_EFFORT")))
+         (old-environment-model (uiop:getenv "ANTAIOS_MODEL"))
+         (old-environment-effort (uiop:getenv "ANTAIOS_REASONING_EFFORT")))
     (unwind-protect
          (progn
            (preferences-store configuration :model model)
@@ -80,8 +80,8 @@
                      (string= (config :reasoning-effort restored)
                               (config :reasoning-effort configuration)))
                 "a conversation without a recorded selection keeps the active choices")))
-           (platform-setenv "AUTOLITH_MODEL" model)
-           (platform-setenv "AUTOLITH_REASONING_EFFORT" "minimal")
+           (platform-setenv "ANTAIOS_MODEL" model)
+           (platform-setenv "ANTAIOS_REASONING_EFFORT" "minimal")
            (let ((selected (configuration-create
                             :defer-provider-validation-p t)))
              (test-assert
@@ -89,11 +89,11 @@
                    (string= (config :reasoning-effort selected) "minimal"))
               "startup defers environment effort validation for init-defined models")))
       (if old-environment-model
-          (platform-setenv "AUTOLITH_MODEL" old-environment-model)
-          (platform-unsetenv "AUTOLITH_MODEL"))
+          (platform-setenv "ANTAIOS_MODEL" old-environment-model)
+          (platform-unsetenv "ANTAIOS_MODEL"))
       (if old-environment-effort
-          (platform-setenv "AUTOLITH_REASONING_EFFORT" old-environment-effort)
-          (platform-unsetenv "AUTOLITH_REASONING_EFFORT"))
+          (platform-setenv "ANTAIOS_REASONING_EFFORT" old-environment-effort)
+          (platform-unsetenv "ANTAIOS_REASONING_EFFORT"))
       (provider--registry-restore registry-snapshot)
       (platform-delete-directory-tree *platform* root :validate t :if-does-not-exist ':ignore)))
   nil)
@@ -102,12 +102,12 @@
 (defun test-openai-compatible-provider-deferred-main-validation ()
   "Test main startup defers validation until registered providers are available."
   (let ((model "main-bootstrap/model")
-        (old-environment-model (uiop:getenv "AUTOLITH_MODEL"))
-        (old-environment-effort (uiop:getenv "AUTOLITH_REASONING_EFFORT")))
+        (old-environment-model (uiop:getenv "ANTAIOS_MODEL"))
+        (old-environment-effort (uiop:getenv "ANTAIOS_REASONING_EFFORT")))
     (unwind-protect
          (progn
-           (platform-setenv "AUTOLITH_MODEL" model)
-           (platform-setenv "AUTOLITH_REASONING_EFFORT" "minimal")
+           (platform-setenv "ANTAIOS_MODEL" model)
+           (platform-setenv "ANTAIOS_REASONING_EFFORT" "minimal")
            (let ((observed-configuration nil)
                  (*active-application* nil))
              (test-call-with-function-replacements
@@ -163,12 +163,12 @@
                             "minimal"))
               "localgroup commands do not validate custom providers before init")))
       (if old-environment-model
-          (platform-setenv "AUTOLITH_MODEL" old-environment-model)
-          (platform-unsetenv "AUTOLITH_MODEL"))
+          (platform-setenv "ANTAIOS_MODEL" old-environment-model)
+          (platform-unsetenv "ANTAIOS_MODEL"))
       (if old-environment-effort
-          (platform-setenv "AUTOLITH_REASONING_EFFORT"
+          (platform-setenv "ANTAIOS_REASONING_EFFORT"
                           old-environment-effort)
-          (platform-unsetenv "AUTOLITH_REASONING_EFFORT"))))
+          (platform-unsetenv "ANTAIOS_REASONING_EFFORT"))))
   nil)
 
 (-> test-openai-compatible-provider-bare-auth-selection () null)
@@ -178,12 +178,12 @@
          (configuration (test-configuration))
          (root (test-configuration-root configuration))
          (model "bare-auth/model")
-         (old-environment-model (uiop:getenv "AUTOLITH_MODEL"))
-         (old-environment-effort (uiop:getenv "AUTOLITH_REASONING_EFFORT")))
+         (old-environment-model (uiop:getenv "ANTAIOS_MODEL"))
+         (old-environment-effort (uiop:getenv "ANTAIOS_REASONING_EFFORT")))
     (unwind-protect
          (progn
-           (platform-unsetenv "AUTOLITH_MODEL")
-           (platform-unsetenv "AUTOLITH_REASONING_EFFORT")
+           (platform-unsetenv "ANTAIOS_MODEL")
+           (platform-unsetenv "ANTAIOS_REASONING_EFFORT")
            (preferences-store configuration :model model)
            (preferences-store configuration :reasoning-effort "minimal")
            (let ((authentication-calls nil)
@@ -268,12 +268,12 @@
                        (string= (third explicit) "device"))
                   "command-line auth passes its explicit provider and method")))))
       (if old-environment-model
-          (platform-setenv "AUTOLITH_MODEL" old-environment-model)
-          (platform-unsetenv "AUTOLITH_MODEL"))
+          (platform-setenv "ANTAIOS_MODEL" old-environment-model)
+          (platform-unsetenv "ANTAIOS_MODEL"))
       (if old-environment-effort
-          (platform-setenv "AUTOLITH_REASONING_EFFORT"
+          (platform-setenv "ANTAIOS_REASONING_EFFORT"
                           old-environment-effort)
-          (platform-unsetenv "AUTOLITH_REASONING_EFFORT"))
+          (platform-unsetenv "ANTAIOS_REASONING_EFFORT"))
       (provider--registry-restore registry-snapshot)
       (platform-delete-directory-tree *platform* root :validate t :if-does-not-exist ':ignore)))
   nil)
@@ -1157,7 +1157,7 @@
                                                       configuration))))
              (test-assert
               (typep (credential-manager-primary-source empty-manager)
-                     'autolith-credential-source)
+                     'antaios-credential-source)
               "API-key sources use the private credential-source contract")
              (test-assert (not (api-key-credential-available-p empty-manager))
               "missing API keys are reported as unavailable")

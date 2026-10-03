@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Gemini Code Assist Provider Tests --
 
@@ -326,7 +326,7 @@
     (dolist (secret (list access-token refresh-token))
       (test-assert
        (and (null (search secret finish-report))
-            (null (search secret (autolith-error-message finish-condition)))
+            (null (search secret (antaios-error-message finish-condition)))
             (null (search secret (provider-error-code finish-condition)))
             (null (search secret (provider-error-request-id finish-condition)))
             (null (search secret (provider-error-response-id finish-condition)))
@@ -334,7 +334,7 @@
        "Gemini finish failures redact every active credential")
       (test-assert
        (and (null (search secret error-report))
-            (null (search secret (autolith-error-message error-condition)))
+            (null (search secret (antaios-error-message error-condition)))
             (null (search secret (provider-error-code error-condition)))
             (null (search secret (provider-error-request-id error-condition)))
             (null (search secret error-response))

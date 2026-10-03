@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Transfer Collection and Ownership --
 
@@ -209,7 +209,7 @@
                       (pushnew (list :area ':input :owner owner
                                      :path (list basename) :bytes bytes)
                                files :test #'equalp)
-                      (format nil "/__autolith_transfer_input__/~A" basename))))))
+                      (format nil "/__antaios_transfer_input__/~A" basename))))))
      files)))
 
 (-> data-transfer--strings (t) list)
@@ -347,7 +347,7 @@
                                       (append plans agenda-forms)))) :test #'equal)))
       (multiple-value-bind (states input-files)
           (data-transfer--collect-inputs states)
-        (list :format ':autolith-data :version *data-transfer-version*
+        (list :format ':antaios-data :version *data-transfer-version*
               :workspace workspace :workspaces (sort workspaces #'string<)
               :sessions sessions :children children :memories memories :papercuts papercuts
               :agendas agenda-forms :plans plans :files (append files input-files)

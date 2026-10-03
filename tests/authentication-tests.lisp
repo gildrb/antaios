@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Subsystem Tests --
 
@@ -24,7 +24,7 @@
                          ':unexpected-success)
                      (authentication-error ()
                        ':rejected))))
-                :name "Autolith secret-use quiescence test")))
+                :name "Antaios secret-use quiescence test")))
          (join-thread thread))))
     (test-assert
      (eq child-result ':rejected)
@@ -35,10 +35,10 @@
     (test-assert
      (null *secret-use-quiescence-owner*)
      "checkpoint quiescence releases its owner after success"))
-  (let* ((lock (make-lock "Autolith existing secret-use test"))
+  (let* ((lock (make-lock "Antaios existing secret-use test"))
          (condition
            (make-condition-variable
-            :name "Autolith existing secret-use test"))
+            :name "Antaios existing secret-use test"))
          (ready-p nil)
          (continue-p nil)
          (nested-use-observed-p nil)
@@ -56,7 +56,7 @@
                   (lambda ()
                     (setf nested-use-observed-p
                           (secret-use-active-p)))))))
-            :name "Autolith existing secret-use test")))
+            :name "Antaios existing secret-use test")))
     (with-lock-held (lock)
       (loop until ready-p
             do (condition-wait condition lock)))
@@ -496,7 +496,7 @@
   (authentication-tests--test-main-input-descriptor)
   (let* ((configuration (test-configuration))
          (root (test-configuration-root configuration))
-         (source (make-instance 'autolith-credential-source
+         (source (make-instance 'antaios-credential-source
                                 :pathname (configuration-auth-path configuration)))
          (credentials (make-instance 'oauth-credentials
                                      :access-token "test-access-token"
@@ -586,7 +586,7 @@
              (test-assert
               (equal (oauth-credentials-source-path imported)
                      (configuration-auth-path configuration))
-              "bootstrap access is copied into Autolith's private store"))
+              "bootstrap access is copied into Antaios's private store"))
            (test-write-codex-auth bootstrap-pathname
                                   :auth-mode "chatgpt"
                                   :account-id "account-b"
@@ -597,7 +597,7 @@
               "subsequent loads ignore changes to the Codex bootstrap store")
              (test-assert
               (string= (oauth-credentials-access-token loaded) "bootstrap-a")
-              "Autolith requests depend only on the imported private credential"))
+              "Antaios requests depend only on the imported private credential"))
            (test-assert
             (handler-case
                 (progn
@@ -606,7 +606,7 @@
                   nil)
               (token-refresh-failed ()
                 t))
-             "non-renewable bootstrap credentials require Autolith's browser login")
+             "non-renewable bootstrap credentials require Antaios's browser login")
            (let* ((primary-source (credential-manager-primary-source manager))
                   (renewable
                     (make-instance 'oauth-credentials

@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- ACP Presentation --
 
@@ -17,7 +17,7 @@
                   :documentation "Text already emitted for the current provider response.")
    (update-buffer :reader acp-observer-update-buffer :type agentcomms:acp-update-buffer
                   :documentation "The ordered buffer coalescing visible thought fragments.")
-   (lock :initform (make-lock "Autolith ACP updates") :reader acp-observer-lock
+   (lock :initform (make-lock "Antaios ACP updates") :reader acp-observer-lock
          :documentation "The lock serializing short presentation updates, never permission waits."))
   (:documentation "An incremental ACP presentation sink with editor authorization."))
 

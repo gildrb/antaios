@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Release Server Configuration --
 
@@ -16,7 +16,7 @@
     :initarg :source-root
     :reader release-server-configuration-source-root
     :type pathname
-    :documentation "The tracked Autolith checkout containing script/install.")
+    :documentation "The tracked Antaios checkout containing script/install.")
    (public-root
     :initarg :public-root
     :reader release-server-configuration-public-root
@@ -155,9 +155,9 @@
            (uiop:ensure-directory-pathname
             (or source-root
                 (let ((configured
-                        (uiop:getenv "AUTOLITH_RELEASE_SOURCE_ROOT")))
+                        (uiop:getenv "ANTAIOS_RELEASE_SOURCE_ROOT")))
                   (and configured (pathname configured)))
-                (asdf:system-source-directory :autolith))))
+                (asdf:system-source-directory :antaios))))
          (resolved-source-root
            (or (ignore-errors (truename configured-source-root))
                configured-source-root)))
@@ -170,15 +170,15 @@
        (uiop:ensure-directory-pathname
         (or public-root
             (let ((configured
-                    (uiop:getenv "AUTOLITH_RELEASE_PUBLIC_ROOT")))
+                    (uiop:getenv "ANTAIOS_RELEASE_PUBLIC_ROOT")))
               (and configured (pathname configured)))
-            #p"/srv/autolith-release-server/"))
+            #p"/srv/antaios-release-server/"))
        :address (or address
-                    (uiop:getenv "AUTOLITH_RELEASE_LISTEN_ADDRESS")
+                    (uiop:getenv "ANTAIOS_RELEASE_LISTEN_ADDRESS")
                     *release-server-default-address*)
        :port (or port
                  (release-server--environment-port
-                  (uiop:getenv "AUTOLITH_RELEASE_LISTEN_PORT")))
+                  (uiop:getenv "ANTAIOS_RELEASE_LISTEN_PORT")))
        :source-tag (or source-tag detected-tag)
        :source-commit (or source-commit detected-commit)))))
 
@@ -195,7 +195,7 @@
 (-> release-server--archive-name (string &optional string) string)
 (defun release-server--archive-name (tag &optional (platform "x86_64-linux"))
   "Return the archive name belonging to TAG and PLATFORM."
-  (format nil "autolith-~A-~A.~A"
+  (format nil "antaios-~A-~A.~A"
           tag platform
           (if (string= platform "x86_64-windows") "zip" "tar.gz")))
 
@@ -365,7 +365,7 @@
        (release-server--response 200 "text/plain; charset=utf-8"
                                  (format nil "ok~%")
                                  :headers (list (cons "Cache-Control" "no-store"))))
-      ((string= path "/autolith")
+      ((string= path "/antaios")
        (let ((installer
                (merge-pathnames
                 "script/install"
@@ -377,7 +377,7 @@
               installer
               :headers (list (cons "Cache-Control" "no-cache")))
              (release-server--not-found))))
-      ((string= path "/autolith.ps1")
+      ((string= path "/antaios.ps1")
        (let ((installer
                (merge-pathnames
                 "script/install.ps1"
@@ -581,7 +581,7 @@
              (release-server-configuration-address configuration))
             (release-server-configuration-port configuration))
            (sb-bsd-sockets:socket-listen listener 128)
-           (format t "~&Autolith release server listening on ~A:~D.~%"
+           (format t "~&Antaios release server listening on ~A:~D.~%"
                    (release-server-configuration-address configuration)
                    (release-server-configuration-port configuration))
            (finish-output)
@@ -591,6 +591,6 @@
                   (make-thread
                    (lambda ()
                      (release-server--handle-connection configuration connection))
-                   :name "autolith release request"))))
+                   :name "antaios release request"))))
       (ignore-errors (sb-bsd-sockets:socket-close listener))))
   nil)

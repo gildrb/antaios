@@ -1,9 +1,9 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Resumed Conversation Notice --
 
 (defparameter *resume-context-instruction*
-    "Autolith restarted and resumed this conversation from disk. Background jobs, asynchronous shell runs, and Lisp worker state started before the restart are gone, so do not poll, wait for, or cancel them; only durable child task results remain readable through job.get."
+    "Antaios restarted and resumed this conversation from disk. Background jobs, asynchronous shell runs, and Lisp worker state started before the restart are gone, so do not poll, wait for, or cancel them; only durable child task results remain readable through job.get."
   "The notice telling the model that pre-restart work no longer exists.")
 
 (-> resume-context--active-p (conversation) boolean)

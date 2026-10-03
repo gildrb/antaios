@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Skill Selection Tool Tests --
 
@@ -177,7 +177,7 @@
   (let* ((base-configuration (test-configuration))
          (root (test-configuration-root base-configuration))
          (project (merge-pathnames "project/" root))
-         (skill-root (merge-pathnames ".autolith/skills/" project))
+         (skill-root (merge-pathnames ".antaios/skills/" project))
          (secret-body
            "FOLLOW-THE-ALPHA-INSTRUCTION-BODY-ONLY-IN-REQUEST-CONTEXT")
          (configuration
@@ -206,13 +206,13 @@
             skill-root
             "alpha/SKILL.sexp"
             (format nil
-                    "(:autolith-skill :version 1 :name \"alpha\" :description \"Apply the alpha workflow.\" :instructions ~S)~%"
+                    "(:antaios-skill :version 1 :name \"alpha\" :description \"Apply the alpha workflow.\" :instructions ~S)~%"
                     secret-body))
            (skill-tool-tests--write
             skill-root
             "oversized/SKILL.sexp"
             (format nil
-                    "(:autolith-skill :version 1 :name \"oversized\" :description \"Exercise deferred instruction reading.\" :instructions ~S)~%"
+                    "(:antaios-skill :version 1 :name \"oversized\" :description \"Exercise deferred instruction reading.\" :instructions ~S)~%"
                     (make-string 256 :initial-element #\x)))
            (test-assert tool
                         "skill registry augmentation installs skill.load")

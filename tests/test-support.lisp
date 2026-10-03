@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Shared Test Support --
 
@@ -102,7 +102,7 @@ Use SYMBOL-GLOBAL-VALUE so configuration fixtures in child threads share it.")
     (platform-make-temporary-directory
      *platform*
      (or parent (uiop:temporary-directory))
-     "autolith-tests-"))))
+     "antaios-tests-"))))
 
 (-> test-call-with-temporary-root (function &key (:temporary-root (or null pathname))) t)
 (defun test-call-with-temporary-root (function &key temporary-root)
@@ -125,10 +125,10 @@ process-global fixture parent on exit; parallel runs need separate processes."
   (let* ((parent (sb-ext:symbol-global-value '*test-temporary-root*))
          (root (uiop:ensure-directory-pathname
                 (merge-pathnames
-                 (format nil "~A~A/" (if parent "" "autolith-tests-")
+                 (format nil "~A~A/" (if parent "" "antaios-tests-")
                          (make-identifier))
                  (or parent (uiop:temporary-directory)))))
-         (source-root (asdf:system-source-directory :autolith)))
+         (source-root (asdf:system-source-directory :antaios)))
     (uiop:ensure-all-directories-exist (list root))
     ;; Canonicalize ROOT so tests compare paths on the same terms as the
     ;; truename-resolved working directory, even when the platform temporary
@@ -145,21 +145,24 @@ process-global fixture parent on exit; parallel runs need separate processes."
      :cache-root (merge-pathnames "cache/" root)
      :codex-auth-path (merge-pathnames "missing-auth.json" root)
      :grok-bootstrap-auth-path (merge-pathnames "missing-grok-auth.json" root)
-     ;; The check runner builds one active core per run, so fresh Autolith
+     ;; Application tests drive the inline terminal; fullscreen tests create
+     ;; their fullscreen interface explicitly.
+     :fullscreen-p nil
+     ;; The check runner builds one active core per run, so fresh Antaios
      ;; processes boot it instead of loading the system from source.
-     (let ((active-core (uiop:getenv "AUTOLITH_TEST_ACTIVE_CORE")))
+     (let ((active-core (uiop:getenv "ANTAIOS_TEST_ACTIVE_CORE")))
        (when (non-empty-string-p active-core)
          (list :active-image-core (uiop:parse-native-namestring active-core)))))))
 
 (-> test-active-core-environment () list)
 (defun test-active-core-environment ()
-  "Return environment entries giving a launched Autolith this run's active core.
+  "Return environment entries giving a launched Antaios this run's active core.
 
 Launcher cases that are not about core selection boot the core the check runner
 built instead of loading the system; outside the runner this is empty."
-  (let ((active-core (uiop:getenv "AUTOLITH_TEST_ACTIVE_CORE")))
+  (let ((active-core (uiop:getenv "ANTAIOS_TEST_ACTIVE_CORE")))
     (when (non-empty-string-p active-core)
-      (list (format nil "AUTOLITH_ACTIVE_CORE=~A" active-core)))))
+      (list (format nil "ANTAIOS_ACTIVE_CORE=~A" active-core)))))
 
 (-> test-configuration-root (configuration) pathname)
 (defun test-configuration-root (configuration)
@@ -227,7 +230,7 @@ and return all of BODY's values. Use process isolation for parallel execution."
 (-> test-configuration-for-source-root (pathname) configuration)
 (defun test-configuration-for-source-root (source-root)
   "Return an isolated configuration whose tracked source is SOURCE-ROOT."
-  (let ((state-root (merge-pathnames ".autolith-test-state/" source-root)))
+  (let ((state-root (merge-pathnames ".antaios-test-state/" source-root)))
     (make-configuration
      :source-root source-root
      :working-directory source-root
@@ -267,7 +270,7 @@ output."
 
 ;;;; -- Host Fixtures --
 
-;;; Some checks need host facilities Autolith itself never uses, such as
+;;; Some checks need host facilities Antaios itself never uses, such as
 ;;; symbolic links, FIFOs, forked children, and POSIX file modes. The
 ;;; protocol below dispatches on *PLATFORM*; tests/posix-fixtures.lisp and
 ;;; tests/win32-fixtures.lisp implement it for their hosts. A host without a

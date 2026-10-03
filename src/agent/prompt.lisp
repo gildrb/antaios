@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- System Prompt --
 
@@ -12,7 +12,7 @@
   "A complete replacement system prompt for the current provider request.
 
 Inference frames bind this so their requests carry a compact frame
-prompt instead of the full Autolith persona.")
+prompt instead of the full Antaios persona.")
 
 (defparameter *system-prompt-template-relative-path*
   #p"docs/system-prompt.org"
@@ -123,20 +123,20 @@ prompt instead of the full Autolith persona.")
 
 (-> system-prompt--template-path () pathname)
 (defun system-prompt--template-path ()
-  "Return the Org system-prompt template shipped with Autolith."
+  "Return the Org system-prompt template shipped with Antaios."
   (let ((path (asdf:system-relative-pathname
-               :autolith *system-prompt-template-relative-path*)))
+               :antaios *system-prompt-template-relative-path*)))
     (unless (probe-file path)
-      (error "Autolith system prompt template is missing: ~A" path))
+      (error "Antaios system prompt template is missing: ~A" path))
     path))
 
 (-> request-context--template-path () pathname)
 (defun request-context--template-path ()
-  "Return the Org mutable request-context template shipped with Autolith."
+  "Return the Org mutable request-context template shipped with Antaios."
   (let ((path (asdf:system-relative-pathname
-               :autolith *request-context-template-relative-path*)))
+               :antaios *request-context-template-relative-path*)))
     (unless (probe-file path)
-      (error "Autolith request-context template is missing: ~A" path))
+      (error "Antaios request-context template is missing: ~A" path))
     path))
 
 (-> system-prompt--template () string)
@@ -259,7 +259,7 @@ prompt instead of the full Autolith persona.")
 
 (-> system-prompt (configuration) string)
 (defun system-prompt (configuration)
-  "Return the Autolith system prompt specialized for CONFIGURATION and today.
+  "Return the Antaios system prompt specialized for CONFIGURATION and today.
 
 The prompt is rebuilt for every provider request so its stable configuration,
 environment, workspace instructions, and date reflect the moment it is made.

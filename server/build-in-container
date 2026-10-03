@@ -7,7 +7,7 @@ state_root=/state
 output_root=/output
 home=$state_root/home
 runtime_version=$(tr -d '[:space:]' < "$source_root/sbcl.version")
-runtime_root=$state_root/data/autolith/runtimes/$runtime_version
+runtime_root=$state_root/data/antaios/runtimes/$runtime_version
 runtime_installation=$runtime_root/installation
 runtime_command=$runtime_installation/bin/sbcl
 
@@ -33,7 +33,7 @@ if [[ $actual_version != "$runtime_version" ]]; then
   "$source_root/script/build-release-runtime" "$runtime_installation"
 fi
 
-export AUTOLITH_SBCL=$runtime_command
+export ANTAIOS_SBCL=$runtime_command
 exec "$runtime_command" --noinform --no-userinit --no-sysinit \
   --script "$source_root/server/build-in-container.lisp" \
   "$source_root" "$state_root" "$output_root"

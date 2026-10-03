@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Test Entry --
 
@@ -8,7 +8,7 @@
   (let ((source-path
           (merge-pathnames
            "src/core/platform-posix.lisp"
-           (asdf:system-source-directory :autolith)))
+           (asdf:system-source-directory :antaios)))
         (native-features
           (remove-if
            (lambda (feature)
@@ -46,14 +46,14 @@
 (-> test-context-window-environment () null)
 (defun test-context-window-environment ()
   "Test that context-window overrides accept only positive integers."
-  (let ((variable "AUTOLITH_CONTEXT_WINDOW")
-        (saved    (uiop:getenv "AUTOLITH_CONTEXT_WINDOW")))
+  (let ((variable "ANTAIOS_CONTEXT_WINDOW")
+        (saved    (uiop:getenv "ANTAIOS_CONTEXT_WINDOW")))
     (unwind-protect
          (progn
            (platform-setenv variable "200000")
            (test-assert
             (= (configuration--context-window-for "unknown-model") 200000)
-            "AUTOLITH_CONTEXT_WINDOW accepts a positive integer")
+            "ANTAIOS_CONTEXT_WINDOW accepts a positive integer")
            (dolist (invalid '("200k" "abc" "0" "-1"))
              (platform-setenv variable invalid)
              (test-assert
@@ -63,16 +63,16 @@
                     nil)
                 (configuration-error ()
                   t))
-              (format nil "AUTOLITH_CONTEXT_WINDOW rejects ~S" invalid))))
+              (format nil "ANTAIOS_CONTEXT_WINDOW rejects ~S" invalid))))
       (tests--restore-environment variable saved)))
   nil)
 
 (-> test-model-environment-validation () null)
 (defun test-model-environment-validation ()
   "Test that configured models are validated after provider registration."
-  (let ((variable "AUTOLITH_MODEL")
-        (saved    (uiop:getenv "AUTOLITH_MODEL"))
-        (root     (asdf:system-source-directory :autolith)))
+  (let ((variable "ANTAIOS_MODEL")
+        (saved    (uiop:getenv "ANTAIOS_MODEL"))
+        (root     (asdf:system-source-directory :antaios)))
     (unwind-protect
          (progn
            (platform-setenv variable "gpt-5.6-typo")
@@ -84,7 +84,7 @@
                   nil)
               (setting-error ()
                 t))
-            "AUTOLITH_MODEL rejects unsupported models")
+            "ANTAIOS_MODEL rejects unsupported models")
            (let ((configuration
                    (configuration-create
                     :source-root root
@@ -119,9 +119,9 @@
 (-> test-xdg-directory-selection () null)
 (defun test-xdg-directory-selection ()
   "Test XDG roots reject invalid values, report state, and use private modes."
-  (let* ((source-root (asdf:system-source-directory :autolith))
+  (let* ((source-root (asdf:system-source-directory :antaios))
          (home (user-homedir-pathname))
-         (direct-variable "AUTOLITH_TEST_XDG_DIRECTORY")
+         (direct-variable "ANTAIOS_TEST_XDG_DIRECTORY")
          ;; Each case names the variable, the root it selects, and the
          ;; directory the XDG convention chooses without it; the host's own
          ;; fallback is observed with the variable absent.
@@ -129,16 +129,16 @@
            (list
             (list "XDG_CONFIG_HOME"
                   (lambda (configuration) (config :config-root configuration))
-                  (merge-pathnames ".config/autolith/" home))
+                  (merge-pathnames ".config/antaios/" home))
             (list "XDG_DATA_HOME"
                   (lambda (configuration) (config :data-root configuration))
-                  (merge-pathnames ".local/share/autolith/" home))
+                  (merge-pathnames ".local/share/antaios/" home))
             (list "XDG_STATE_HOME"
                   (lambda (configuration) (config :state-root configuration))
-                  (merge-pathnames ".local/state/autolith/" home))
+                  (merge-pathnames ".local/state/antaios/" home))
             (list "XDG_CACHE_HOME"
                   (lambda (configuration) (config :cache-root configuration))
-                  (merge-pathnames ".cache/autolith/" home))))
+                  (merge-pathnames ".cache/antaios/" home))))
          (saved
            (mapcar (lambda (name) (cons name (uiop:getenv name)))
                    (cons direct-variable (mapcar #'first cases)))))
@@ -186,8 +186,8 @@
              (test-assert
               (equal
                (environment-api-key-credential-source--pathname "fixture")
-               (merge-pathnames "autolith/fixture-auth.sexp" state-home))
-              "environment API-key reporting includes one autolith state component")))
+               (merge-pathnames "antaios/fixture-auth.sexp" state-home))
+              "environment API-key reporting includes one antaios state component")))
            (let* ((configuration (test-configuration))
                   (root (test-configuration-root configuration)))
              (unwind-protect
@@ -234,8 +234,8 @@
 (defun test-core-defaults ()
   "Test configuration defaults and basic JSON and presentation behavior."
   (let ((configuration (configuration-create
-                        :source-root (asdf:system-source-directory :autolith)
-                        :working-directory (asdf:system-source-directory :autolith)
+                        :source-root (asdf:system-source-directory :antaios)
+                        :working-directory (asdf:system-source-directory :antaios)
                         :durable-p nil)))
     (test-assert (string= (config :model configuration) "gpt-6.1-sol")
                  "the default model is gpt-6.1-sol")
@@ -243,9 +243,9 @@
       (test-assert
        (string= (config :model
                  (configuration-create
-                  :source-root (asdf:system-source-directory :autolith)
+                  :source-root (asdf:system-source-directory :antaios)
                   :working-directory
-                  (asdf:system-source-directory :autolith)
+                  (asdf:system-source-directory :antaios)
                   :durable-p nil))
                 "gpt-5.6-luna")
        "live default parameters affect newly created configurations"))

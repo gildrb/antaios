@@ -1,8 +1,8 @@
-#+title: Friends of Autolith: remaining candidates
+#+title: Friends of Antaios: remaining candidates
 #+date: 2026-09-01
 #+options: toc:2
 
-Remaining candidates from the 2026-09-01 review, pruned against Autolith
+Remaining candidates from the 2026-09-01 review, pruned against Antaios
 0.56.0 on 2026-10-03. Source references describe that historical review.
 
 * samizdat (yogthos)
@@ -54,11 +54,11 @@ demand rather than adding accounting tables to every prompt.
 
 Optional local previews through kitty graphics or sixel, independent of
 provider image input. The historical comparison used a Playwright-rendered
-chat tile; Autolith's presentation belongs in its terminal adapters.
+chat tile; Antaios's presentation belongs in its terminal adapters.
 
 * Steering provenance
 
 samizdat's interventions queue recorded the issuer of each directive.
-Autolith already persists steering identifiers and acknowledges durable
+Antaios already persists steering identifiers and acknowledges durable
 consumption. Extend those records with the issuing client or session for
 on-demand inspection, rather than repeating provenance in model context.

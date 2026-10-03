@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Nous Provider Test Support --
 
@@ -40,9 +40,9 @@
          (root (test-configuration-root configuration))
          (registration (provider-registration-find "nous"))
          (original-get (symbol-function 'dexador:get))
-         (saved-portal (uiop:getenv "AUTOLITH_NOUS_PORTAL_URL"))
-         (saved-base (uiop:getenv "AUTOLITH_NOUS_INFERENCE_BASE_URL"))
-         (saved-provider (uiop:getenv "AUTOLITH_NOUS_PROVIDER_ENDPOINT"))
+         (saved-portal (uiop:getenv "ANTAIOS_NOUS_PORTAL_URL"))
+         (saved-base (uiop:getenv "ANTAIOS_NOUS_INFERENCE_BASE_URL"))
+         (saved-provider (uiop:getenv "ANTAIOS_NOUS_PROVIDER_ENDPOINT"))
          (captured-requests nil))
     (unwind-protect
          (progn
@@ -67,12 +67,12 @@
                      (credential-manager-primary-source
                       (provider-credential-manager authentication-provider)))
                     (configuration-nous-auth-path configuration)))
-              "autolith auth nous constructs a provider before model discovery"))
-           (platform-setenv "AUTOLITH_NOUS_PORTAL_URL"
+              "antaios auth nous constructs a provider before model discovery"))
+           (platform-setenv "ANTAIOS_NOUS_PORTAL_URL"
                             "https://portal.nous.test/")
-           (platform-setenv "AUTOLITH_NOUS_INFERENCE_BASE_URL"
+           (platform-setenv "ANTAIOS_NOUS_INFERENCE_BASE_URL"
                             "https://inference.nous.test/v1/")
-           (platform-setenv "AUTOLITH_NOUS_PROVIDER_ENDPOINT"
+           (platform-setenv "ANTAIOS_NOUS_PROVIDER_ENDPOINT"
                             "https://override.nous.test/chat")
            (test-assert
             (and (string= (nous-portal-url) "https://portal.nous.test")
@@ -139,7 +139,7 @@
              (test-assert
               (string= (config :provider-endpoint chat-configuration)
                        "https://override.nous.test/chat")
-              "AUTOLITH_NOUS_PROVIDER_ENDPOINT overrides the Chat Completions route")
+              "ANTAIOS_NOUS_PROVIDER_ENDPOINT overrides the Chat Completions route")
              (let ((chat (provider-create chat-configuration))
                    (messages (provider-create messages-configuration)))
                (test-assert
@@ -162,13 +162,13 @@
       (setf (symbol-function 'dexador:get) original-get)
       (provider--registry-restore registry-snapshot)
       (nous-provider-test--restore-environment
-       "AUTOLITH_NOUS_PORTAL_URL"
+       "ANTAIOS_NOUS_PORTAL_URL"
        saved-portal)
       (nous-provider-test--restore-environment
-       "AUTOLITH_NOUS_INFERENCE_BASE_URL"
+       "ANTAIOS_NOUS_INFERENCE_BASE_URL"
        saved-base)
       (nous-provider-test--restore-environment
-       "AUTOLITH_NOUS_PROVIDER_ENDPOINT"
+       "ANTAIOS_NOUS_PROVIDER_ENDPOINT"
        saved-provider)
       (platform-delete-directory-tree *platform* root
                                       :validate t
@@ -187,14 +187,14 @@
          (registration (provider-registration-find "nous"))
          (original-get (symbol-function 'dexador:get))
          (original-post (symbol-function 'dexador:post))
-         (saved-base (uiop:getenv "AUTOLITH_NOUS_INFERENCE_BASE_URL"))
-         (saved-provider (uiop:getenv "AUTOLITH_NOUS_PROVIDER_ENDPOINT"))
+         (saved-base (uiop:getenv "ANTAIOS_NOUS_INFERENCE_BASE_URL"))
+         (saved-provider (uiop:getenv "ANTAIOS_NOUS_PROVIDER_ENDPOINT"))
          (posts nil))
     (unwind-protect
          (progn
-           (platform-setenv "AUTOLITH_NOUS_INFERENCE_BASE_URL"
+           (platform-setenv "ANTAIOS_NOUS_INFERENCE_BASE_URL"
                             "https://transport.nous.test/v1")
-           (platform-unsetenv "AUTOLITH_NOUS_PROVIDER_ENDPOINT")
+           (platform-unsetenv "ANTAIOS_NOUS_PROVIDER_ENDPOINT")
            (nous-provider-test--save-credentials configuration)
            (setf (symbol-function 'dexador:get)
                  (lambda (url &rest arguments)
@@ -283,10 +283,10 @@
             (symbol-function 'dexador:post) original-post)
       (provider--registry-restore registry-snapshot)
       (nous-provider-test--restore-environment
-       "AUTOLITH_NOUS_INFERENCE_BASE_URL"
+       "ANTAIOS_NOUS_INFERENCE_BASE_URL"
        saved-base)
       (nous-provider-test--restore-environment
-       "AUTOLITH_NOUS_PROVIDER_ENDPOINT"
+       "ANTAIOS_NOUS_PROVIDER_ENDPOINT"
        saved-provider)
       (platform-delete-directory-tree *platform* root
                                       :validate t

@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Release Script Tests --
 
@@ -24,7 +24,7 @@
 (-> test-build-sandbox-packaged-helpers () null)
 (defun test-build-sandbox-packaged-helpers ()
   "Build POSIX helpers only when a platform-required packaged helper is missing."
-  (let* ((script (asdf:system-relative-pathname :autolith "script/build-sandbox.lisp"))
+  (let* ((script (asdf:system-relative-pathname :antaios "script/build-sandbox.lisp"))
          (existing (namestring script))
          (missing (namestring (merge-pathnames "missing-sandbox-helper" script))))
     (dolist (platform '(:linux :darwin :freebsd :netbsd :openbsd))
@@ -86,11 +86,11 @@ can assert on the exact failure message through the second return value."
   "Return a platform PTY command running shell COMMAND and submitting ANSWER."
   (if (member :darwin *features*)
       (list "env"
-            (format nil "AUTOLITH_TEST_PTY_COMMAND=~A" command)
-            (format nil "AUTOLITH_TEST_PTY_ANSWER=~A" answer)
+            (format nil "ANTAIOS_TEST_PTY_COMMAND=~A" command)
+            (format nil "ANTAIOS_TEST_PTY_ANSWER=~A" answer)
             "/usr/bin/expect"
             "-c"
-            "set timeout 30; spawn -noecho /bin/sh -c \"$env(AUTOLITH_TEST_PTY_COMMAND)\"; expect -exact {[Y/n]}; send -- \"$env(AUTOLITH_TEST_PTY_ANSWER)\\r\"; expect eof; catch wait result; exit [lindex $result 3]")
+            "set timeout 30; spawn -noecho /bin/sh -c \"$env(ANTAIOS_TEST_PTY_COMMAND)\"; expect -exact {[Y/n]}; send -- \"$env(ANTAIOS_TEST_PTY_ANSWER)\\r\"; expect eof; catch wait result; exit [lindex $result 3]")
       (list "env" "SHELL=/bin/sh" "script" "-q" "-e" "-c" command "/dev/null")))
 
 (-> release-script-tests--chmod (string pathname) null)
@@ -118,7 +118,7 @@ can assert on the exact failure message through the second return value."
 (defun release-script-tests--fixture-curl ()
   "Return a curl substitute serving files from the test fixture root."
   (format nil
-          "#!/bin/sh~%set -eu~%output=~%write_out=~%url=~%while [ \"$#\" -gt 0 ]; do~%  case $1 in~%    --output) output=$2; shift 2 ;;~%    --write-out) write_out=$2; shift 2 ;;~%    --retry|--proto|--max-time) shift 2 ;;~%    --*) shift ;;~%    *) url=$1; shift ;;~%  esac~%done~%case $url in~%  */latest)~%    [ -n \"$write_out\" ]~%    printf \"%s\" \"https://example.invalid/releases/${AUTOLITH_TEST_LATEST_TAG:-v0.11.0}\"~%    exit 0~%    ;;~%esac~%cp \"$AUTOLITH_TEST_RELEASE_FIXTURE/${url##*/}\" \"$output\"~%"))
+          "#!/bin/sh~%set -eu~%output=~%write_out=~%url=~%while [ \"$#\" -gt 0 ]; do~%  case $1 in~%    --output) output=$2; shift 2 ;;~%    --write-out) write_out=$2; shift 2 ;;~%    --retry|--proto|--max-time) shift 2 ;;~%    --*) shift ;;~%    *) url=$1; shift ;;~%  esac~%done~%case $url in~%  */latest)~%    [ -n \"$write_out\" ]~%    printf \"%s\" \"https://example.invalid/releases/${ANTAIOS_TEST_LATEST_TAG:-v0.11.0}\"~%    exit 0~%    ;;~%esac~%cp \"$ANTAIOS_TEST_RELEASE_FIXTURE/${url##*/}\" \"$output\"~%"))
 
 (-> release-script-tests--install-linux-host-tools
     (pathname &key (:architecture string) (:libc string))
@@ -224,9 +224,9 @@ fi
     (source-root release-root &key (library-extension "so") platform)
   "Create a minimal packaged release fixture below RELEASE-ROOT."
   (dolist (relative
-           (list "libexec/autolith/.qlot/setup.lisp"
-                 "libexec/autolith/autolith.asd"
-                 "libexec/autolith/script/install"
+           (list "libexec/antaios/.qlot/setup.lisp"
+                 "libexec/antaios/antaios.asd"
+                 "libexec/antaios/script/install"
                  "libexec/sbcl-source/version.lisp-expr"
                  (format nil "lib/libfff_c.~A" library-extension)
                  (format nil "lib/libcolorlisp-tree-sitter.~A"
@@ -237,19 +237,19 @@ fi
     (release-script-tests--write-file
      (merge-pathnames relative release-root)
      ""))
-  (let ((launcher (merge-pathnames "bin/autolith" release-root)))
+  (let ((launcher (merge-pathnames "bin/antaios" release-root)))
     (ensure-directories-exist launcher)
-    (uiop:copy-file (merge-pathnames "bin/autolith-release" source-root)
+    (uiop:copy-file (merge-pathnames "bin/antaios-release" source-root)
                     launcher)
     (release-script-tests--chmod "755" launcher))
   (uiop:copy-file
    (merge-pathnames "script/install" source-root)
-   (merge-pathnames "libexec/autolith/script/install" release-root))
+   (merge-pathnames "libexec/antaios/script/install" release-root))
   (uiop:copy-file
    (merge-pathnames "script/launcher-cli.sh" source-root)
-   (merge-pathnames "libexec/autolith/script/launcher-cli.sh" release-root))
+   (merge-pathnames "libexec/antaios/script/launcher-cli.sh" release-root))
   (release-script-tests--chmod
-   "755" (merge-pathnames "libexec/autolith/script/install" release-root))
+   "755" (merge-pathnames "libexec/antaios/script/install" release-root))
   (release-script-tests--chmod
    "755" (merge-pathnames "runtime/bin/sbcl" release-root))
   (release-script-tests--chmod
@@ -265,9 +265,9 @@ fi
 (-> release-script-tests--syntax (pathname) null)
 (defun release-script-tests--syntax (source-root)
   "Check the remaining bootstrap shell boundaries and tracked Lisp programs."
-  (dolist (relative '("bin/autolith"
-                      "bin/autolith-release"
-                      "bin/autolith-runtime"
+  (dolist (relative '("bin/antaios"
+                      "bin/antaios-release"
+                      "bin/antaios-runtime"
                       "script/bootstrap"
                       "script/build-active"
                       "script/build-fff"
@@ -301,7 +301,7 @@ fi
                  (format nil "release program ~A is readable Lisp" relative)))
   (multiple-value-bind (output error-output status)
       (release-script-tests--run
-       (list (or (uiop:getenv "AUTOLITH_SBCL")
+       (list (or (uiop:getenv "ANTAIOS_SBCL")
                  (namestring (truename (uiop:argv0)))
                  "sbcl")
              "--noinform" "--no-userinit" "--no-sysinit"
@@ -340,7 +340,7 @@ fi
          (cache-home (merge-pathnames "cache/" fixture))
          (data-home (merge-pathnames "data/" fixture))
          (checkout
-           (merge-pathnames (format nil "autolith/build/fff/~A/" commit)
+           (merge-pathnames (format nil "antaios/build/fff/~A/" commit)
                             cache-home))
          (fixture-bin (merge-pathnames "bin/" fixture))
          (xcrun (merge-pathnames "xcrun" fixture-bin))
@@ -364,14 +364,14 @@ fi
      "#!/bin/sh
 set -eu
 [ \"$1\" = --show-sdk-path ]
-printf '%s\\n' \"${AUTOLITH_TEST_SDK%/}\"
+printf '%s\\n' \"${ANTAIOS_TEST_SDK%/}\"
 ")
     (release-script-tests--write-file
      git
      "#!/bin/sh
 set -eu
 case \"$*\" in
-  *\"rev-parse HEAD\") printf '%s\\n' \"${AUTOLITH_TEST_FFF_COMMIT:?}\" ;;
+  *\"rev-parse HEAD\") printf '%s\\n' \"${ANTAIOS_TEST_FFF_COMMIT:?}\" ;;
 esac
 ")
     (release-script-tests--write-file
@@ -379,7 +379,7 @@ esac
      "#!/bin/sh
 set -eu
 mkdir -p target/release
-printf '%s\\n' \"${LIBRARY_PATH:-}\" > \"${AUTOLITH_TEST_EVENT_LOG:?}\"
+printf '%s\\n' \"${LIBRARY_PATH:-}\" > \"${ANTAIOS_TEST_EVENT_LOG:?}\"
 : > target/release/libfff_c.dylib
 ")
     (dolist (pathname (list xcrun git cargo))
@@ -400,9 +400,9 @@ printf '%s\\n' \"${LIBRARY_PATH:-}\" > \"${AUTOLITH_TEST_EVENT_LOG:?}\"
                (format nil "PATH=~A:~A"
                        (string-right-trim "/" (namestring fixture-bin))
                        (or (uiop:getenv "PATH") ""))
-               (format nil "AUTOLITH_TEST_SDK=~A" (namestring sdk))
-               (format nil "AUTOLITH_TEST_FFF_COMMIT=~A" commit)
-               (format nil "AUTOLITH_TEST_EVENT_LOG=~A"
+               (format nil "ANTAIOS_TEST_SDK=~A" (namestring sdk))
+               (format nil "ANTAIOS_TEST_FFF_COMMIT=~A" commit)
+               (format nil "ANTAIOS_TEST_EVENT_LOG=~A"
                        (namestring event-log))
                "LIBRARY_PATH=/existing/lib")
          :ignore-error-status t)
@@ -420,7 +420,7 @@ printf '%s\\n' \"${LIBRARY_PATH:-}\" > \"${AUTOLITH_TEST_EVENT_LOG:?}\"
                library-path)))
     (test-assert
      (probe-file
-      (merge-pathnames "autolith/native/fff/libfff_c.dylib" data-home))
+      (merge-pathnames "antaios/native/fff/libfff_c.dylib" data-home))
      "the Darwin fff build publishes its private library")
     nil))
 
@@ -445,7 +445,7 @@ printf '%s\\n' \"${LIBRARY_PATH:-}\" > \"${AUTOLITH_TEST_EVENT_LOG:?}\"
                     bootstrap)
     (release-script-tests--write-file
      (merge-pathnames "runtime-requirement.lisp" script-directory)
-     "(defun autolith-require-minimum-runtime (pathname)
+     "(defun antaios-require-minimum-runtime (pathname)
   (declare (ignore pathname))
   nil)
 ")
@@ -462,7 +462,7 @@ printf '%s\\n' \"${LIBRARY_PATH:-}\" > \"${AUTOLITH_TEST_EVENT_LOG:?}\"
 (in-package #:ql)
 
 (defun record-event (event)
-  (with-open-file (stream (uiop:getenv \"AUTOLITH_TEST_EVENT_LOG\")
+  (with-open-file (stream (uiop:getenv \"ANTAIOS_TEST_EVENT_LOG\")
                           :direction :output
                           :if-exists :append
                           :if-does-not-exist :create)
@@ -487,7 +487,7 @@ printf '%s\\n' \"${LIBRARY_PATH:-}\" > \"${AUTOLITH_TEST_EVENT_LOG:?}\"
 (in-package #:ql)
 
 (defun record-event (event)
-  (with-open-file (stream (uiop:getenv \"AUTOLITH_TEST_EVENT_LOG\")
+  (with-open-file (stream (uiop:getenv \"ANTAIOS_TEST_EVENT_LOG\")
                           :direction :output
                           :if-exists :append
                           :if-does-not-exist :create)
@@ -530,7 +530,7 @@ printf '%s\\n' \"${LIBRARY_PATH:-}\" > \"${AUTOLITH_TEST_EVENT_LOG:?}\"
      fake-sbcl
      "#!/bin/sh
 set -eu
-printf 'subprocess %s\\n' \"$*\" >> \"${AUTOLITH_TEST_EVENT_LOG:?}\"
+printf 'subprocess %s\\n' \"$*\" >> \"${ANTAIOS_TEST_EVENT_LOG:?}\"
 ")
     (release-script-tests--chmod "755" fake-sbcl)
     (release-script-tests--write-file
@@ -550,8 +550,8 @@ printf 'subprocess %s\\n' \"$*\" >> \"${AUTOLITH_TEST_EVENT_LOG:?}\"
                (format nil "XDG_CACHE_HOME=~A" (namestring cache-home))
                (format nil "XDG_DATA_HOME=~A" (namestring data-home))
                (format nil "XDG_STATE_HOME=~A" (namestring state-home))
-               (format nil "AUTOLITH_SBCL=~A" (namestring fake-sbcl))
-               (format nil "AUTOLITH_TEST_EVENT_LOG=~A"
+               (format nil "ANTAIOS_SBCL=~A" (namestring fake-sbcl))
+               (format nil "ANTAIOS_TEST_EVENT_LOG=~A"
                        (namestring event-log))
                "NO_COLOR=1")
          :ignore-error-status t)
@@ -584,11 +584,11 @@ printf 'subprocess %s\\n' \"$*\" >> \"${AUTOLITH_TEST_EVENT_LOG:?}\"
          (data-home (merge-pathnames "data/" fixture-root))
          (state-home (merge-pathnames "state/" fixture-root))
          (home (merge-pathnames "home/" fixture-root))
-         (active-directory (merge-pathnames "autolith/active/" data-home))
-         (active-core (merge-pathnames "autolith-active.core" active-directory))
+         (active-directory (merge-pathnames "antaios/active/" data-home))
+         (active-core (merge-pathnames "antaios-active.core" active-directory))
          (active-manifest (merge-pathnames "manifest.sexp" active-directory))
-         (launcher (merge-pathnames "autolith" bin-directory))
-         (active-source (merge-pathnames "autolith-active" bin-directory))
+         (launcher (merge-pathnames "antaios" bin-directory))
+         (active-source (merge-pathnames "antaios-active" bin-directory))
          (bootstrap (merge-pathnames "bootstrap" script-directory))
          (recovery-source (merge-pathnames "launcher.lisp" recovery-directory))
          (fake-sbcl (merge-pathnames "fake-sbcl" fixture-root))
@@ -596,7 +596,7 @@ printf 'subprocess %s\\n' \"$*\" >> \"${AUTOLITH_TEST_EVENT_LOG:?}\"
     (uiop:ensure-all-directories-exist
      (list bin-directory script-directory recovery-directory
            data-home state-home home))
-    (uiop:copy-file (merge-pathnames "bin/autolith" source-root) launcher)
+    (uiop:copy-file (merge-pathnames "bin/antaios" source-root) launcher)
     (uiop:copy-file (merge-pathnames "script/launcher-cli.sh" source-root)
                     (merge-pathnames "launcher-cli.sh" script-directory))
     (release-script-tests--write-file active-source "")
@@ -612,14 +612,14 @@ printf 'subprocess %s\\n' \"$*\" >> \"${AUTOLITH_TEST_EVENT_LOG:?}\"
      fake-sbcl
      "#!/bin/sh
 set -eu
-printf 'SBCL %s\\n' \"$*\" >> \"$AUTOLITH_TEST_LOG\"
+printf 'SBCL %s\\n' \"$*\" >> \"$ANTAIOS_TEST_LOG\"
 mode=UNKNOWN
 probe=false
 for argument in \"$@\"; do
   case $argument in
-    --autolith-internal-active-image-probe) probe=true ;;
-    */bin/autolith-active) mode=SOURCE ;;
-    */autolith-active.core) mode=ACTIVE ;;
+    --antaios-internal-active-image-probe) probe=true ;;
+    */bin/antaios-active) mode=SOURCE ;;
+    */antaios-active.core) mode=ACTIVE ;;
   esac
 done
 if [ \"$probe\" = true ]; then
@@ -635,10 +635,10 @@ esac
      bootstrap
      "#!/bin/sh
 set -eu
-printf 'BOOTSTRAP\\n' >> \"$AUTOLITH_TEST_LOG\"
-active=$XDG_DATA_HOME/autolith/active
+printf 'BOOTSTRAP\\n' >> \"$ANTAIOS_TEST_LOG\"
+active=$XDG_DATA_HOME/antaios/active
 mkdir -p \"$active\"
-: > \"$active/autolith-active.core\"
+: > \"$active/antaios-active.core\"
 printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
 ")
     (dolist (pathname (list launcher fake-sbcl bootstrap))
@@ -646,10 +646,10 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
     (let* ((environment
              (list (format nil "XDG_DATA_HOME=~A" (namestring data-home))
                    (format nil "XDG_STATE_HOME=~A" (namestring state-home))
-                   (format nil "AUTOLITH_SBCL=~A" (namestring fake-sbcl))
-                   "AUTOLITH_ACTIVE_CORE="
-                   "AUTOLITH_RECOVERY_CORE="
-                   (format nil "AUTOLITH_TEST_LOG=~A" (namestring log))))
+                   (format nil "ANTAIOS_SBCL=~A" (namestring fake-sbcl))
+                   "ANTAIOS_ACTIVE_CORE="
+                   "ANTAIOS_RECOVERY_CORE="
+                   (format nil "ANTAIOS_TEST_LOG=~A" (namestring log))))
            (source-output
              (release-script-tests--run
               (list (namestring launcher) "--from-source" "fixture-argument")
@@ -663,8 +663,8 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
                (list (format nil "HOME=~A" (namestring home))
                      "XDG_DATA_HOME=relative/data"
                      "XDG_STATE_HOME=relative/state"
-                     (format nil "AUTOLITH_SBCL=~A" (namestring fake-sbcl))
-                     (format nil "AUTOLITH_TEST_LOG=~A" (namestring log))))
+                     (format nil "ANTAIOS_SBCL=~A" (namestring fake-sbcl))
+                     (format nil "ANTAIOS_TEST_LOG=~A" (namestring log))))
              (output
                (release-script-tests--run
                 (list (namestring launcher) "--from-source")
@@ -673,10 +673,10 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
          (and (search "SOURCE" output)
               (uiop:directory-exists-p
                (merge-pathnames
-                ".local/state/autolith/crash-pointers/" home))
+                ".local/state/antaios/crash-pointers/" home))
               (not
                (uiop:directory-exists-p
-                (merge-pathnames "relative/state/autolith/" fixture-root))))
+                (merge-pathnames "relative/state/antaios/" fixture-root))))
          "the source launcher falls back from relative XDG base directories"))
       (multiple-value-bind (output error-output status)
           (release-script-tests--run
@@ -697,24 +697,24 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
       (let* ((cache-home (merge-pathnames "cache/" fixture-root))
              (config-home (merge-pathnames "config/" fixture-root))
              (artifacts
-               (list (merge-pathnames "autolith/generations/g1/autolith.core" data-home)
-                     (merge-pathnames "autolith/runtimes/2.6.6/installation/bin/sbcl" data-home)
-                     (merge-pathnames "autolith/lisp-images/worker.core" data-home)
-                     (merge-pathnames "autolith/release-images" data-home)
-                     (merge-pathnames "autolith/crashes/capsule.sexp" state-home)
-                     (merge-pathnames "autolith/current-generation.sexp" state-home)
-                     (merge-pathnames "autolith/provider-models.sexp" state-home)
-                     (merge-pathnames "autolith/fff/index" cache-home)))
+               (list (merge-pathnames "antaios/generations/g1/antaios.core" data-home)
+                     (merge-pathnames "antaios/runtimes/2.6.6/installation/bin/sbcl" data-home)
+                     (merge-pathnames "antaios/lisp-images/worker.core" data-home)
+                     (merge-pathnames "antaios/release-images" data-home)
+                     (merge-pathnames "antaios/crashes/capsule.sexp" state-home)
+                     (merge-pathnames "antaios/current-generation.sexp" state-home)
+                     (merge-pathnames "antaios/provider-models.sexp" state-home)
+                     (merge-pathnames "antaios/fff/index" cache-home)))
              (kept
-               (list (merge-pathnames "autolith/conversations/c1/00000000000000000001.sexp"
+               (list (merge-pathnames "antaios/conversations/c1/00000000000000000001.sexp"
                                       data-home)
-                     (merge-pathnames "autolith/memories.sexp" data-home)
-                     (merge-pathnames "autolith/image-commits/i1/reconstruct.lisp" data-home)
-                     (merge-pathnames "autolith/auth.sexp" state-home)
-                     (merge-pathnames "autolith/mutation-history/HEAD" state-home)
-                     (merge-pathnames "autolith/mutations.sexp" state-home)
-                     (merge-pathnames "autolith/preferences.sexp" state-home)
-                     (merge-pathnames "autolith/init.lisp" config-home)))
+                     (merge-pathnames "antaios/memories.sexp" data-home)
+                     (merge-pathnames "antaios/image-commits/i1/reconstruct.lisp" data-home)
+                     (merge-pathnames "antaios/auth.sexp" state-home)
+                     (merge-pathnames "antaios/mutation-history/HEAD" state-home)
+                     (merge-pathnames "antaios/mutations.sexp" state-home)
+                     (merge-pathnames "antaios/preferences.sexp" state-home)
+                     (merge-pathnames "antaios/init.lisp" config-home)))
              (uninstall-environment
                (append environment
                        (list (format nil "XDG_CACHE_HOME=~A" (namestring cache-home))
@@ -743,7 +743,7 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
             (test-assert
              (and (zerop status)
                   (notany #'probe-file artifacts)
-                  (not (uiop:directory-exists-p (merge-pathnames "autolith/" cache-home)))
+                  (not (uiop:directory-exists-p (merge-pathnames "antaios/" cache-home)))
                   (every #'probe-file kept)
                   (search "source checkout" error-output)
                   (search (string-right-trim "/" (namestring (truename fixture-root)))
@@ -786,7 +786,7 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
             (release-script-tests--run
              (cons (namestring launcher) arguments)
              :environment (append environment
-                                  '("AUTOLITH_INSTALLATION_KIND=release"))
+                                  '("ANTAIOS_INSTALLATION_KIND=release"))
              :ignore-error-status t)
           (declare (ignore output))
           (test-assert
@@ -877,23 +877,23 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
   "Exercise packaged launcher validation and its machine-readable probe."
   (let* ((release-root
            (merge-pathnames
-            (format nil "autolith-v~A/" *release-script-tests-version*)
+            (format nil "antaios-v~A/" *release-script-tests-version*)
             root))
          (launcher
-           (merge-pathnames "bin/autolith" release-root))
+           (merge-pathnames "bin/antaios" release-root))
          (host-bin (merge-pathnames "linux-host-bin/" root))
          (path (format nil "~A:~A"
                        (string-right-trim "/" (namestring host-bin))
                        (or (uiop:getenv "PATH") "")))
          (environment
-           (list "AUTOLITH_NO_UPDATE_CHECK=1"
+           (list "ANTAIOS_NO_UPDATE_CHECK=1"
                  (format nil "PATH=~A" path))))
     (release-script-tests--install-linux-host-tools host-bin)
     (release-script-tests--make-release source-root release-root
                                         :platform "x86_64-linux")
     (let ((output
             (release-script-tests--run
-             (list (namestring launcher) "--autolith-release-probe")
+             (list (namestring launcher) "--antaios-release-probe")
              :environment environment)))
       (dolist (line
                (list
@@ -906,7 +906,7 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
                          "/"
                          (namestring
                           (truename
-                           (merge-pathnames "libexec/autolith/" release-root)))))
+                           (merge-pathnames "libexec/antaios/" release-root)))))
                 (format nil "runtime=~A"
                         (namestring
                          (truename
@@ -922,7 +922,7 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
      :platform "aarch64-linux")
     (multiple-value-bind (output error-output status)
         (release-script-tests--run
-         (list (namestring launcher) "--autolith-release-probe")
+         (list (namestring launcher) "--antaios-release-probe")
          :environment environment
          :ignore-error-status t)
       (declare (ignore output))
@@ -937,7 +937,7 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
      (format nil "v~A" *release-script-tests-version*))
     (multiple-value-bind (output error-output status)
         (release-script-tests--run
-         (list (namestring launcher) "--autolith-release-probe")
+         (list (namestring launcher) "--antaios-release-probe")
          :environment environment
          :ignore-error-status t)
       (declare (ignore output))
@@ -956,7 +956,7 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
       (delete-file library)
       (multiple-value-bind (output error-output status)
           (release-script-tests--run
-           (list (namestring launcher) "--autolith-release-probe")
+           (list (namestring launcher) "--antaios-release-probe")
            :environment environment
            :ignore-error-status t
            :output nil)
@@ -969,7 +969,7 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
      "v0.12.0")
     (multiple-value-bind (output error-output status)
         (release-script-tests--run
-         (list (namestring launcher) "--autolith-release-probe")
+         (list (namestring launcher) "--antaios-release-probe")
          :environment environment
          :ignore-error-status t)
       (declare (ignore output))
@@ -985,17 +985,17 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
   "Exercise Darwin packaged launcher validation and its machine-readable probe."
   (let* ((release-root
            (merge-pathnames
-            (format nil "autolith-darwin-launcher-v~A/"
+            (format nil "antaios-darwin-launcher-v~A/"
                     *release-script-tests-version*)
             root))
          (launcher
-           (merge-pathnames "bin/autolith" release-root))
+           (merge-pathnames "bin/antaios" release-root))
          (host-bin (merge-pathnames "darwin-host-bin/" root))
          (path (format nil "~A:~A"
                        (string-right-trim "/" (namestring host-bin))
                        (or (uiop:getenv "PATH") "")))
          (environment
-           (list "AUTOLITH_NO_UPDATE_CHECK=1"
+           (list "ANTAIOS_NO_UPDATE_CHECK=1"
                  (format nil "PATH=~A" path))))
     (release-script-tests--install-darwin-host-tools host-bin)
     (release-script-tests--make-release source-root release-root
@@ -1003,7 +1003,7 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
                                         :platform "arm64-darwin")
     (let ((output
             (release-script-tests--run
-             (list (namestring launcher) "--autolith-release-probe")
+             (list (namestring launcher) "--antaios-release-probe")
              :environment environment)))
       (dolist (line
                (list
@@ -1016,7 +1016,7 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
                          "/"
                          (namestring
                           (truename
-                           (merge-pathnames "libexec/autolith/" release-root)))))
+                           (merge-pathnames "libexec/antaios/" release-root)))))
                 (format nil "runtime=~A"
                         (namestring
                          (truename
@@ -1032,7 +1032,7 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
       (delete-file library)
       (multiple-value-bind (output error-output status)
           (release-script-tests--run
-           (list (namestring launcher) "--autolith-release-probe")
+           (list (namestring launcher) "--antaios-release-probe")
            :environment environment
            :ignore-error-status t
            :output nil)
@@ -1047,7 +1047,7 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
      :platform "x86_64-darwin")
     (let ((output
             (release-script-tests--run
-             (list (namestring launcher) "--autolith-release-probe")
+             (list (namestring launcher) "--antaios-release-probe")
              :environment environment)))
       (test-assert
        (find "platform=x86_64-darwin"
@@ -1059,7 +1059,7 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
      (format nil "v~A" *release-script-tests-version*))
     (multiple-value-bind (output error-output status)
         (release-script-tests--run
-         (list (namestring launcher) "--autolith-release-probe")
+         (list (namestring launcher) "--antaios-release-probe")
          :environment environment
          :ignore-error-status t)
       (declare (ignore output))
@@ -1073,7 +1073,7 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
      "v0.12.0")
     (multiple-value-bind (output error-output status)
         (release-script-tests--run
-         (list (namestring launcher) "--autolith-release-probe")
+         (list (namestring launcher) "--antaios-release-probe")
          :environment environment
          :ignore-error-status t)
       (declare (ignore output))
@@ -1090,10 +1090,10 @@ printf '(:ACTIVE-IMAGE :VERSION 1\\n)\\n' > \"$active/manifest.sexp\"
   (let* ((tag (format nil "v~A" *release-script-tests-version*))
          (next-tag "v0.12.0")
          (release-name
-           (format nil "autolith-~A-x86_64-linux" tag))
+           (format nil "antaios-~A-x86_64-linux" tag))
          (release-root
            (merge-pathnames
-            (format nil "autolith-v~A/" *release-script-tests-version*)
+            (format nil "antaios-v~A/" *release-script-tests-version*)
             root))
          (fixture-root (merge-pathnames "fixture/" root))
          (fixture-source (merge-pathnames "fixture-source/" root))
@@ -1174,12 +1174,12 @@ esac
            (base-environment
              (list
               (format nil "PATH=~A" path)
-              (format nil "AUTOLITH_TEST_RELEASE_FIXTURE=~A"
+              (format nil "ANTAIOS_TEST_RELEASE_FIXTURE=~A"
                       (namestring fixture-root))
-              "AUTOLITH_RELEASE_BASE_URL=https://example.invalid"
-              (format nil "AUTOLITH_INSTALL_ROOT=~A"
+              "ANTAIOS_RELEASE_BASE_URL=https://example.invalid"
+              (format nil "ANTAIOS_INSTALL_ROOT=~A"
                       (string-right-trim "/" (namestring install-root)))
-              (format nil "AUTOLITH_BIN_DIR=~A"
+              (format nil "ANTAIOS_BIN_DIR=~A"
                       (string-right-trim "/" (namestring bin-directory))))))
       (release-script-tests--run
        (list (namestring installer) "--version" tag)
@@ -1188,7 +1188,7 @@ esac
       (test-assert
        (probe-file
          (merge-pathnames
-          (format nil "releases/~A-x86_64-linux/bin/autolith" tag)
+          (format nil "releases/~A-x86_64-linux/bin/antaios" tag)
           install-root))
        "the installer publishes the requested release")
       (test-assert
@@ -1198,24 +1198,24 @@ esac
        "the installer selects the requested version atomically")
       (test-assert
        (string= (release-script-tests--readlink
-                 (merge-pathnames "autolith" bin-directory))
-                (namestring (merge-pathnames "current/bin/autolith"
+                 (merge-pathnames "antaios" bin-directory))
+                (namestring (merge-pathnames "current/bin/antaios"
                                              install-root)))
        "the installer publishes the user command link")
       (let* ((fallback-home (merge-pathnames "installer-home/" root))
              (fallback-root
                (merge-pathnames
-                ".local/share/autolith/installation/" fallback-home))
+                ".local/share/antaios/installation/" fallback-home))
              (fallback-environment
                (append
                 (remove-if
                  (lambda (entry)
-                   (or (uiop:string-prefix-p "AUTOLITH_INSTALL_ROOT=" entry)
-                       (uiop:string-prefix-p "AUTOLITH_BIN_DIR=" entry)))
+                   (or (uiop:string-prefix-p "ANTAIOS_INSTALL_ROOT=" entry)
+                       (uiop:string-prefix-p "ANTAIOS_BIN_DIR=" entry)))
                  base-environment)
                 (list (format nil "HOME=~A" (namestring fallback-home))
                       "XDG_DATA_HOME=relative/data"
-                      (format nil "AUTOLITH_BIN_DIR=~A"
+                      (format nil "ANTAIOS_BIN_DIR=~A"
                               (namestring bin-directory))))))
         (uiop:ensure-all-directories-exist (list fallback-home))
         (release-script-tests--run
@@ -1225,7 +1225,7 @@ esac
         (test-assert
          (probe-file
           (merge-pathnames
-           (format nil "releases/~A-x86_64-linux/bin/autolith" tag)
+           (format nil "releases/~A-x86_64-linux/bin/antaios" tag)
            fallback-root))
          "the installer falls back from a relative XDG data home"))
       (release-script-tests--run
@@ -1263,18 +1263,18 @@ esac
        "the installer replaces an existing selected release link")
       (test-assert
        (string= (release-script-tests--readlink
-                 (merge-pathnames "autolith" bin-directory))
-                (namestring (merge-pathnames "current/bin/autolith"
+                 (merge-pathnames "antaios" bin-directory))
+                (namestring (merge-pathnames "current/bin/antaios"
                                              install-root)))
        "no-link publication preserves the existing command prefix")
       (release-script-tests--run
        (list (namestring installer))
        :environment
        (append
-        (remove "AUTOLITH_RELEASE_BASE_URL=https://example.invalid"
+        (remove "ANTAIOS_RELEASE_BASE_URL=https://example.invalid"
                 base-environment :test #'string=)
-        '("AUTOLITH_RELEASE_BASE_URL=https://example.invalid/releases"
-          "AUTOLITH_RELEASE_LATEST_URL=https://example.invalid/releases/latest"))
+        '("ANTAIOS_RELEASE_BASE_URL=https://example.invalid/releases"
+          "ANTAIOS_RELEASE_LATEST_URL=https://example.invalid/releases/latest"))
        :output nil)))
   nil)
 
@@ -1333,12 +1333,12 @@ fi
   "Exercise Darwin binary installer download, verification, and link updates."
   (let* ((tag (format nil "v~A" *release-script-tests-version*))
          (release-name
-           (format nil "autolith-~A-arm64-darwin" tag))
+           (format nil "antaios-~A-arm64-darwin" tag))
          (x86-release-name
-           (format nil "autolith-~A-x86_64-darwin" tag))
+           (format nil "antaios-~A-x86_64-darwin" tag))
          (release-root
            (merge-pathnames
-            (format nil "autolith-darwin-v~A/" *release-script-tests-version*)
+            (format nil "antaios-darwin-v~A/" *release-script-tests-version*)
             root))
          (fixture-root (merge-pathnames "fixture-darwin/" root))
          (fixture-source (merge-pathnames "fixture-darwin-source/" root))
@@ -1423,12 +1423,12 @@ fi
            (base-environment
              (list
               (format nil "PATH=~A" path)
-              (format nil "AUTOLITH_TEST_RELEASE_FIXTURE=~A"
+              (format nil "ANTAIOS_TEST_RELEASE_FIXTURE=~A"
                       (namestring fixture-root))
-              "AUTOLITH_RELEASE_BASE_URL=https://example.invalid"
-              (format nil "AUTOLITH_INSTALL_ROOT=~A"
+              "ANTAIOS_RELEASE_BASE_URL=https://example.invalid"
+              (format nil "ANTAIOS_INSTALL_ROOT=~A"
                       (string-right-trim "/" (namestring install-root)))
-              (format nil "AUTOLITH_BIN_DIR=~A"
+              (format nil "ANTAIOS_BIN_DIR=~A"
                       (string-right-trim "/" (namestring bin-directory))))))
       (multiple-value-bind (output error-output status)
           (release-script-tests--run
@@ -1449,7 +1449,7 @@ fi
       (test-assert
        (probe-file
          (merge-pathnames
-          (format nil "releases/~A-arm64-darwin/bin/autolith" tag)
+          (format nil "releases/~A-arm64-darwin/bin/antaios" tag)
           install-root))
        "the Darwin installer publishes the requested release")
       (test-assert
@@ -1459,8 +1459,8 @@ fi
        "the Darwin installer selects the requested version")
       (test-assert
        (string= (release-script-tests--readlink
-                 (merge-pathnames "autolith" bin-directory))
-                (namestring (merge-pathnames "current/bin/autolith"
+                 (merge-pathnames "antaios" bin-directory))
+                (namestring (merge-pathnames "current/bin/antaios"
                                              install-root)))
        "the Darwin installer publishes the user command link")
       (release-script-tests--run
@@ -1475,7 +1475,7 @@ fi
       (test-assert
        (probe-file
         (merge-pathnames
-         (format nil "releases/~A-x86_64-darwin/bin/autolith" tag)
+         (format nil "releases/~A-x86_64-darwin/bin/antaios" tag)
          install-root))
        "the Darwin x86-64 installer publishes the requested release")
       (test-assert
@@ -1498,17 +1498,17 @@ fi
          (install-root (merge-pathnames "custom-installation/" fixture-root))
          (release-root (merge-pathnames (format nil "releases/~A/" tag)
                                         install-root))
-         (packaged-source (merge-pathnames "libexec/autolith/" release-root))
-         (inner-launcher (merge-pathnames "bin/autolith" packaged-source))
+         (packaged-source (merge-pathnames "libexec/antaios/" release-root))
+         (inner-launcher (merge-pathnames "bin/antaios" packaged-source))
          (bundled-installer (merge-pathnames "script/install" packaged-source))
-         (launcher (merge-pathnames "bin/autolith" release-root))
+         (launcher (merge-pathnames "bin/antaios" release-root))
          (bin-directory (merge-pathnames "custom-bin/" fixture-root))
-         (command-link (merge-pathnames "autolith" bin-directory))
+         (command-link (merge-pathnames "antaios" bin-directory))
          (data-home (merge-pathnames "data/" fixture-root))
          (state-home (merge-pathnames "state/" fixture-root))
          (fixture-bin (merge-pathnames "fixture-bin/" fixture-root))
          (curl (merge-pathnames "curl" fixture-bin))
-         (updated-launcher (merge-pathnames "updated-autolith" fixture-root))
+         (updated-launcher (merge-pathnames "updated-antaios" fixture-root))
          (log (merge-pathnames "handoff.log" fixture-root)))
     (release-script-tests--make-release source-root release-root)
     (uiop:ensure-all-directories-exist
@@ -1518,28 +1518,28 @@ fi
      (list "ln" "-s" (format nil "releases/~A" tag)
            (namestring (merge-pathnames "current" install-root))))
     (uiop:run-program
-     (list "ln" "-s" (namestring (merge-pathnames "current/bin/autolith"
+     (list "ln" "-s" (namestring (merge-pathnames "current/bin/antaios"
                                                    install-root))
            (namestring command-link)))
     (release-script-tests--write-file
      inner-launcher
      "#!/bin/sh
 set -eu
-printf 'INNER_KIND=%s\\n' \"${AUTOLITH_INSTALLATION_KIND:-}\" >> \"$AUTOLITH_TEST_LOG\"
-printf 'INNER_ROOT=%s\\n' \"${AUTOLITH_RELEASE_ROOT:-}\" >> \"$AUTOLITH_TEST_LOG\"
-printf 'INNER_ARGS=%s\\n' \"$*\" >> \"$AUTOLITH_TEST_LOG\"
-printf 'INNER_ARG=<%s>\\n' \"$@\" >> \"$AUTOLITH_TEST_LOG\"
-printf 'INNER_ARGC=%s\\n' \"$#\" >> \"$AUTOLITH_TEST_LOG\"
-[ \"${AUTOLITH_SUPPRESS_UPDATE_OFFER:-}\" != 1 ] || exit 0
+printf 'INNER_KIND=%s\\n' \"${ANTAIOS_INSTALLATION_KIND:-}\" >> \"$ANTAIOS_TEST_LOG\"
+printf 'INNER_ROOT=%s\\n' \"${ANTAIOS_RELEASE_ROOT:-}\" >> \"$ANTAIOS_TEST_LOG\"
+printf 'INNER_ARGS=%s\\n' \"$*\" >> \"$ANTAIOS_TEST_LOG\"
+printf 'INNER_ARG=<%s>\\n' \"$@\" >> \"$ANTAIOS_TEST_LOG\"
+printf 'INNER_ARGC=%s\\n' \"$#\" >> \"$ANTAIOS_TEST_LOG\"
+[ \"${ANTAIOS_SUPPRESS_UPDATE_OFFER:-}\" != 1 ] || exit 0
 exit 76
 ")
     (release-script-tests--write-file
      updated-launcher
      "#!/bin/sh
 set -eu
-printf 'UPDATED_ARGS=%s\\n' \"$*\" >> \"$AUTOLITH_TEST_LOG\"
-printf 'UPDATED_ARG=<%s>\\n' \"$@\" >> \"$AUTOLITH_TEST_LOG\"
-printf 'UPDATED_ARGC=%s\\n' \"$#\" >> \"$AUTOLITH_TEST_LOG\"
+printf 'UPDATED_ARGS=%s\\n' \"$*\" >> \"$ANTAIOS_TEST_LOG\"
+printf 'UPDATED_ARG=<%s>\\n' \"$@\" >> \"$ANTAIOS_TEST_LOG\"
+printf 'UPDATED_ARGC=%s\\n' \"$#\" >> \"$ANTAIOS_TEST_LOG\"
 ")
     (release-script-tests--write-file
      bundled-installer
@@ -1555,38 +1555,38 @@ while [ \"$#\" -gt 0 ]; do
   esac
 done
 [ \"$without\" = true ]
-[ \"$requested\" = \"$AUTOLITH_TEST_LATEST_TAG\" ]
-printf 'INSTALL_ROOT=%s\\n' \"$AUTOLITH_INSTALL_ROOT\" >> \"$AUTOLITH_TEST_LOG\"
-printf 'INSTALL_ARGS=without-command-link,%s\\n' \"$requested\" >> \"$AUTOLITH_TEST_LOG\"
-[ \"${AUTOLITH_TEST_INSTALL_STATUS:-0}\" = 0 ] || exit \"$AUTOLITH_TEST_INSTALL_STATUS\"
-target=$AUTOLITH_INSTALL_ROOT/releases/$requested
+[ \"$requested\" = \"$ANTAIOS_TEST_LATEST_TAG\" ]
+printf 'INSTALL_ROOT=%s\\n' \"$ANTAIOS_INSTALL_ROOT\" >> \"$ANTAIOS_TEST_LOG\"
+printf 'INSTALL_ARGS=without-command-link,%s\\n' \"$requested\" >> \"$ANTAIOS_TEST_LOG\"
+[ \"${ANTAIOS_TEST_INSTALL_STATUS:-0}\" = 0 ] || exit \"$ANTAIOS_TEST_INSTALL_STATUS\"
+target=$ANTAIOS_INSTALL_ROOT/releases/$requested
 mkdir -p \"$target/bin\"
-cp \"$AUTOLITH_TEST_UPDATED_LAUNCHER\" \"$target/bin/autolith\"
-chmod 755 \"$target/bin/autolith\"
-temporary=$AUTOLITH_INSTALL_ROOT/.current.$$
+cp \"$ANTAIOS_TEST_UPDATED_LAUNCHER\" \"$target/bin/antaios\"
+chmod 755 \"$target/bin/antaios\"
+temporary=$ANTAIOS_INSTALL_ROOT/.current.$$
 ln -s \"releases/$requested\" \"$temporary\"
-mv -Tf \"$temporary\" \"$AUTOLITH_INSTALL_ROOT/current\"
+mv -Tf \"$temporary\" \"$ANTAIOS_INSTALL_ROOT/current\"
 ")
     (release-script-tests--write-file
      curl
      "#!/bin/sh
 set -eu
-printf 'DISCOVERY\\n' >> \"$AUTOLITH_TEST_LOG\"
-[ \"${AUTOLITH_TEST_DISCOVERY_STATUS:-0}\" = 0 ] || exit \"$AUTOLITH_TEST_DISCOVERY_STATUS\"
-printf 'https://example.invalid/releases/%s' \"$AUTOLITH_TEST_LATEST_TAG\"
+printf 'DISCOVERY\\n' >> \"$ANTAIOS_TEST_LOG\"
+[ \"${ANTAIOS_TEST_DISCOVERY_STATUS:-0}\" = 0 ] || exit \"$ANTAIOS_TEST_DISCOVERY_STATUS\"
+printf 'https://example.invalid/releases/%s' \"$ANTAIOS_TEST_LATEST_TAG\"
 ")
     (release-script-tests--write-file
      (merge-pathnames "runtime/bin/sbcl" release-root)
      "#!/bin/sh
-printf 'RUNTIME=%s\\n' \"$*\" >> \"$AUTOLITH_TEST_LOG\"
+printf 'RUNTIME=%s\\n' \"$*\" >> \"$ANTAIOS_TEST_LOG\"
 ")
     (dolist (pathname (list inner-launcher bundled-installer updated-launcher
                             curl))
       (release-script-tests--chmod "755" pathname))
-    (let* ((active-root (merge-pathnames "autolith/active/" data-home))
-           (recovery-root (merge-pathnames "autolith/recovery/" data-home)))
-      (dolist (pathname (list (merge-pathnames "autolith-active.core" active-root)
-                              (merge-pathnames "autolith-recovery.core"
+    (let* ((active-root (merge-pathnames "antaios/active/" data-home))
+           (recovery-root (merge-pathnames "antaios/recovery/" data-home)))
+      (dolist (pathname (list (merge-pathnames "antaios-active.core" active-root)
+                              (merge-pathnames "antaios-recovery.core"
                                                recovery-root)))
         (release-script-tests--write-file pathname "core"))
       (release-script-tests--write-file
@@ -1596,7 +1596,7 @@ printf 'RUNTIME=%s\\n' \"$*\" >> \"$AUTOLITH_TEST_LOG\"
        (merge-pathnames "manifest.sexp" recovery-root)
        "(:RECOVERY-IMAGE :VERSION 2)\n")
       (release-script-tests--write-file
-       (merge-pathnames "autolith/release-images" data-home)
+       (merge-pathnames "antaios/release-images" data-home)
        (format nil "~A:x86_64-linux~%" tag)))
     (let* ((environment
              (list (format nil "PATH=~A:~A"
@@ -1604,13 +1604,13 @@ printf 'RUNTIME=%s\\n' \"$*\" >> \"$AUTOLITH_TEST_LOG\"
                            (or (uiop:getenv "PATH") ""))
                    (format nil "XDG_DATA_HOME=~A" (namestring data-home))
                    (format nil "XDG_STATE_HOME=~A" (namestring state-home))
-                   (format nil "AUTOLITH_TEST_LOG=~A" (namestring log))
-                   (format nil "AUTOLITH_TEST_UPDATED_LAUNCHER=~A"
+                   (format nil "ANTAIOS_TEST_LOG=~A" (namestring log))
+                   (format nil "ANTAIOS_TEST_UPDATED_LAUNCHER=~A"
                            (namestring updated-launcher))
-                   "AUTOLITH_SUPPRESS_UPDATE_OFFER="
-                   "AUTOLITH_RELEASE_LATEST_URL=https://example.invalid/releases/latest"))
+                   "ANTAIOS_SUPPRESS_UPDATE_OFFER="
+                   "ANTAIOS_RELEASE_LATEST_URL=https://example.invalid/releases/latest"))
            (current (merge-pathnames "current" install-root))
-           (image-marker (merge-pathnames "autolith/release-images" data-home)))
+           (image-marker (merge-pathnames "antaios/release-images" data-home)))
       (labels ((select-original ()
                  (sb-posix:unlink (namestring current))
                  (sb-posix:symlink (format nil "releases/~A" tag)
@@ -1627,11 +1627,11 @@ printf 'RUNTIME=%s\\n' \"$*\" >> \"$AUTOLITH_TEST_LOG\"
                       (cons (namestring command-link) arguments)
                       :environment
                       (append environment
-                              (list (format nil "AUTOLITH_TEST_LATEST_TAG=~A"
+                              (list (format nil "ANTAIOS_TEST_LATEST_TAG=~A"
                                             latest-tag)
-                                    (format nil "AUTOLITH_TEST_DISCOVERY_STATUS=~D"
+                                    (format nil "ANTAIOS_TEST_DISCOVERY_STATUS=~D"
                                             discovery-status)
-                                    (format nil "AUTOLITH_TEST_INSTALL_STATUS=~D"
+                                    (format nil "ANTAIOS_TEST_INSTALL_STATUS=~D"
                                             install-status)))
                       :ignore-error-status t)
                    (test-assert
@@ -1693,7 +1693,7 @@ printf 'RUNTIME=%s\\n' \"$*\" >> \"$AUTOLITH_TEST_LOG\"
         (release-script-tests--run
          (list (namestring launcher) "resume" "fixture-conversation")
          :environment (append environment
-                              (list (format nil "AUTOLITH_TEST_LATEST_TAG=~A"
+                              (list (format nil "ANTAIOS_TEST_LATEST_TAG=~A"
                                             next-tag)))
          :output nil)))
     (let ((events (uiop:read-file-string log)))
@@ -1720,7 +1720,7 @@ printf 'RUNTIME=%s\\n' \"$*\" >> \"$AUTOLITH_TEST_LOG\"
        "the restarted release receives the original command arguments"))
     (test-assert
      (string= (release-script-tests--readlink command-link)
-              (namestring (merge-pathnames "current/bin/autolith" install-root)))
+              (namestring (merge-pathnames "current/bin/antaios" install-root)))
      "a custom command prefix remains untouched across an update")
     (test-assert
      (string= (release-script-tests--readlink
@@ -1737,7 +1737,7 @@ printf 'RUNTIME=%s\\n' \"$*\" >> \"$AUTOLITH_TEST_LOG\"
          (install-root (merge-pathnames "installation/" fixture-root))
          (release-root (merge-pathnames (format nil "releases/~A/" tag) install-root))
          (bin-directory (merge-pathnames "bin/" fixture-root))
-         (command-link (merge-pathnames "autolith" bin-directory))
+         (command-link (merge-pathnames "antaios" bin-directory))
          (data-home (merge-pathnames "data/" fixture-root))
          (state-home (merge-pathnames "state/" fixture-root))
          (cache-home (merge-pathnames "cache/" fixture-root))
@@ -1745,18 +1745,18 @@ printf 'RUNTIME=%s\\n' \"$*\" >> \"$AUTOLITH_TEST_LOG\"
          (fixture-bin (merge-pathnames "fixture-bin/" fixture-root))
          (log (merge-pathnames "uninstall.log" fixture-root))
          (artifacts
-           (list (merge-pathnames "autolith/active/autolith-active.core" data-home)
-                 (merge-pathnames "autolith/recovery/autolith-recovery.core" data-home)
-                 (merge-pathnames "autolith/release-images" data-home)
-                 (merge-pathnames "autolith/crash-pointers/launcher-1.path" state-home)
-                 (merge-pathnames "autolith/fff/index" cache-home)))
+           (list (merge-pathnames "antaios/active/antaios-active.core" data-home)
+                 (merge-pathnames "antaios/recovery/antaios-recovery.core" data-home)
+                 (merge-pathnames "antaios/release-images" data-home)
+                 (merge-pathnames "antaios/crash-pointers/launcher-1.path" state-home)
+                 (merge-pathnames "antaios/fff/index" cache-home)))
          (kept
-           (list (merge-pathnames "autolith/conversations/c1/00000000000000000001.sexp"
+           (list (merge-pathnames "antaios/conversations/c1/00000000000000000001.sexp"
                                   data-home)
-                 (merge-pathnames "autolith/agendas.sexp" data-home)
-                 (merge-pathnames "autolith/api-keys.sexp" state-home)
-                 (merge-pathnames "autolith/permissions.sexp" state-home)
-                 (merge-pathnames "autolith/init.lisp" config-home)))
+                 (merge-pathnames "antaios/agendas.sexp" data-home)
+                 (merge-pathnames "antaios/api-keys.sexp" state-home)
+                 (merge-pathnames "antaios/permissions.sexp" state-home)
+                 (merge-pathnames "antaios/init.lisp" config-home)))
          (environment
            (list (format nil "PATH=~A:~A"
                          (string-right-trim "/" (namestring fixture-bin))
@@ -1766,8 +1766,8 @@ printf 'RUNTIME=%s\\n' \"$*\" >> \"$AUTOLITH_TEST_LOG\"
                  (format nil "XDG_STATE_HOME=~A" (namestring state-home))
                  (format nil "XDG_CACHE_HOME=~A" (namestring cache-home))
                  (format nil "XDG_CONFIG_HOME=~A" (namestring config-home))
-                 (format nil "AUTOLITH_BIN_DIR=~A" (string-right-trim "/" (namestring bin-directory)))
-                 (format nil "AUTOLITH_TEST_LOG=~A" (namestring log)))))
+                 (format nil "ANTAIOS_BIN_DIR=~A" (string-right-trim "/" (namestring bin-directory)))
+                 (format nil "ANTAIOS_TEST_LOG=~A" (namestring log)))))
     (release-script-tests--make-release source-root release-root)
     (uiop:ensure-all-directories-exist (list bin-directory fixture-bin))
     (release-script-tests--install-linux-host-tools fixture-bin)
@@ -1775,15 +1775,15 @@ printf 'RUNTIME=%s\\n' \"$*\" >> \"$AUTOLITH_TEST_LOG\"
      (list "ln" "-s" (format nil "releases/~A" tag)
            (namestring (merge-pathnames "current" install-root))))
     (uiop:run-program
-     (list "ln" "-s" (namestring (merge-pathnames "current/bin/autolith" install-root))
+     (list "ln" "-s" (namestring (merge-pathnames "current/bin/antaios" install-root))
            (namestring command-link)))
     (release-script-tests--write-file
-     (merge-pathnames "libexec/autolith/bin/autolith" release-root)
+     (merge-pathnames "libexec/antaios/bin/antaios" release-root)
      "#!/bin/sh
-printf 'INNER\\n' >> \"$AUTOLITH_TEST_LOG\"
+printf 'INNER\\n' >> \"$ANTAIOS_TEST_LOG\"
 ")
     (release-script-tests--chmod
-     "755" (merge-pathnames "libexec/autolith/bin/autolith" release-root))
+     "755" (merge-pathnames "libexec/antaios/bin/antaios" release-root))
     (dolist (pathname (append artifacts kept))
       (release-script-tests--write-file pathname "x"))
     (release-script-tests--write-file log "")
@@ -1808,7 +1808,7 @@ printf 'INNER\\n' >> \"$AUTOLITH_TEST_LOG\"
             (not (uiop:directory-exists-p install-root))
             (not (probe-file command-link))
             (notany #'probe-file artifacts)
-            (not (uiop:directory-exists-p (merge-pathnames "autolith/" cache-home)))
+            (not (uiop:directory-exists-p (merge-pathnames "antaios/" cache-home)))
             (every #'probe-file kept)
             (search (string-right-trim "/" (namestring (truename fixture-root)))
                     error-output)
@@ -1828,14 +1828,14 @@ printf 'INNER\\n' >> \"$AUTOLITH_TEST_LOG\"
          (release-root
            (merge-pathnames (format nil "releases/~A-~A/" tag platform)
                             install-root))
-         (packaged-source (merge-pathnames "libexec/autolith/" release-root))
-         (inner-launcher (merge-pathnames "bin/autolith" packaged-source))
+         (packaged-source (merge-pathnames "libexec/antaios/" release-root))
+         (inner-launcher (merge-pathnames "bin/antaios" packaged-source))
          (bundled-installer (merge-pathnames "script/install" packaged-source))
-         (launcher (merge-pathnames "bin/autolith" release-root))
+         (launcher (merge-pathnames "bin/antaios" release-root))
          (data-home (merge-pathnames "data/" fixture-root))
          (fixture-bin (merge-pathnames "fixture-bin/" fixture-root))
          (curl (merge-pathnames "curl" fixture-bin))
-         (updated-launcher (merge-pathnames "updated-autolith" fixture-root))
+         (updated-launcher (merge-pathnames "updated-antaios" fixture-root))
          (log (merge-pathnames "handoff.log" fixture-root)))
     (release-script-tests--make-release
      source-root release-root :platform platform)
@@ -1855,32 +1855,32 @@ exit 76
     (release-script-tests--write-file
      updated-launcher
      "#!/bin/sh
-printf 'UPDATED_ARGS=%s\\n' \"$*\" >> \"$AUTOLITH_TEST_LOG\"
+printf 'UPDATED_ARGS=%s\\n' \"$*\" >> \"$ANTAIOS_TEST_LOG\"
 ")
     (release-script-tests--write-file
      bundled-installer
      "#!/bin/sh
 set -eu
-printf 'INSTALL_ARGS=%s\\n' \"$*\" >> \"$AUTOLITH_TEST_LOG\"
+printf 'INSTALL_ARGS=%s\\n' \"$*\" >> \"$ANTAIOS_TEST_LOG\"
 [ \"$1\" = --musl ]
 [ \"$2\" = --without-command-link ]
 [ \"$3\" = --version ]
 requested=$4
-[ \"$requested\" = \"$AUTOLITH_TEST_LATEST_TAG\" ]
-target=$AUTOLITH_INSTALL_ROOT/releases/${requested}-x86_64-linux-musl
+[ \"$requested\" = \"$ANTAIOS_TEST_LATEST_TAG\" ]
+target=$ANTAIOS_INSTALL_ROOT/releases/${requested}-x86_64-linux-musl
 mkdir -p \"$target/bin\"
-cp \"$AUTOLITH_TEST_UPDATED_LAUNCHER\" \"$target/bin/autolith\"
-chmod 755 \"$target/bin/autolith\"
-temporary=$AUTOLITH_INSTALL_ROOT/.current.$$
+cp \"$ANTAIOS_TEST_UPDATED_LAUNCHER\" \"$target/bin/antaios\"
+chmod 755 \"$target/bin/antaios\"
+temporary=$ANTAIOS_INSTALL_ROOT/.current.$$
 ln -s \"releases/${requested}-x86_64-linux-musl\" \"$temporary\"
-mv -Tf \"$temporary\" \"$AUTOLITH_INSTALL_ROOT/current\"
+mv -Tf \"$temporary\" \"$ANTAIOS_INSTALL_ROOT/current\"
 ")
     (dolist (pathname (list inner-launcher bundled-installer updated-launcher))
       (release-script-tests--chmod "755" pathname))
-    (let* ((active-root (merge-pathnames "autolith/active/" data-home))
-           (recovery-root (merge-pathnames "autolith/recovery/" data-home)))
-      (dolist (pathname (list (merge-pathnames "autolith-active.core" active-root)
-                              (merge-pathnames "autolith-recovery.core"
+    (let* ((active-root (merge-pathnames "antaios/active/" data-home))
+           (recovery-root (merge-pathnames "antaios/recovery/" data-home)))
+      (dolist (pathname (list (merge-pathnames "antaios-active.core" active-root)
+                              (merge-pathnames "antaios-recovery.core"
                                                recovery-root)))
         (release-script-tests--write-file pathname "core"))
       (release-script-tests--write-file
@@ -1890,7 +1890,7 @@ mv -Tf \"$temporary\" \"$AUTOLITH_INSTALL_ROOT/current\"
        (merge-pathnames "manifest.sexp" recovery-root)
        "(:RECOVERY-IMAGE :VERSION 2)\n")
       (release-script-tests--write-file
-       (merge-pathnames "autolith/release-images" data-home)
+       (merge-pathnames "antaios/release-images" data-home)
        (format nil "~A:~A~%" tag platform)))
     (release-script-tests--run
      (list (namestring launcher) "resume" "fixture-conversation")
@@ -1900,11 +1900,11 @@ mv -Tf \"$temporary\" \"$AUTOLITH_INSTALL_ROOT/current\"
               (string-right-trim "/" (namestring fixture-bin))
               (or (uiop:getenv "PATH") ""))
       (format nil "XDG_DATA_HOME=~A" (namestring data-home))
-      (format nil "AUTOLITH_TEST_LOG=~A" (namestring log))
-      (format nil "AUTOLITH_TEST_UPDATED_LAUNCHER=~A"
+      (format nil "ANTAIOS_TEST_LOG=~A" (namestring log))
+      (format nil "ANTAIOS_TEST_UPDATED_LAUNCHER=~A"
               (namestring updated-launcher))
-      (format nil "AUTOLITH_TEST_LATEST_TAG=~A" next-tag)
-      "AUTOLITH_RELEASE_LATEST_URL=https://example.invalid/releases/latest")
+      (format nil "ANTAIOS_TEST_LATEST_TAG=~A" next-tag)
+      "ANTAIOS_RELEASE_LATEST_URL=https://example.invalid/releases/latest")
      :output nil)
     (let ((events (uiop:read-file-string log)))
       (test-assert
@@ -1930,14 +1930,14 @@ mv -Tf \"$temporary\" \"$AUTOLITH_INSTALL_ROOT/current\"
   (let* ((tag (format nil "v~A" *release-script-tests-version*))
          (fixture-root (merge-pathnames "image-marker-platform/" root))
          (release-root (merge-pathnames "release/" fixture-root))
-         (launcher (merge-pathnames "bin/autolith" release-root))
+         (launcher (merge-pathnames "bin/antaios" release-root))
          (inner-launcher
-           (merge-pathnames "libexec/autolith/bin/autolith" release-root))
+           (merge-pathnames "libexec/antaios/bin/antaios" release-root))
          (runtime (merge-pathnames "runtime/bin/sbcl" release-root))
          (fixture-bin (merge-pathnames "fixture-bin/" fixture-root))
          (data-home (merge-pathnames "data/" fixture-root))
          (log (merge-pathnames "sbcl.log" fixture-root))
-         (marker (merge-pathnames "autolith/release-images" data-home)))
+         (marker (merge-pathnames "antaios/release-images" data-home)))
     (release-script-tests--make-release
      source-root release-root :platform "x86_64-linux")
     (uiop:ensure-all-directories-exist (list fixture-bin data-home))
@@ -1951,7 +1951,7 @@ exit 0
      runtime
      "#!/bin/sh
 set -eu
-printf '%s\\n' \"$*\" >> \"$AUTOLITH_TEST_SBCL_LOG\"
+printf '%s\\n' \"$*\" >> \"$ANTAIOS_TEST_SBCL_LOG\"
 target=
 for argument in \"$@\"; do target=$argument; done
 case \" $* \" in
@@ -1971,12 +1971,12 @@ esac
       (release-script-tests--chmod "755" pathname))
     (labels ((environment ()
                (list
-                "AUTOLITH_NO_UPDATE_CHECK=1"
+                "ANTAIOS_NO_UPDATE_CHECK=1"
                 (format nil "PATH=~A:~A"
                         (string-right-trim "/" (namestring fixture-bin))
                         (or (uiop:getenv "PATH") ""))
                 (format nil "XDG_DATA_HOME=~A" (namestring data-home))
-                (format nil "AUTOLITH_TEST_SBCL_LOG=~A" (namestring log))))
+                (format nil "ANTAIOS_TEST_SBCL_LOG=~A" (namestring log))))
 
              (build-count ()
                (let ((content (uiop:read-file-string log)))
@@ -2020,8 +2020,8 @@ esac
          (tools-directory (merge-pathnames "tools/" fixture-root))
          (data-home (merge-pathnames "data/" fixture-root))
          (adapter-target
-           (merge-pathnames "autolith-runtime-target" bin-directory))
-         (adapter (merge-pathnames "autolith-runtime" bin-directory))
+           (merge-pathnames "antaios-runtime-target" bin-directory))
+         (adapter (merge-pathnames "antaios-runtime" bin-directory))
          (fake-curl (merge-pathnames "curl" tools-directory))
          (fake-readlink (merge-pathnames "readlink" tools-directory))
          (fake-sha256sum (merge-pathnames "sha256sum" tools-directory))
@@ -2029,7 +2029,7 @@ esac
          (script (merge-pathnames "script.lisp" fixture-root)))
     (uiop:ensure-all-directories-exist
      (list bin-directory tools-directory data-home))
-    (uiop:copy-file (merge-pathnames "bin/autolith-runtime" source-root)
+    (uiop:copy-file (merge-pathnames "bin/antaios-runtime" source-root)
                     adapter-target)
     (dolist (name '("runtime-probe.lisp" "runtime-requirement.lisp"))
       (let ((target (merge-pathnames (format nil "script/~A" name) fixture-root)))
@@ -2066,7 +2066,7 @@ printf 'fixture archive\n' > \"$output\"
      fake-sha256sum
      "#!/bin/sh
 set -eu
-printf '%s  %s\n' \"${AUTOLITH_TEST_SHA256:?}\" \"$1\"
+printf '%s  %s\n' \"${ANTAIOS_TEST_SHA256:?}\" \"$1\"
 ")
     (release-script-tests--write-file
      fake-tar
@@ -2112,7 +2112,7 @@ printf '\"%s\"\n' \"$version\" > \"$destination/sbcl-$version/version.lisp-expr\
 set -eu
 case \" $* \" in
   *runtime-probe.lisp*) shift 3; exec ~A --noinform --no-userinit --no-sysinit --eval ~A \"$@\" ;;
-  *' --script '*) printf 'ADAPTER-SCRIPT version=~A source=%s %s\\n' \"${AUTOLITH_SBCL_SOURCE_ROOT-}\" \"$*\" ;;
+  *' --script '*) printf 'ADAPTER-SCRIPT version=~A source=%s %s\\n' \"${ANTAIOS_SBCL_SOURCE_ROOT-}\" \"$*\" ;;
 esac
 "
                         (test-fixture-shell-quote *platform* (namestring sb-ext:*runtime-pathname*))
@@ -2140,10 +2140,10 @@ esac
                                 (namestring tools-directory)
                                 (or (uiop:getenv "PATH") ""))
                         (format nil "XDG_DATA_HOME=~A" (namestring data-home))
-                        (format nil "AUTOLITH_SBCL=~A" (namestring runtime))
-                        (format nil "AUTOLITH_SBCL_SOURCE_ROOT=~A"
+                        (format nil "ANTAIOS_SBCL=~A" (namestring runtime))
+                        (format nil "ANTAIOS_SBCL_SOURCE_ROOT=~A"
                                 (or inherited-source ""))
-                        (format nil "AUTOLITH_TEST_SHA256=~A" sha256))
+                        (format nil "ANTAIOS_TEST_SHA256=~A" sha256))
                   :ignore-error-status t)
                (declare (ignore error-output))
                (values (or output "") status))))
@@ -2155,7 +2155,7 @@ esac
                      "the adapter runs the script on a newer runtime")
         (test-assert
          (probe-file
-          (merge-pathnames "autolith/runtimes/command" data-home))
+          (merge-pathnames "antaios/runtimes/command" data-home))
          "the adapter records the accepted runtime command"))
       (multiple-value-bind (output status)
           (run-adapter (fake-runtime "2.6.7") :install-p t)
@@ -2164,7 +2164,7 @@ esac
         (test-assert
          (string=
           (uiop:read-file-string
-           (merge-pathnames "autolith/runtimes/2.6.7/source.identity"
+           (merge-pathnames "antaios/runtimes/2.6.7/source.identity"
                             data-home))
           (format nil "2.6.7 ~A~%"
                   (make-string 64 :initial-element #\1)))
@@ -2172,7 +2172,7 @@ esac
         (test-assert
          (probe-file
           (merge-pathnames
-           "autolith/runtimes/2.6.7/source/src/code/list.lisp"
+           "antaios/runtimes/2.6.7/source/src/code/list.lisp"
            data-home))
          "the adapter publishes the matching read-only source tree"))
       (multiple-value-bind (output status)
@@ -2210,7 +2210,7 @@ esac
                (format nil "inherited implementation source ~S is ~:[rejected~;preserved~]"
                        inherited accepted-p))))))
       (let ((identity
-              (merge-pathnames "autolith/runtimes/2.6.7/source.identity"
+              (merge-pathnames "antaios/runtimes/2.6.7/source.identity"
                                data-home)))
         (release-script-tests--chmod "600" identity)
         (release-script-tests--write-file
@@ -2245,10 +2245,10 @@ esac
       (load (merge-pathnames "script/runtime-requirement.lisp" source-root)))
     (let ((at-least-p
             (fdefinition
-             (find-symbol "AUTOLITH-VERSION-AT-LEAST-P" "CL-USER")))
+             (find-symbol "ANTAIOS-VERSION-AT-LEAST-P" "CL-USER")))
           (require-runtime
             (fdefinition
-             (find-symbol "AUTOLITH-REQUIRE-MINIMUM-RUNTIME" "CL-USER"))))
+             (find-symbol "ANTAIOS-REQUIRE-MINIMUM-RUNTIME" "CL-USER"))))
       (test-assert (funcall at-least-p "2.6.6" "2.6.6")
                    "the version requirement accepts the minimum itself")
       (test-assert (funcall at-least-p "2.10.0" "2.6.6")
@@ -2320,7 +2320,7 @@ esac
 (defun release-script-tests--write-release-archive
     (release-root fixture-root &key tag platform record-platform)
   "Package RELEASE-ROOT as TAG's PLATFORM archive below FIXTURE-ROOT."
-  (let* ((release-name (format nil "autolith-~A-~A" tag platform))
+  (let* ((release-name (format nil "antaios-~A-~A" tag platform))
          (fixture-source (merge-pathnames "source/" fixture-root))
          (fixture-release
            (merge-pathnames (format nil "~A/" release-name) fixture-source))
@@ -2375,12 +2375,12 @@ esac
                 (format nil "PATH=~A:~A"
                         (string-right-trim "/" (namestring fixture-bin))
                         (or (uiop:getenv "PATH") ""))
-                (format nil "AUTOLITH_TEST_RELEASE_FIXTURE=~A"
+                (format nil "ANTAIOS_TEST_RELEASE_FIXTURE=~A"
                         (namestring fixture-root))
-                "AUTOLITH_RELEASE_BASE_URL=https://example.invalid"
-                (format nil "AUTOLITH_INSTALL_ROOT=~A"
+                "ANTAIOS_RELEASE_BASE_URL=https://example.invalid"
+                (format nil "ANTAIOS_INSTALL_ROOT=~A"
                         (string-right-trim "/" (namestring install-root)))
-                (format nil "AUTOLITH_BIN_DIR=~A"
+                (format nil "ANTAIOS_BIN_DIR=~A"
                         (string-right-trim "/" (namestring bin-directory)))))
 
              (install-fails (arguments diagnostic description)
@@ -2457,11 +2457,11 @@ esac
        (and
         (probe-file
          (merge-pathnames
-          (format nil "releases/~A-x86_64-linux/bin/autolith" tag)
+          (format nil "releases/~A-x86_64-linux/bin/antaios" tag)
           install-root))
         (probe-file
          (merge-pathnames
-          (format nil "releases/~A-x86_64-linux-musl/bin/autolith" tag)
+          (format nil "releases/~A-x86_64-linux-musl/bin/antaios" tag)
           install-root))
         (string=
          (release-script-tests--readlink
@@ -2535,29 +2535,29 @@ esac
                 (search "Binary releases currently support"
                         (release-archive-error-cause condition)))))
        (format nil "~A/~A is not a release target" os architecture))))
-  (let ((old-platform (uiop:getenv "AUTOLITH_RELEASE_PLATFORM")))
+  (let ((old-platform (uiop:getenv "ANTAIOS_RELEASE_PLATFORM")))
     (unwind-protect
          (progn
-           (platform-setenv "AUTOLITH_RELEASE_PLATFORM" "sparc-sunos")
+           (platform-setenv "ANTAIOS_RELEASE_PLATFORM" "sparc-sunos")
            (test-assert
             (handler-case
                 (progn
                   (release-archive--platform)
                   nil)
               (release-archive-error (condition)
-                (search "AUTOLITH_RELEASE_PLATFORM names"
+                (search "ANTAIOS_RELEASE_PLATFORM names"
                         (release-archive-error-cause condition))))
             "release platform overrides must match the native host"))
       (if old-platform
-          (platform-setenv "AUTOLITH_RELEASE_PLATFORM" old-platform)
-          (platform-unsetenv "AUTOLITH_RELEASE_PLATFORM"))))
+          (platform-setenv "ANTAIOS_RELEASE_PLATFORM" old-platform)
+          (platform-unsetenv "ANTAIOS_RELEASE_PLATFORM"))))
   (when (string-equal (software-type) "Linux")
-    (let* ((old-libc (uiop:getenv "AUTOLITH_LIBC"))
+    (let* ((old-libc (uiop:getenv "ANTAIOS_LIBC"))
            (detected (release-archive--linux-libc))
            (mismatch (if (string= detected "musl") "glibc" "musl")))
       (unwind-protect
            (progn
-             (platform-setenv "AUTOLITH_LIBC" mismatch)
+             (platform-setenv "ANTAIOS_LIBC" mismatch)
              (test-assert
               (handler-case
                   (progn
@@ -2568,8 +2568,8 @@ esac
                           (release-archive-error-cause condition))))
               "release libc overrides must match the native host"))
         (if old-libc
-            (platform-setenv "AUTOLITH_LIBC" old-libc)
-            (platform-unsetenv "AUTOLITH_LIBC")))))
+            (platform-setenv "ANTAIOS_LIBC" old-libc)
+            (platform-unsetenv "ANTAIOS_LIBC")))))
   nil)
 
 (-> release-script-tests--launcher-bsd (pathname pathname) null)
@@ -2581,20 +2581,20 @@ esac
     (destructuring-bind (os platform) spec
       (let* ((release-root
                (merge-pathnames (format nil "bsd-launcher-~A/" os) root))
-             (launcher (merge-pathnames "bin/autolith" release-root))
+             (launcher (merge-pathnames "bin/antaios" release-root))
              (host-bin (merge-pathnames (format nil "bsd-host-~A/" os) root))
              (path (format nil "~A:~A"
                            (string-right-trim "/" (namestring host-bin))
                            (or (uiop:getenv "PATH") "")))
              (environment
-               (list "AUTOLITH_NO_UPDATE_CHECK=1"
+               (list "ANTAIOS_NO_UPDATE_CHECK=1"
                      (format nil "PATH=~A" path))))
         (release-script-tests--write-uname host-bin os "amd64")
         (release-script-tests--make-release
          source-root release-root :platform platform)
         (let ((output
                 (release-script-tests--run
-                 (list (namestring launcher) "--autolith-release-probe")
+                 (list (namestring launcher) "--antaios-release-probe")
                  :environment environment)))
           (test-assert
            (and (search (format nil "version=~A" *release-script-tests-version*)
@@ -2606,7 +2606,7 @@ esac
           (delete-file library)
           (multiple-value-bind (output error-output status)
               (release-script-tests--run
-               (list (namestring launcher) "--autolith-release-probe")
+               (list (namestring launcher) "--antaios-release-probe")
                :environment environment
                :ignore-error-status t
                :output nil)
@@ -2622,7 +2622,7 @@ esac
           (delete-file helper)
           (multiple-value-bind (output error-output status)
               (release-script-tests--run
-               (list (namestring launcher) "--autolith-release-probe")
+               (list (namestring launcher) "--antaios-release-probe")
                :environment environment
                :ignore-error-status t)
             (declare (ignore output))
@@ -2648,7 +2648,7 @@ esac
                     ("NetBSD" "amd64" "x86_64-netbsd")
                     ("OpenBSD" "amd64" "x86_64-openbsd")))
       (destructuring-bind (os architecture platform) spec
-        (let* ((release-name (format nil "autolith-~A-~A" tag platform))
+        (let* ((release-name (format nil "antaios-~A-~A" tag platform))
                (fixture-root
                  (merge-pathnames (format nil "fixture-~A/" platform) root))
                (fixture-source
@@ -2694,18 +2694,18 @@ esac
             (format nil "PATH=~A:~A"
                     (string-right-trim "/" (namestring fixture-bin))
                     (or (uiop:getenv "PATH") ""))
-            (format nil "AUTOLITH_TEST_RELEASE_FIXTURE=~A"
+            (format nil "ANTAIOS_TEST_RELEASE_FIXTURE=~A"
                     (namestring fixture-root))
-            "AUTOLITH_RELEASE_BASE_URL=https://example.invalid"
-            (format nil "AUTOLITH_INSTALL_ROOT=~A"
+            "ANTAIOS_RELEASE_BASE_URL=https://example.invalid"
+            (format nil "ANTAIOS_INSTALL_ROOT=~A"
                     (string-right-trim "/" (namestring install-root)))
-            (format nil "AUTOLITH_BIN_DIR=~A"
+            (format nil "ANTAIOS_BIN_DIR=~A"
                     (string-right-trim "/" (namestring bin-directory))))
            :output nil)
           (test-assert
            (probe-file
              (merge-pathnames
-              (format nil "releases/~A-~A/bin/autolith" tag platform)
+              (format nil "releases/~A-~A/bin/antaios" tag platform)
               install-root))
            (format nil "the ~A installer publishes the requested release" os))
           (test-assert
@@ -2742,7 +2742,7 @@ esac
   "Exercise GNU-format SHA-256 checksum publication."
   (let* ((file (merge-pathnames "payload.bin" root))
          (checksum (merge-pathnames "payload.bin.sha256" root)))
-    (release-script-tests--write-file file "autolith")
+    (release-script-tests--write-file file "antaios")
     (release-archive--checksum-file file checksum)
     (let* ((line (string-trim '(#\Newline #\Return)
                               (uiop:read-file-string checksum)))
@@ -2777,14 +2777,14 @@ esac
     (release-script-tests--write-uname bin "FreeBSD" "amd64")
     (release-script-tests--write-file
      sbcl
-     (format nil "#!/bin/sh~%case \" $* \" in~%  *lisp-implementation-version*) printf '%s' \"${AUTOLITH_TEST_SBCL_VERSION:-2.6.6}\"; exit 0 ;;~%esac~%printf '%s\\n' \"$*\" > \"${AUTOLITH_TEST_BOOTSTRAP_LOG:?}\"~%exit 0~%"))
+     (format nil "#!/bin/sh~%case \" $* \" in~%  *lisp-implementation-version*) printf '%s' \"${ANTAIOS_TEST_SBCL_VERSION:-2.6.6}\"; exit 0 ;;~%esac~%printf '%s\\n' \"$*\" > \"${ANTAIOS_TEST_BOOTSTRAP_LOG:?}\"~%exit 0~%"))
     (release-script-tests--write-file
      curl
-     (format nil "#!/bin/sh~%printf 'curl invoked\\n' > \"${AUTOLITH_TEST_CURL_LOG:?}\"~%exit 1~%"))
+     (format nil "#!/bin/sh~%printf 'curl invoked\\n' > \"${ANTAIOS_TEST_CURL_LOG:?}\"~%exit 1~%"))
     (release-script-tests--write-file
      ldd
      "#!/bin/sh
-case ${AUTOLITH_TEST_LIBC:-glibc} in
+case ${ANTAIOS_TEST_LIBC:-glibc} in
   musl) printf 'musl libc\\n' ;;
   glibc) printf 'libc.so.6\\n' ;;
   *) printf 'unknown libc\\n'; exit 1 ;;
@@ -2795,10 +2795,10 @@ esac
     (labels ((environment (&rest extra)
                (append
                 (list (format nil "PATH=~A" path)
-                      (format nil "AUTOLITH_SBCL=~A" (namestring sbcl))
-                      (format nil "AUTOLITH_TEST_BOOTSTRAP_LOG=~A"
+                      (format nil "ANTAIOS_SBCL=~A" (namestring sbcl))
+                      (format nil "ANTAIOS_TEST_BOOTSTRAP_LOG=~A"
                               (namestring log))
-                      (format nil "AUTOLITH_TEST_CURL_LOG=~A"
+                      (format nil "ANTAIOS_TEST_CURL_LOG=~A"
                               (namestring curl-log)))
                 extra))
 
@@ -2826,7 +2826,7 @@ esac
       (when (probe-file log)
         (delete-file log))
       (multiple-value-bind (output error-output status)
-          (run-bootstrap "AUTOLITH_TEST_SBCL_VERSION=2.6.5-85913ede1")
+          (run-bootstrap "ANTAIOS_TEST_SBCL_VERSION=2.6.5-85913ede1")
         (declare (ignore error-output))
         (test-assert
          (and (zerop status)
@@ -2838,7 +2838,7 @@ esac
       (when (probe-file log)
         (delete-file log))
       (multiple-value-bind (output error-output status)
-          (run-bootstrap "AUTOLITH_TEST_SBCL_VERSION=1.9.9-foo")
+          (run-bootstrap "ANTAIOS_TEST_SBCL_VERSION=1.9.9-foo")
         (let ((diagnostic (concatenate 'string (or output "")
                                        (or error-output ""))))
           (test-assert
@@ -2858,7 +2858,7 @@ esac
               (probe-file log))
          "Linux x86-64 runtime bootstrap uses a validated host compiler"))
       (multiple-value-bind (output error-output status)
-          (run-bootstrap "AUTOLITH_LIBC=musl")
+          (run-bootstrap "ANTAIOS_LIBC=musl")
         (let ((diagnostic (concatenate 'string (or output "")
                                        (or error-output ""))))
           (test-assert
@@ -2866,7 +2866,7 @@ esac
                 (search "expected musl but detected glibc" diagnostic))
            "runtime bootstrap rejects a mismatched libc override")))
       (multiple-value-bind (output error-output status)
-          (run-bootstrap "AUTOLITH_TEST_LIBC=unknown")
+          (run-bootstrap "ANTAIOS_TEST_LIBC=unknown")
         (let ((diagnostic (concatenate 'string (or output "")
                                        (or error-output ""))))
           (test-assert
@@ -2876,7 +2876,7 @@ esac
       (when (probe-file curl-log)
         (delete-file curl-log))
       (multiple-value-bind (output error-output status)
-          (run-bootstrap "AUTOLITH_LIBC=musl" "AUTOLITH_TEST_LIBC=musl")
+          (run-bootstrap "ANTAIOS_LIBC=musl" "ANTAIOS_TEST_LIBC=musl")
         (declare (ignore error-output))
         (test-assert
          (and (zerop status)
@@ -2912,7 +2912,7 @@ esac
                  (namestring installation))
            :environment
            (list (format nil "PATH=~A" path)
-                 "AUTOLITH_SBCL=/no/such/sbcl")
+                 "ANTAIOS_SBCL=/no/such/sbcl")
            :ignore-error-status t)
         (let ((diagnostic (concatenate 'string (or output "")
                                        (or error-output ""))))
@@ -2945,7 +2945,7 @@ esac
       (test-assert (null (release-archive--sandbox-helper missing))
                    "sandbox helper lookup is silent for an unrelated source root")
       (let* ((source-directory (symbol-function 'asdf:system-source-directory))
-             (source-root (asdf:system-source-directory :autolith))
+             (source-root (asdf:system-source-directory :antaios))
              (library-root (merge-pathnames "sandbox-library/" root))
              (helper (merge-pathnames "build/cl-exec-sandbox-helper" library-root)))
         (release-script-tests--write-file helper "fixture helper")
@@ -2967,14 +2967,14 @@ esac
       (test-assert
        (equal
         (truename (release-archive--process-group-helper
-                   (asdf:system-source-directory :autolith)))
+                   (asdf:system-source-directory :antaios)))
         (truename
          (merge-pathnames
           "build/cl-exec-sandbox-process-group"
           (asdf:system-source-directory :cl-exec-sandbox))))
        "process-group helper lookup uses the locked ASDF dependency")
       (with-test-environment
-          (("AUTOLITH_RELEASE_PROCESS_GROUP_HELPER"
+          (("ANTAIOS_RELEASE_PROCESS_GROUP_HELPER"
             (namestring (merge-pathnames "release-record" root))))
         (test-assert
          (equal (truename (release-archive--process-group-helper missing))
@@ -3041,7 +3041,7 @@ esac
                      (release-archive--tar-command
                       (merge-pathnames "release.tar" root)
                       root
-                      "autolith-v0.0.0-x86_64-openbsd"
+                      "antaios-v0.0.0-x86_64-openbsd"
                       "0")))
                (test-assert (and (stringp (first command))
                                  (plusp (length (first command))))
@@ -3061,7 +3061,7 @@ esac
          (fixture-root
            (uiop:ensure-directory-pathname
             (merge-pathnames "linux-release-validator/" root)))
-         (release-name "autolith-v0.11.0-x86_64-linux")
+         (release-name "antaios-v0.11.0-x86_64-linux")
          (release-root
            (merge-pathnames (format nil "~A/" release-name) fixture-root))
          (release-record (merge-pathnames "RELEASE" release-root))
@@ -3083,25 +3083,25 @@ for argument do
   [ \"$argument\" = --script ] && static_smoke=true
 done
 if [ \"$static_smoke\" = true ]; then
-  [ \"$AUTOLITH_FFF_LIBRARY\" = \"$0\" ]
+  [ \"$ANTAIOS_FFF_LIBRARY\" = \"$0\" ]
   [ \"$COLORLISP_NATIVE_LIBRARY\" = \"$0\" ]
   printf 'Static native smoke test passed.\\n'
 else
-  printf '%s' \"${AUTOLITH_TEST_RUNTIME_VERSION:-2.6.6}\"
+  printf '%s' \"${ANTAIOS_TEST_RUNTIME_VERSION:-2.6.6}\"
 fi
 ")
     (release-script-tests--write-file
      file-command
      "#!/bin/sh
-printf '%s\\n' \"${AUTOLITH_TEST_FILE_DESCRIPTION:-ELF 64-bit LSB pie executable, x86-64}\"
+printf '%s\\n' \"${ANTAIOS_TEST_FILE_DESCRIPTION:-ELF 64-bit LSB pie executable, x86-64}\"
 ")
     (release-script-tests--write-file
      readelf-command
      "#!/bin/sh
 case $1 in
-  -h) printf '  Machine: %s\\n' \"${AUTOLITH_TEST_MACHINE:-Advanced Micro Devices X86-64}\" ;;
-  -l) [ \"${AUTOLITH_TEST_STATIC_HEADERS:-0}\" = 1 ] || printf '      [Requesting program interpreter: %s]\\n' \"${AUTOLITH_TEST_INTERPRETER:-/lib64/ld-linux-x86-64.so.2}\" ;;
-  -d) [ -z \"${AUTOLITH_TEST_NEEDED:-}\" ] || printf ' 0x0000000000000001 (NEEDED) Shared library: [%s]\\n' \"$AUTOLITH_TEST_NEEDED\" ;;
+  -h) printf '  Machine: %s\\n' \"${ANTAIOS_TEST_MACHINE:-Advanced Micro Devices X86-64}\" ;;
+  -l) [ \"${ANTAIOS_TEST_STATIC_HEADERS:-0}\" = 1 ] || printf '      [Requesting program interpreter: %s]\\n' \"${ANTAIOS_TEST_INTERPRETER:-/lib64/ld-linux-x86-64.so.2}\" ;;
+  -d) [ -z \"${ANTAIOS_TEST_NEEDED:-}\" ] || printf ' 0x0000000000000001 (NEEDED) Shared library: [%s]\\n' \"$ANTAIOS_TEST_NEEDED\" ;;
 esac
 ")
     (dolist (pathname (list runtime file-command readelf-command))
@@ -3168,13 +3168,13 @@ esac
                        "Linux artifact validation accepts a matching archive"))
         (assert-failure
          valid "Linux artifact validation rejects a mismatched ELF machine"
-         :extra-environment '("AUTOLITH_TEST_MACHINE=SPARC V9"))
+         :extra-environment '("ANTAIOS_TEST_MACHINE=SPARC V9"))
         (assert-failure
          valid "Linux artifact validation rejects a mismatched interpreter"
-         :extra-environment '("AUTOLITH_TEST_INTERPRETER=/wrong/loader"))
+         :extra-environment '("ANTAIOS_TEST_INTERPRETER=/wrong/loader"))
         (assert-failure
          valid "Linux artifact validation rejects a malformed runtime version"
-         :extra-environment '("AUTOLITH_TEST_RUNTIME_VERSION=2.6")))
+         :extra-environment '("ANTAIOS_TEST_RUNTIME_VERSION=2.6")))
       (release-script-tests--write-file
        (merge-pathnames "rogue" fixture-root) "outside release root")
       (assert-failure
@@ -3201,14 +3201,14 @@ esac
            (make-archive "mismatched-static-root")
            :platform "x86_64-linux-musl"
            :extra-environment
-           '("AUTOLITH_TEST_FILE_DESCRIPTION=ELF 64-bit LSB executable, x86-64, statically linked"
-             "AUTOLITH_TEST_STATIC_HEADERS=1"))
+           '("ANTAIOS_TEST_FILE_DESCRIPTION=ELF 64-bit LSB executable, x86-64, statically linked"
+             "ANTAIOS_TEST_STATIC_HEADERS=1"))
         (declare (ignore output error-output))
         (test-assert (not (zerop status))
                      "static validation rejects a mismatched archive root"))
       (release-script-tests--record
        release-record "v0.11.0" :platform "x86_64-linux")
-      (let* ((musl-name "autolith-v0.11.0-x86_64-linux-musl")
+      (let* ((musl-name "antaios-v0.11.0-x86_64-linux-musl")
              (musl-root
                (merge-pathnames (format nil "~A/" musl-name) fixture-root))
              (musl-record (merge-pathnames "RELEASE" musl-root)))
@@ -3223,8 +3223,8 @@ esac
                static
                :platform "x86_64-linux-musl"
                :extra-environment
-               '("AUTOLITH_TEST_FILE_DESCRIPTION=ELF 64-bit LSB executable, x86-64, statically linked"
-                 "AUTOLITH_TEST_STATIC_HEADERS=1"))
+               '("ANTAIOS_TEST_FILE_DESCRIPTION=ELF 64-bit LSB executable, x86-64, statically linked"
+                 "ANTAIOS_TEST_STATIC_HEADERS=1"))
             (declare (ignore error-output))
             (test-assert (zerop status)
                          "Linux artifact validation accepts a static musl archive")
@@ -3235,9 +3235,9 @@ esac
                static
                :platform "x86_64-linux-musl"
                :extra-environment
-               '("AUTOLITH_TEST_FILE_DESCRIPTION=ELF 64-bit LSB executable, x86-64, statically linked"
-                 "AUTOLITH_TEST_STATIC_HEADERS=1"
-                 "AUTOLITH_TEST_NEEDED=libc.so"))
+               '("ANTAIOS_TEST_FILE_DESCRIPTION=ELF 64-bit LSB executable, x86-64, statically linked"
+                 "ANTAIOS_TEST_STATIC_HEADERS=1"
+                 "ANTAIOS_TEST_NEEDED=libc.so"))
             (declare (ignore output error-output))
             (test-assert (not (zerop status))
                          "static Linux validation rejects dynamic dependencies")))
@@ -3250,8 +3250,8 @@ esac
              (make-archive "static-escaping-link" :name musl-name)
              :platform "x86_64-linux-musl"
              :extra-environment
-             '("AUTOLITH_TEST_FILE_DESCRIPTION=ELF 64-bit LSB executable, x86-64, statically linked"
-               "AUTOLITH_TEST_STATIC_HEADERS=1"))
+             '("ANTAIOS_TEST_FILE_DESCRIPTION=ELF 64-bit LSB executable, x86-64, statically linked"
+               "ANTAIOS_TEST_STATIC_HEADERS=1"))
           (declare (ignore output error-output))
           (test-assert (not (zerop status))
                        "static validation rejects escaping symbolic links")))
@@ -3266,7 +3266,7 @@ esac
                (release-script-tests--run
                 (append
                  (list "bash" "-c"
-                       "set -eu; source \"$1\"; shift; autolith_launcher_parse \"$@\"; printf '%s\\n' \"$recovery_requested\" \"$from_source_requested\" \"$update_requested\"; if [ \"${#remaining_arguments[@]}\" -gt 0 ]; then printf '%s\\n' \"${remaining_arguments[@]}\"; fi"
+                       "set -eu; source \"$1\"; shift; antaios_launcher_parse \"$@\"; printf '%s\\n' \"$recovery_requested\" \"$from_source_requested\" \"$update_requested\"; if [ \"${#remaining_arguments[@]}\" -gt 0 ]; then printf '%s\\n' \"${remaining_arguments[@]}\"; fi"
                        "launcher-test" helper kind)
                  arguments)
                 :ignore-error-status t))
@@ -3356,7 +3356,7 @@ esac
               (run-preflight (cons "uninstall" tail) kind)
             (declare (ignore error-output))
             (test-assert
-             (and (zerop status) (search "Usage: autolith uninstall" output))
+             (and (zerop status) (search "Usage: antaios uninstall" output))
              "uninstall help exits successfully without startup")))
         (dolist (tail '(nil ("--yes") ("--yes" "--")))
           (multiple-value-bind (output error-output status)
@@ -3464,11 +3464,11 @@ esac
 (-> test-release-scripts () null)
 (defun test-release-scripts ()
   "Test shell bootstrap boundaries through Common Lisp fixtures."
-  (let* ((source-root (asdf:system-source-directory :autolith))
+  (let* ((source-root (asdf:system-source-directory :antaios))
          (root
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-release-script-tests-~A/" (make-identifier))
+             (format nil "antaios-release-script-tests-~A/" (make-identifier))
              (uiop:temporary-directory)))))
     (unwind-protect
          (progn

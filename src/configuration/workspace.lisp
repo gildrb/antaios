@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Workspace Identity --
 
@@ -61,8 +61,8 @@ Git marker is its own project identity."
             return working-directory
           finally (return working-directory))))
 
-(-> workspace-autolith-notes-path (pathname) pathname)
-(defun workspace-autolith-notes-path (working-directory)
-  "Return the root AUTOLITH.org pathname for WORKING-DIRECTORY."
-  (merge-pathnames "AUTOLITH.org"
+(-> workspace-antaios-notes-path (pathname) pathname)
+(defun workspace-antaios-notes-path (working-directory)
+  "Return the root ANTAIOS.org pathname for WORKING-DIRECTORY."
+  (merge-pathnames "ANTAIOS.org"
                    (workspace-project-root working-directory)))

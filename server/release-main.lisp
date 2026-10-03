@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Release Service Entry --
 
@@ -27,12 +27,12 @@
             (string= (first arguments) "archive")
             (null (rest (rest arguments))))
        (release-archive-build
-        :source-root (asdf:system-source-directory :autolith)
+        :source-root (asdf:system-source-directory :antaios)
         :output-directory
         (if (second arguments)
             (pathname (second arguments))
             (merge-pathnames "dist/"
-                             (asdf:system-source-directory :autolith))))
+                             (asdf:system-source-directory :antaios))))
        nil)
       (t
        (error 'configuration-error

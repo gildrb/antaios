@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Workspace Plan --
 
@@ -54,7 +54,7 @@
   (:documentation "The current ordered plan for one workspace."))
 
 
-(define-condition plan-error (autolith-error)
+(define-condition plan-error (antaios-error)
   ((pathname
     :initarg :pathname
     :reader plan-error-pathname
@@ -71,7 +71,7 @@
      (format stream "Plan ~A failed~@[ at ~A~]: ~A"
              (plan-error-operation condition)
              (plan-error-pathname condition)
-             (autolith-error-message condition)))))
+             (antaios-error-message condition)))))
 
 
 (-> plan--status (t) (option plan-status))
@@ -270,7 +270,7 @@
     (plan--retire-matching-legacy configuration directory))
   nil)
 
-(defvar *plan-lock* (make-recursive-lock "Autolith workspace plans")
+(defvar *plan-lock* (make-recursive-lock "Antaios workspace plans")
   "Serialize plan mutations and import rollback in this process.")
 
 (-> plan--call-with-lock (configuration function) t)

@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- OpenRouter Chat Completions Provider --
 
@@ -6,8 +6,8 @@
   "The namespace distinguishing OpenRouter models from other providers.")
 
 (defparameter *openrouter-request-headers*
-  '(("HTTP-Referer" . "https://github.com/lambda-symbolics/autolith")
-    ("X-OpenRouter-Title" . "Autolith"))
+  '(("HTTP-Referer" . "https://github.com/gildrb/theseus")
+    ("X-OpenRouter-Title" . "Antaios"))
   "The non-secret OpenRouter attribution headers sent with provider requests.")
 
 (defparameter *openrouter-models-without-reasoning* (make-hash-table :test #'equal)
@@ -44,7 +44,7 @@
 
 (-> openrouter--chat-tool-model-p (json-object) boolean)
 (defun openrouter--chat-tool-model-p (entry)
-  "Return true when OpenRouter model ENTRY accepts Autolith's request shape."
+  "Return true when OpenRouter model ENTRY accepts Antaios's request shape."
   (let* ((architecture (json-get entry "architecture"))
          (output-modalities
            (and (json-object-p architecture)
@@ -116,7 +116,7 @@
 
 (-> openrouter--reasoning-effort (string) (option string))
 (defun openrouter--reasoning-effort (effort)
-  "Translate Autolith reasoning EFFORT to OpenRouter's normalized values."
+  "Translate Antaios reasoning EFFORT to OpenRouter's normalized values."
   (cond
     ((string= effort "none")
      nil)

@@ -1,9 +1,9 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Localgroup Protocol Bridge --
 
 ;;; The wire protocol lives in the image-daemon library. This file keeps
-;;; Autolith's condition bridge, startup handoff state, and the small
+;;; Antaios's condition bridge, startup handoff state, and the small
 ;;; process helpers the localgroup runtime shares.
 
 (defvar *localgroup-startup-record* nil
@@ -24,10 +24,10 @@
 (-> localgroup-handoff-assert-startup-active () null)
 (-> localgroup-handoff-finish-startup (t) null)
 
-(define-condition localgroup-error (image-daemon:daemon-error autolith-error)
+(define-condition localgroup-error (image-daemon:daemon-error antaios-error)
   ()
   (:documentation
-   "A localgroup failure joined to Autolith's condition hierarchy."))
+   "A localgroup failure joined to Antaios's condition hierarchy."))
 
 
 ;;;; -- image-daemon Host Wiring --

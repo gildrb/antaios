@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Task Runtime --
 
@@ -34,7 +34,7 @@ claims."
          (maximum-concurrency
            (if hurry-up-p
                *task-hurry-up-maximum-agents*
-               (task--environment-integer "AUTOLITH_TASK_MAX_CONCURRENCY"
+               (task--environment-integer "ANTAIOS_TASK_MAX_CONCURRENCY"
                                           *task-default-maximum-concurrency*
                                           :minimum 1
                                           :maximum *task-maximum-concurrency*)))
@@ -49,7 +49,7 @@ claims."
          (maximum-runtime-milliseconds
            (if refresh-runtime-p
                (task--environment-integer
-                "AUTOLITH_TASK_MAX_RUNTIME_MS"
+                "ANTAIOS_TASK_MAX_RUNTIME_MS"
                 *task-default-maximum-runtime-milliseconds*
                 :minimum 0)
                (job-pool-maximum-runtime-milliseconds pool))))
@@ -69,7 +69,7 @@ claims."
      pool
      :maximum-concurrency
      (task--environment-integer
-      "AUTOLITH_EXECUTION_MAX_CONCURRENCY"
+      "ANTAIOS_EXECUTION_MAX_CONCURRENCY"
       *tool-execution-default-maximum-concurrency*
       :minimum 1
       :maximum *tool-execution-maximum-concurrency*)
@@ -154,10 +154,10 @@ a no-op, preserving lazy pools before their first job."
   "Create an orchestrator and its lazy worker pools from the environment."
   (let* ((task-pool
            (make-job-pool
-            :name "Autolith task"
+            :name "Antaios task"
             :job-class 'task-job
             :maximum-concurrency
-            (task--environment-integer "AUTOLITH_TASK_MAX_CONCURRENCY"
+            (task--environment-integer "ANTAIOS_TASK_MAX_CONCURRENCY"
                                        *task-default-maximum-concurrency*
                                        :minimum 1
                                        :maximum *task-maximum-concurrency*)
@@ -165,18 +165,18 @@ a no-op, preserving lazy pools before their first job."
             :maximum-live-jobs *task-maximum-live-jobs*
             :maximum-runtime-milliseconds
             (task--environment-integer
-             "AUTOLITH_TASK_MAX_RUNTIME_MS"
+             "ANTAIOS_TASK_MAX_RUNTIME_MS"
              *task-default-maximum-runtime-milliseconds*
              :minimum 0)
             :terminal-retention-limit *task-terminal-retention-limit*
             :start-threads-p nil))
          (execution-pool
            (make-job-pool
-            :name "Autolith execution"
+            :name "Antaios execution"
             :job-class 'tool-execution-job
             :maximum-concurrency
             (task--environment-integer
-             "AUTOLITH_EXECUTION_MAX_CONCURRENCY"
+             "ANTAIOS_EXECUTION_MAX_CONCURRENCY"
              *tool-execution-default-maximum-concurrency*
              :minimum 1
              :maximum *tool-execution-maximum-concurrency*)
@@ -193,7 +193,7 @@ a no-op, preserving lazy pools before their first job."
                           :pool task-pool
                           :execution-pool execution-pool
                           :maximum-depth
-                          (task--environment-integer "AUTOLITH_TASK_MAX_DEPTH"
+                          (task--environment-integer "ANTAIOS_TASK_MAX_DEPTH"
                                                      *task-default-maximum-depth*
                                                      :minimum 1))))
     (job-pool-add-listener task-pool #'task--pool-event-listener)
@@ -220,7 +220,7 @@ A completed shutdown can be reopened only by an explicit runtime resume."
        :refresh-runtime-p t)
       (task-orchestrator--apply-execution-limits-locked orchestrator)
       (setf (task-orchestrator-maximum-depth orchestrator)
-            (task--environment-integer "AUTOLITH_TASK_MAX_DEPTH"
+            (task--environment-integer "ANTAIOS_TASK_MAX_DEPTH"
                                        *task-default-maximum-depth* :minimum 1))
       (dolist (pool (list task-pool execution-pool))
         (job-pool-add-listener pool #'task--pool-event-listener)
@@ -338,7 +338,7 @@ identifier is what an agent uses to refer to its own children."
 ;;;; -- Pool Events Seen As Task Events --
 
 (defun task--pool-event-listener (channel payload)
-  "Re-emit one pool lifecycle event in Autolith's session vocabulary."
+  "Re-emit one pool lifecycle event in Antaios's session vocabulary."
   (let ((job (getf payload :job)))
     (when (and (typep job 'session-job) (eq channel :job-lifecycle))
       (let ((status (getf payload :status)))

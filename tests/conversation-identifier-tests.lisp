@@ -1,10 +1,10 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Conversation Identifier Tests --
 
 (-> test-conversation-identifier-format () null)
 (defun test-conversation-identifier-format ()
-  "Test the stored identifier format Autolith relies on for conversation files.
+  "Test the stored identifier format Antaios relies on for conversation files.
 
 The pinned vectors guard the on-disk format across idsmall upgrades. A changed
 scramble would orphan every stored conversation, so relaxing these cases to
@@ -35,7 +35,7 @@ match a new library version is never the correct repair."
          (progn (conversation-identifier-normalize invalid) nil)
        (conversation-identifier-error ()
          t))
-     "malformed identifiers signal the Autolith condition"))
+     "malformed identifiers signal the Antaios condition"))
   nil)
 
 (-> test-conversation-identifier-allocation () null)

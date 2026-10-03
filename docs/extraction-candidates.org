@@ -1,4 +1,4 @@
-#+TITLE: Extraction candidates in the Autolith sources
+#+TITLE: Extraction candidates in the Antaios sources
 
 * Terminal and application
 
@@ -11,10 +11,10 @@
   Gray stream that tracks =?1049h/l= and OSC 10/11/110/111 across packet splits
   so a dropped relay client gets its screen restored.
 - clinedi already decodes =:click=, =:scroll= and the page keys but cannot
-  switch the alternate screen or SGR mouse mode on, so Autolith hard-codes those
+  switch the alternate screen or SGR mouse mode on, so Antaios hard-codes those
   sequences in five places (fullscreen.lisp 73, 100, 629; commands.lisp 2016,
   2033).
-- Stays in Autolith: the frame composer, legend, welcome panel, and the message
+- Stays in Antaios: the frame composer, legend, welcome panel, and the message
   header jump (which becomes a row predicate argument). The Win32 console mode
   call maps onto clinedi's posix/win32 transport split; theme enter/leave
   become caller-supplied prologue and epilogue strings.
@@ -22,13 +22,13 @@
 ** DONE OSC 52 clipboard route (sophisticated-clipboard)
 sophisticated-clipboard 756b65f adds =terminal-backend=, which writes OSC 52
 through a writer function, and =clipboard-copy-text=, which copies to the host
-clipboard and the terminal together. Autolith keeps only the UI writer in
+clipboard and the terminal together. Antaios keeps only the UI writer in
 =src/terminal/clipboard.lisp= and its notices.
 
 ** DONE Remaining xterm controls (clinedi ansi.lisp)
 clinedi 1b75c6b adds =window-title-sequence=, =default-color-sequence=,
 =default-color-reset-sequence= and a =:redraw-p= option on
-=semantic-prompt-marker-sequence=, so Autolith no longer writes OSC 0, 10, 11,
+=semantic-prompt-marker-sequence=, so Antaios no longer writes OSC 0, 10, 11,
 110, 111 or its own =redraw=0= prompt marker.
 
 ** Layered source-tagged registry (new library, or structlisp)
@@ -44,7 +44,7 @@ macro, =configuration-error=, and the command validation hook.
 =src/application/lisp-machine.lisp= 99-309 with helpers at 27-45 and 70-97.
 Runs a thunk with the failing stack kept live, routes every condition through
 a selector callback instead of SBCL's debugger, and supports retry,
-return-values and abort recoveries through catch tags. Cut: the Autolith
+return-values and abort recoveries through catch tags. Cut: the Antaios
 control-condition predicate, =application-present= as the failure callback, the
 recovery object protocol, =self-read-form=, and the package. The LLM diagnosis
 (=debugger.lisp=) and the terminal modal (lisp-machine.lisp 437-764) are product
@@ -75,7 +75,7 @@ pattern recurs in =user-operation-context.lisp= 59 and
 ** DONE Clickable widget spans (cl-termdown spans)
 cl-termdown 681f4bc adds widgets (=make-widget= with a role, label and action),
 which every span function presents as their label, plus =widget-regions=,
-=shift-regions= and =region-action=. Autolith keeps its closed
+=shift-regions= and =region-action=. Antaios keeps its closed
 =terminal-style= by checking widget roles in =terminal-styled-text-p=. The
 fullscreen viewport that consumes the regions remains its own candidate.
 
@@ -101,7 +101,7 @@ fullscreen viewport that consumes the regions remains its own candidate.
 - DONE =--proper-list-p= exists in nine copies across application, task, localgroup,
   mcp, lsp and conversation files; one definition in core.
 - DONE Terminal size lookup uses =clinedi:terminal-current-size= for native geometry,
-  =tput= and environment fallbacks; Autolith supplies its size defaults.
+  =tput= and environment fallbacks; Antaios supplies its size defaults.
 
 * Core, configuration and state
 
@@ -147,7 +147,7 @@ UUIDv4 from =ironclad:random-data= or use idsmall, and both platform methods go.
 - DONE 2026-10-03 (d9915e93): every =sb-posix:getpid= outside the platform
   files now calls =ls-compat.posix:current-process-id=, and the one
   =sb-posix:rmdir= uses =uiop:delete-empty-directory=.
-- DONE 2026-10-03 (ls-compat 52c959f, Autolith cade840b and b5eabc64): the
+- DONE 2026-10-03 (ls-compat 52c959f, Antaios cade840b and b5eabc64): the
   28 direct =sb-ext= UTF-8 octet conversions now call
   =ls-compat:utf8-string-to-octets= and =utf8-octets-to-string=, which use
   =sb-ext= on SBCL (so a lone surrogate is still refused) and babel with an
@@ -165,7 +165,7 @@ UUIDv4 from =ironclad:random-data= or use idsmall, and both platform methods go.
 
 * Provider, conversation and inference
 
-Compared against the library versions Autolith pins through qlot, not the
+Compared against the library versions Antaios pins through qlot, not the
 older checkouts under =~/common-lisp=: the pinned cl-llm-provider-api already
 has a =/wire= system (Responses, Chat Completions, Anthropic Messages, SSE,
 contracts) and the pinned cl-rfc8628 has a managed credential manager, JWT
@@ -230,7 +230,7 @@ clinedi.
 Layered builtin, site, user and runtime sources with precedence, discovery
 under a per-registration lock, merged declared and discovered models, cache,
 snapshot and restore. The library already declares a
-=model-provider-registration= slot holding an object only Autolith defines.
+=model-provider-registration= slot holding an object only Antaios defines.
 Cut: =config=, the default window and effort tables, the legacy
 =*supported-models*= refresh, =*extension-registration-source*=,
 =configuration-error=, and the snapshot cache path (inject a sexp-store-backed
@@ -240,7 +240,7 @@ cache function).
 =src/provider/client.lisp= 883-1013 (separate retry cap once output streamed,
 =provider-stream-abandoned=, jittered delays), 1015-1056 (refresh once after
 401), 725-751 (SSE inactivity deadline, which belongs in =/dexador=). Built
-directly on the library's bounded retries and event classes. Cut: Autolith
+directly on the library's bounded retries and event classes. Cut: Antaios
 wording and =authentication-error= as a hook.
 
 ** Structured answers from model text and JSON Schema import (cl-llm-provider-api/contracts)
@@ -318,7 +318,7 @@ structlisp's integer interval set.
 A strict =scheme:identifier= URI grammar, a per-scheme resolver registry,
 generics for capabilities, observe and apply-operations with a base revision,
 conditions for stale, denied and unsupported, keyed SipHash snapshot digests,
-percent-encoded item URIs. Cut: the =autolith-error= superclass and failure
+percent-encoded item URIs. Cut: the =antaios-error= superclass and failure
 codes, the child-agent and child-safe predicates (one =resolver-permits-p=),
 the readable-schemes policy; observation alias retention (154-252) is tied to
 the conversation and may stay. =resource-uri-encode/decode= and the URI octet
@@ -332,10 +332,10 @@ predicate hand-roll percent encoding while quri is already a dependency.
 An authenticated control endpoint for a Lisp image is image-daemon's stated
 purpose, yet this runs a second framing and auth protocol beside image-daemon's
 packets and bearer token. Cut: the application object, the
-=:management-repl-*= settings, platform file helpers, the AUTOLITH read
+=:management-repl-*= settings, platform file helpers, the ANTAIOS read
 package, transfer and quiescence. Security note: =management-repl-read-frame=
 (163-202) runs before authentication (346) with the full reader and
-=*package*= set to AUTOLITH, read-eval off only, so an unauthenticated peer can
+=*package*= set to ANTAIOS, read-eval off only, so an unauthenticated peer can
 intern symbols and send deeply nested forms; sexp-config's bounded reader with
 a small grammar fixes that regardless of extraction.
 
@@ -363,12 +363,12 @@ a small grammar fixes that regardless of extraction.
 CLOSED: [2026-10-03]
 ls-compat 089be111 adds the =ls-compat/files= system: =publish-pathname=
 claims a unique hidden sibling, hands it to a producer, runs an optional
-prepare hook (where Autolith applies =platform-make-private=), then renames
+prepare hook (where Antaios applies =platform-make-private=), then renames
 over the target or hard-links it through the pinned =link-file= so an occupied
 target signals =link-target-exists=; a =publish-function= hook keeps hosts
-whose no-clobber publication lives elsewhere (Autolith's Win32 adapter) on
+whose no-clobber publication lives elsewhere (Antaios's Win32 adapter) on
 the same path, and the temporary never outlives the call. =publish-file=
-writes text, octets or a stream writer the same way. Autolith now uses them
+writes text, octets or a stream writer the same way. Antaios now uses them
 in =state/image-commits.lisp=, =configuration/project-adaptations.lisp=,
 =self/tools.lisp= (which also fixes the pid-only temporary name and the
 missing cleanup), =skills/tools.lisp=, =task/job-boundary.lisp=,
@@ -390,7 +390,7 @@ capture for defun, defmethod, defvar, deftype, defclass and compiler macros via
 =sb-int:info= snapshots), 1066-1166 and 1401-1464 (top-level form spans with
 comment skipping, find and replace a definition in a file). SBCL machinery any
 self-modifying or IDE-like tool needs; sbcl-workers' source lookup covers
-related ground. Cut: the AUTOLITH defaults, the context-contributor and
+related ground. Cut: the ANTAIOS defaults, the context-contributor and
 application-command undo branches (make an extensible generic), the mutation
 conditions, journal, image-commit fallbacks and the replay engine.
 
@@ -400,9 +400,9 @@ runtime identity, core saving through fork or a fresh saver, probe boot with an
 exact handshake, atomic install with a read-only manifest. The compatibility
 check (130-137) duplicates =sbcl-worker-image-compatible-p= and
 =generation-compatible-p=; the probe boot (297-329) duplicates the generations
-probe runner. Cut: the hard-coded input list, the Autolith specials reset in
+probe runner. Cut: the hard-coded input list, the Antaios specials reset in
 the saver child (including an internal sbcl-generations symbol),
-=AUTOLITH_SBCL=, and the entry point.
+=ANTAIOS_SBCL=, and the entry point.
 
 ** LSP glue (cl-lsp)
 =lsp/configuration.lisp= 1-218 builds =cl-lsp:lsp-server-configuration= from
@@ -414,7 +414,7 @@ methods on capabilities, 60-92 fan out by extension. Cut: =config-root=,
 
 - DONE 2026-10-03: project-root selection. cl-lsp 5aa382d exports
   =lsp-project-root= and =*lsp-maximum-root-depth*= (literal marker names,
-  canonical inputs); Autolith 51b05a25 dropped its copy. The declarative
+  canonical inputs); Antaios 51b05a25 dropped its copy. The declarative
   =lsp.sexp= reader, the position inverse and the capability gates remain.
 
 ** Localgroup detached-process handoff (image-daemon) and process-tree reaping (ls-compat.posix)
@@ -426,7 +426,7 @@ and conversation-id validation.
 - DONE descendant discovery: ls-compat 089be111 exports
   =ls-compat.posix:descendant-process-ids= (deepest first, best-effort =ps=
   snapshot, NIL without =ps=) and the handoff's stop loop calls it. The
-  TERM-then-KILL escalation stays in Autolith because it interleaves the
+  TERM-then-KILL escalation stays in Antaios because it interleaves the
   handoff's launcher and replacement pid records with the platform process
   object.
 
@@ -470,13 +470,13 @@ storm guard, runtime lifecycle) stays.
    publication, bounded regular-file reads, process reaping and path
    confinement. Target: ls-compat growing a files package.
    - DONE 2026-10-03: atomic publication (=ls-compat/files=) and descendant
-     discovery, adopted in Autolith at nine sites; see the two DONE items.
+     discovery, adopted in Antaios at nine sites; see the two DONE items.
    - DONE 2026-10-03: the delegation below, the bounded reader and path
      confinement; see the DONE items above.
    - Noted while doing it: the pinned ls-compat already provides
      =file-information=, =stream-file-information=, =open-regular-file=,
      =directory-entries=, =link-file= and =file-mode= with a Win32 backend, so
-     the remaining step is to make Autolith's =platform-path-status=,
+     the remaining step is to make Antaios's =platform-path-status=,
      =platform-stream-status=, =platform-open-regular-file=,
      =platform-list-directory=, =platform-publish-new-file= and the privacy
      calls delegate to them instead of carrying parallel POSIX and Win32
@@ -484,7 +484,7 @@ storm guard, runtime lifecycle) stays.
      confinement (=tools/workspace.lisp=) then follow, since both only need
      that status protocol. Not started.
 2. Bounded reading and record validation: sexp-config and sexp-store already
-   own this; Autolith re-implements it in at least ten places, two of them
+   own this; Antaios re-implements it in at least ten places, two of them
    with real holes (the pre-authentication REPL frame reader, the unbounded
    child result read).
 3. Provider authentication: the loopback OAuth login and the refresh grant are
@@ -514,4 +514,4 @@ five data-only provider authentication files.
 - The Gemini loopback callback reader is unbounded; the ChatGPT one is not.
 - =gemini-code-assist--text-parts= drops image parts silently.
 - DONE =provider-family= now uses cl-llm-provider-api's registration-family
-  hook, specialized on Autolith's own registration type.
+  hook, specialized on Antaios's own registration type.

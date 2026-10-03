@@ -1,8 +1,8 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Management REPL Conditions --
 
-(define-condition management-repl-error (autolith-error)
+(define-condition management-repl-error (antaios-error)
   ((operation
     :initarg :operation
     :reader management-repl-error-operation
@@ -179,7 +179,7 @@
         (with-standard-io-syntax
           (let ((*read-eval* nil)
                 (*readtable* (copy-readtable nil))
-                (*package* (find-package '#:autolith))
+                (*package* (find-package '#:antaios))
                 (position 0))
             (handler-case
                 (multiple-value-bind (form next)
@@ -211,7 +211,7 @@
             (*print-circle* t)
             (*print-level* 12)
             (*print-length* 256)
-            (*package* (find-package '#:autolith)))
+            (*package* (find-package '#:antaios)))
         (write value :stream capture)))
     (when (management-repl-output-truncated-p capture)
       (management-repl--protocol-error
@@ -464,11 +464,11 @@
     :type real
     :documentation "The internal real-time deadline for evaluation completion.")
    (lock
-    :initform (make-lock "Autolith management request")
+    :initform (make-lock "Antaios management request")
     :reader management-repl-request-lock
     :documentation "The lock guarding completion and response.")
    (condition-variable
-    :initform (sb-thread:make-waitqueue :name "Autolith management request")
+    :initform (sb-thread:make-waitqueue :name "Antaios management request")
     :reader management-repl-request-condition-variable
     :documentation "The completion notification waitqueue.")
    (completed-p
@@ -512,11 +512,11 @@
     :type t
     :documentation "The platform file identity of the Unix socket created by this runtime.")
    (lock
-    :initform (make-lock "Autolith management runtime")
+    :initform (make-lock "Antaios management runtime")
     :reader management-repl-runtime-lock
     :documentation "The lock guarding lifecycle, clients, and the request queue.")
    (condition-variable
-    :initform (sb-thread:make-waitqueue :name "Autolith management queue")
+    :initform (sb-thread:make-waitqueue :name "Antaios management queue")
     :reader management-repl-runtime-condition-variable
     :documentation "The queue work and shutdown notification waitqueue.")
    (stopping-p
@@ -576,7 +576,7 @@
   (with-standard-io-syntax
     (let ((*read-eval* nil)
           (*readtable* (copy-readtable nil))
-          (*package* (find-package '#:autolith)))
+          (*package* (find-package '#:antaios)))
       (multiple-value-bind (form position)
           (read-from-string source nil ':end-of-input)
         (when (eq form ':end-of-input)
@@ -627,7 +627,7 @@
                      :message "Management evaluation expired before execution."
                      :operation ':evaluate))
             (sb-ext:with-timeout remaining
-              (let ((*package* (find-package '#:autolith))
+              (let ((*package* (find-package '#:antaios))
                     (*standard-output* output)
                     (*error-output* output)
                     (*trace-output* output)
@@ -913,7 +913,7 @@
            (management-repl-configuration-error (condition)
              (warn "Management authentication configuration failure (~A): ~A"
                    (management-repl-configuration-error-reason condition)
-                   (autolith-error-message condition)))
+                   (antaios-error-message condition)))
            (management-repl-error ()
              nil)
            (sb-ext:timeout ()
@@ -958,7 +958,7 @@
                             (make-thread
                              (lambda ()
                                (management-repl--run-client runtime socket))
-                             :name "Autolith management client")))
+                             :name "Antaios management client")))
                       (push socket
                             (management-repl-runtime-client-sockets runtime))
                       (push thread
@@ -1001,12 +1001,12 @@
                   (funcall *management-repl-start-thread-function*
                            (lambda ()
                              (management-repl--run-evaluator runtime))
-                           :name "Autolith management evaluator")
+                           :name "Antaios management evaluator")
                   (management-repl-runtime-listener-thread runtime)
                   (funcall *management-repl-start-thread-function*
                            (lambda ()
                              (management-repl--serve runtime))
-                           :name "Autolith management endpoint"))
+                           :name "Antaios management endpoint"))
             runtime)
         (error (condition)
           (ignore-errors (management-repl-stop application))
@@ -1142,7 +1142,7 @@
       (error 'management-repl-quiescence-error
              :message "A management evaluation cannot checkpoint its own evaluator."
              :operation ':checkpoint
-             :threads '("Autolith management evaluator")))
+             :threads '("Antaios management evaluator")))
     (when running-p
       (management-repl-stop application))
     (unwind-protect

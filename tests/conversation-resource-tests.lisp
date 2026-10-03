@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Conversation History Resource Tests --
 
@@ -101,7 +101,7 @@
       (progn
         (apply #'conversation-resource-tests--read context identifier arguments)
         nil)
-    (autolith-error ()
+    (antaios-error ()
       t)))
 
 (-> conversation-resource-tests--heading (integer) string)

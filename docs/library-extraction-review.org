@@ -8,7 +8,7 @@ Complete the approved ownership transfers into existing Lambda Symbolics
 libraries. Defer the proposed revisioned-document and release-distribution
 libraries, conditional RLM extraction, releases, and CI/workflow changes.
 
-The objective is fewer Autolith implementation and test lines, with each generic
+The objective is fewer Antaios implementation and test lines, with each generic
 behavior and its exhaustive tests owned once. Extracting a helper while keeping
 its state machine, wrappers and tests here would miss that objective.
 
@@ -18,7 +18,7 @@ The implementation record describes the approved subset and measured results.
 * Completed approved transfers
 
 All approved existing-library transfers are integrated through =e5389ff=.
-Generic implementations and their test matrices moved downstream; Autolith keeps
+Generic implementations and their test matrices moved downstream; Antaios keeps
 product policy, configuration, authorization and representative integration tests.
 
 ** Ownership and pinned revisions
@@ -60,7 +60,7 @@ Host review corrections added 33 source lines and 71 test lines: refreshed-token
 account validation, explicit papercut assessment results, and shared writer locks
 for picker reconstruction. The final =dfa8f95..e5389ff= reduction is therefore
 *6,672 source lines and 4,523 test lines*, or *11,195 lines combined*.
-Downstream additions are not counted as Autolith reductions.
+Downstream additions are not counted as Antaios reductions.
 
 ** Review fixes and verification
 
@@ -80,7 +80,7 @@ and 191 protocol/context/contract checks; mcparen 102 tests; sexp-store 149 chec
 clinker-transcript 74 assertions; image-daemon 113 assertions; cl-termdown 86 tests;
 and the complete Clinedi regression suite. The sandbox merge passed 83 checks.
 
-Each Autolith integration passed =./script/check --jobs 8=, including recovery
+Each Antaios integration passed =./script/check --jobs 8=, including recovery
 probes, and native =nix flake check --option eval-cache false=. The combined tree
 passed *470 cases and 5,847 checks*, with zero failed cases. Nix verification was
 Linux x86-64 only; the incompatible aarch64 targets were not run.
@@ -160,10 +160,10 @@ credential use from =src/provider/authentication.lisp=. Relevant seams include
 =call-with-credentials=. Inject the provider refresh exchange and use the existing
 secret-region hook. This does not require a separate single-flight library.
 
-Autolith owns provider registration, model preferences, product credential paths,
+Antaios owns provider registration, model preferences, product credential paths,
 external bootstrap-store ownership, prompt/context projection, tool dispatch,
 provider-specific subscription adapters and checkpoint secret-use quiescence.
-Generic libraries should not accept an Autolith application or conversation.
+Generic libraries should not accept an Antaios application or conversation.
 
 Transfer exhaustive wire-event sequences, malformed/interrupted streams,
 fragmented tool calls, usage normalization, retry classification and concurrent
@@ -190,7 +190,7 @@ detach. A snapshot should contain capabilities, generation/revision, state and
 diagnostics. Credential resolution and secret-use scope are injected boundaries;
 local teardown must work even when credential resolution fails.
 
-Autolith owns configuration layering, child permissions, tool registry binding,
+Antaios owns configuration layering, child permissions, tool registry binding,
 provider schema projection, instruction trust, images and result/status display.
 This should remove manager implementation, not just rename the current classes.
 
@@ -220,10 +220,10 @@ explicit contracts rather than assumptions about atomic rename.
 Separately extend =clinker-transcript= from item vocabulary to ordered projection
 and reconciliation. Transfer call/output grouping, duplicate detection,
 missing-output detection, projection replacement and item-metadata maintenance.
-Return repair intents; Autolith supplies wording and decides when to durably
-publish repairs. Avoid moving the Autolith conversation class downstream.
+Return repair intents; Antaios supplies wording and decides when to durably
+publish repairs. Avoid moving the Antaios conversation class downstream.
 
-Autolith owns memory relevance/visibility, papercut lifecycle, agenda statuses and
+Antaios owns memory relevance/visibility, papercut lifecycle, agenda statuses and
 links, conversation titles, compaction meaning, inherited-reference policy,
 artifact ownership and identifier migration. Reuse Structlisp deques, ordered
 maps, bounded builders and indexes instead of adding another storage-specific
@@ -248,9 +248,9 @@ threads, controller takeover, blocked-stream shutdown and client loops from
 =src/localgroup/terminal.lisp=, =runtime.lisp= and =client.lisp=.
 Use explicit storage roots, request callbacks, input/output/resize events and
 start/stop/discover/attach/detach operations. Keep terminal adapters independent
-of Autolith terminal classes.
+of Antaios terminal classes.
 
-Autolith owns submission versus steering, conversation leases, permissions,
+Antaios owns submission versus steering, conversation leases, permissions,
 checkpoint choices and input-reader coordination. In particular,
 =src/localgroup/handoff.lisp= is application choreography, not another thousand
 lines of generic daemon code.
@@ -278,7 +278,7 @@ The main source seams are =src/terminal/ui.lisp=, =stream.lisp=, =input.lisp=,
 add semantic-span fitting/rendering capabilities rather than a new span library.
 Replace private Clinedi history-slot access with public operations.
 
-Autolith owns queue/submission behavior, Lisp/application-command completion,
+Antaios owns queue/submission behavior, Lisp/application-command completion,
 image attachment, tool activity, modeline content, interruption policy and
 transcript composition. The 3,784-line =responsive-input.lisp= is not a justified
 wholesale extraction. Move terminal geometry, input, lifecycle, picker, history
@@ -295,7 +295,7 @@ instruction/evidence fields, per-session receipt isolation and consumption only
 after successful delivery. Accept contribution values, explicit resolver state,
 a session key and a cost function.
 
-Autolith owns contributor registration, user-init transactions, active tools,
+Antaios owns contributor registration, user-init transactions, active tools,
 workspace/goal lookup, built-in contributions and display. Transfer generic
 selection, receipt, reactivation and budget tests from =tests/context-tests.lisp=.
 
@@ -316,7 +316,7 @@ The library should own snapshots, observed-range accounting, anchor resolution,
 edit normalization/overlap checks, text transformation, newline preservation,
 revision expiry and typed stale/invalid-edit conditions. Use a small backing-store
 protocol with a file backend. An optional Lisp-source module could later own
-lossless top-level spans and replacement, while Autolith supplies recognized
+lossless top-level spans and replacement, while Antaios supplies recognized
 definition operators and mutation policy.
 
 Initial sources: =src/resource/workspace-file.lisp= and the observation machinery
@@ -324,7 +324,7 @@ in =src/resource/protocol.lisp=. Relevant seams include
 =workspace-file--resolve-anchored-line=, =workspace-file--normalize-operations=,
 =workspace-file--apply-normalized-operations= and =workspace-file--publish=.
 
-Autolith owns URI/tool dispatch, workspace confinement, permissions, association
+Antaios owns URI/tool dispatch, workspace confinement, permissions, association
 with conversations, domain resources, rendering and delimiter warnings. A
 universal resource-provider framework is unnecessary for this extraction.
 
@@ -363,7 +363,7 @@ identity, cycle services and check expected health. Preserve guarded cleanup and
 classify retryable versus identity-specific failures. Avoid a universal workflow
 or build scheduler; the current builder mirrors release assets.
 
-Autolith owns naming/default URLs, platform matrix, Linux-first availability,
+Antaios owns naming/default URLs, platform matrix, Linux-first availability,
 lightweight deployment-tag policy, SBCL/Qlot/native-library packaging, launchers,
 bootstrap/check recipes and host configuration. Most of
 =server/release-archive.lisp= is that packaging recipe. The pre-Lisp shell installer
@@ -371,7 +371,7 @@ also has a legitimate product boundary. Its lines are not claimed as removed.
 
 Use one independently loadable archive/publication module for any genuinely
 shared archive/staging mechanics, including suitable data-import pieces. Keep
-Autolith import schemas, ownership, workspace remapping and conversation leases
+Antaios import schemas, ownership, workspace remapping and conversation leases
 in =src/state/data-transfer-*=. The runtime must not need the release HTTP/GitHub
 stack merely to import user data. Reuse =ls-flock= and =sexp-store= underneath;
 =ls-compat= should contain platform primitives, not deployment transactions.
@@ -390,7 +390,7 @@ strengthen verified behavior, not rename it into a stronger guarantee.
 
 Potential consumers include other Lisp CLI distributions and small service
 publishers. A separately usable catalog/publisher/deployer is the acceptance test;
-a collection of callbacks requiring Autolith internals would not qualify.
+a collection of callbacks requiring Antaios internals would not qualify.
 
 * Existing abstractions and conditional work
 
@@ -398,13 +398,13 @@ a collection of callbacks requiring Autolith internals would not qualify.
 progress, cancellation and retention. =sbcl-workers= already owns persistent
 worker processes, requests and images. Use their public extension points and move
 remaining generic fixes there. The current worker adapter is not a second worker
-engine. =sbcl-generations= similarly owns heap checkpoint mechanics; Autolith owns
+engine. =sbcl-generations= similarly owns heap checkpoint mechanics; Antaios owns
 secret quiescence, active-state preparation and recovery selection.
 
 RLM budgets/views/context objects already live in =cl-llm-provider-api=. The
 remaining inference directory includes product tools, resource adapters and
 permission classification. Tool-enabled inference and root completion currently
-construct an Autolith agent. A reusable bounded turn executor could justify an
+construct an Antaios agent. A reusable bounded turn executor could justify an
 optional provider-library execution system, but merely passing =agent-run-user-turn=
 as a callback is insufficient evidence of an independent runtime. Defer a new
 RLM library until that boundary is demonstrated. Its conditional savings are not
@@ -423,8 +423,8 @@ For each vertical slice:
 1. Define the generic invariant and the narrow host boundary against the current
    upstream checkout. Pin and inspect any prerequisite upstream update.
 2. Implement the capability and its generic behavioral/failure tests downstream.
-   Demonstrate use without loading Autolith or accepting its application classes.
-3. Replace the Autolith implementation with the adapter. Remove the superseded
+   Demonstrate use without loading Antaios or accepting its application classes.
+3. Replace the Antaios implementation with the adapter. Remove the superseded
    state, duplicate algorithms and generic test matrices in that integration.
 4. Keep a few explicit product integration cases, including failure propagation,
    lifecycle ownership, permissions or persistence where relevant.
@@ -432,7 +432,7 @@ For each vertical slice:
    separately, including adapters, wrappers and duplicate fixtures. Count moved
    behavior once; upstream growth also deserves review.
 
-An upstream feature without the corresponding Autolith deletion is unfinished
+An upstream feature without the corresponding Antaios deletion is unfinished
 extraction work. A changed abstraction must reduce local ownership, not merely
 move function bodies behind another facade. Implement in the priority order
 above, with small independently checked commits rather than a wholesale rewrite.
@@ -440,7 +440,7 @@ above, with small independently checked commits rather than a wholesale rewrite.
 * Upstream provenance
 
 Each entry is the exact inspected commit from a refreshed, read-only reference
-checkout outside the Autolith worktree. Metadata-only reviews establish public
+checkout outside the Antaios worktree. Metadata-only reviews establish public
 scope/API, not every implementation invariant. Implementation reads were deeper
 for the principal destinations discussed above.
 

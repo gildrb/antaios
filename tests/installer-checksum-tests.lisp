@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Installer Archive Verification --
 
@@ -7,7 +7,7 @@
   "Test exact archive verification before extraction or installation selection."
   (with-test-configuration (configuration root)
     (declare (ignore configuration))
-    (let* ((source-root (asdf:system-source-directory :autolith))
+    (let* ((source-root (asdf:system-source-directory :antaios))
            (release-root (merge-pathnames "release/" root))
            (fixtures (merge-pathnames "downloads/" root))
            (commands (merge-pathnames "commands/" root))
@@ -18,9 +18,9 @@
            (tar-command (release-archive--command-pathname "tar"))
            (environment
              (list (format nil "PATH=~A:~A" commands (uiop:getenv "PATH"))
-                   (format nil "AUTOLITH_TEST_RELEASE_FIXTURE=~A" fixtures)
-                   (format nil "AUTOLITH_INSTALL_ROOT=~A" installation)
-                   "AUTOLITH_RELEASE_BASE_URL=https://example.invalid")))
+                   (format nil "ANTAIOS_TEST_RELEASE_FIXTURE=~A" fixtures)
+                   (format nil "ANTAIOS_INSTALL_ROOT=~A" installation)
+                   "ANTAIOS_RELEASE_BASE_URL=https://example.invalid")))
       (release-script-tests--make-release source-root release-root)
       (release-script-tests--install-linux-host-tools commands)
       (release-script-tests--write-file

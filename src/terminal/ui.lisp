@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- UI Construction --
 
@@ -3218,7 +3218,7 @@ installed owner the thunk simply runs."
     (terminal-ui t)
     (values keyword (option (or string user-message-input))))
 (defun terminal-ui--apply-editor-event (ui event)
-  "Apply EVENT through Clinedi while preserving Autolith interaction policy."
+  "Apply EVENT through Clinedi while preserving Antaios interaction policy."
   (let ((editor (terminal-ui-editor ui)))
     (cond
       ((and (eq event :interrupt)

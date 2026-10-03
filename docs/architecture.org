@@ -1,10 +1,10 @@
-#+TITLE: Autolith Architecture
+#+TITLE: Antaios Architecture
 #+STARTUP: content
 
-Autolith is a terminal agent in a live Common Lisp image. The running
+Antaios is a terminal agent in a live Common Lisp image. The running
 system can be inspected and changed by both the agent, and the user.
 
-All application definitions live in the single =autolith= package,
+All application definitions live in the single =antaios= package,
 which may be considered non-standard or unwise by some Common Lisp
 developers, but I consider correct for self-modifiability.
 
@@ -17,7 +17,7 @@ developers, but I consider correct for self-modifiability.
                          +---------+----------+
                                    |
                     +--------------v---------------+
-                    | active Autolith Lisp image    |
+                    | active Antaios Lisp image    |
                     | terminal, agent, tools, state |
                     +--+-----------+-----------+----+
                        |           |           |
@@ -41,14 +41,14 @@ developers, but I consider correct for self-modifiability.
   They live in separate Lisp images and cannot directly modify the agent.
 - *Durable records* live under reasonable XDG folders. This roughly includes
   conversations, memories, agendas, images, and credentials
-- The *recovery image* is a separately built pristine core, which Autolith
-  will reboot into in case the current image is FUBAR. Autolith can work
+- The *recovery image* is a separately built pristine core, which Antaios
+  will reboot into in case the current image is FUBAR. Antaios can work
   using the recovery image to either fix figure out the issue with your
   current image, or try to finish your task if that's a priority.
 
 * Configuration layers
 
-Autolith keeps packaged defaults separate from the user's XDG configuration.
+Antaios keeps packaged defaults separate from the user's XDG configuration.
 An optional absolute site configuration root supplies =init.lisp=, =mcp.sexp=,
 =skills/=, and =agents/=. Site definitions have lower precedence than the
 corresponding user definitions. Trusted directory configuration follows user
@@ -90,7 +90,7 @@ terminal prompt          local Lisp result       finalized scrollback
 
 * Library boundaries
 
-| Library | Generic implementation | Autolith integration |
+| Library | Generic implementation | Antaios integration |
 |---------+------------------------+----------------------|
 | agentcomms | ACP v1 schema, symmetric JSON-RPC, owned request handlers and session lifecycle | Headless application ownership, durable replay, observer projection and editor approvals |
 | cl-llm-provider-api | Wire clients, request execution, context resolution, structured contracts | Provider registration, subscription adapters, conversation projection, contributors |
@@ -121,7 +121,7 @@ owners; durable turn finalization defers queued interrupts before lease teardown
 
 * User state
 
-Autolith stores portable, readable S-expressions (for now, it is possible we migrate
+Antaios stores portable, readable S-expressions (for now, it is possible we migrate
 to sqlite or similar in the future).
 
 Use =sexp-store= transactions for locked read/modify/publish operations. Caller
@@ -147,7 +147,7 @@ holds the same file lock as source invalidation and writes.
 A =configuration= holds a table of settings and their values. Each setting is
 an instance of a =setting= kind (=boolean-setting=, =choice-setting=,
 =integer-setting=, =string-setting=, =pathname-setting=, =derived-setting=,
-and the Autolith-specific =model-setting= and =reasoning-effort-setting=)
+and the Antaios-specific =model-setting= and =reasoning-effort-setting=)
 declaring its name, type, documentation, label and group for the settings
 page, default, options, scope, and environment variable. =define-setting=
 registers a knob once; each configuration snapshots the registry at creation,
@@ -236,18 +236,19 @@ contributes a request-context note naming enabled servers.
 
 * Terminal
 
-Autolith uses the primary screen and leaves finalized output in normal
-scrollback by default. An opt-in fullscreen terminal UI owns the transcript
+Antaios runs a fullscreen terminal UI by default: it owns the transcript
 viewport in an alternate screen, keeps application scrollback, and pins the
-composer to the bottom. The persistent setting is stored in the global
-preferences record; =--fullscreen= overrides it for one launch.
+composer to the bottom. The inline presentation instead uses the primary
+screen and leaves finalized output in normal scrollback. The persistent
+setting is stored in the global preferences record; =--fullscreen= overrides a
+saved inline choice for one launch. No style renders bold text.
 
 - Reasoning previews enter scrollback only once finalized
-- Autolith provides semantic styling, candidate policy, terminal mode, and
+- Antaios provides semantic styling, candidate policy, terminal mode, and
   emits OSC 133 prompt blocks
 - OSC 133: =A= and =B= precede input, =C= starts execution, =D;STATUS=
   closes execution. This way you can rely on smarter terminals
-- OSC 0: the interactive window title is =autolith - PATH=. Autolith writes
+- OSC 0: the interactive window title is =antaios - PATH=. Antaios writes
   it at UI start, after localgroup attach, and after =/cwd=.
 - Clinedi owns editor state, input decoding, geometry, and live repainting
 - The fullscreen viewport owns transcript wrapping, application scrolling,
@@ -288,7 +289,7 @@ compile and install --> checks --> replay script and manifest
 - Replay entries record the tracked source they shadowed. Startup replay
   skips and reports an entry whose tracked definition moved since
   publication, so newer tracked code is never shadowed by a stale override
-- Checkpoints use =sbcl-generations=. Before the fork, Autolith quiesces
+- Checkpoints use =sbcl-generations=. Before the fork, Antaios quiesces
   work, clears credentials, detaches workers, and checks provenance
 - Windows cannot fork. Checkpoints and rollback are withheld there, and a
   worker saves its image by exiting through =save-lisp-and-die= and
@@ -309,12 +310,13 @@ stable launcher
 #+END_SRC
 
 - =active-image.lisp= builds the preloaded image for normal startup and for
-  every fresh Autolith process, such as pristine =lisp.*= workers
+  every fresh Antaios process, such as pristine =lisp.*= workers
 - =script/bootstrap= finds a supported SBCL, builds the pristine recovery
   core and a separate active image, and boot-probes both
-- Updates validate provenance and refresh a readable availability cache.
-  Startup reads cached state only. An accepted packaged update runs the
-  bundled installer and restarts. 
+- Updates validate provenance and refresh a readable availability cache from
+  the release service named by =ANTAIOS_RELEASE_BASE_URL=; there is no default
+  service. Startup reads cached state only. An accepted packaged update runs
+  the bundled installer and restarts.
 - Recovery reports sanitized crash context. Automatic failure recovery boots
   current committed source without private mutations or user init. Explicit
   generation selection and rollback retain their saved-state path
@@ -335,5 +337,5 @@ Here's a rough, probably outdated map of the repository
 | Images and recovery           | =src/startup/active-image.lisp=, =src/state/generations.lisp=, =recovery/=, =bin/=, sbcl-generations |
 | Configuration and transfer    | =src/configuration/=, =src/localgroup/=, =src/state/updates.lisp=, sexp-config                     |
 
-Read [[file:guide.org][the guide]] for operating Autolith, and =AGENTS.md= for
+Read [[file:guide.org][the guide]] for operating Antaios, and =AGENTS.md= for
 repository rules and development policy, especially using clankers.

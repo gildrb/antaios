@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Presentation Test Support --
 
@@ -43,12 +43,12 @@
 
 (defclass gated-provider (scripted-provider)
   ((gate-lock
-    :initform (make-lock "Autolith gated provider")
+    :initform (make-lock "Antaios gated provider")
     :reader gated-provider-lock
     :type t
     :documentation "The lock protecting deterministic provider timing.")
    (gate-condition-variable
-    :initform (make-condition-variable :name "Autolith gated provider")
+    :initform (make-condition-variable :name "Antaios gated provider")
     :reader gated-provider-condition-variable
     :type t
     :documentation "The wait point for first-request entry and release.")
@@ -108,12 +108,12 @@
 
 (defclass application-test-gated-tool (tool)
   ((lock
-    :initform (make-lock "Autolith gated tool")
+    :initform (make-lock "Antaios gated tool")
     :reader application-test-gated-tool-lock
     :type t
     :documentation "The lock protecting deterministic tool execution timing.")
    (condition-variable
-    :initform (make-condition-variable :name "Autolith gated tool")
+    :initform (make-condition-variable :name "Antaios gated tool")
     :reader application-test-gated-tool-condition-variable
     :type t
     :documentation "The wait point for gated tool execution.")
@@ -178,7 +178,7 @@
 
 (defclass application-test-counting-provider (scripted-provider)
   ((lock
-    :initform (make-lock "Autolith counting provider")
+    :initform (make-lock "Antaios counting provider")
     :reader application-test-counting-provider-lock
     :type t
     :documentation "The lock protecting the completed request count.")
@@ -305,7 +305,7 @@
 
 (defclass queued-recording-terminal (recording-terminal)
   ((event-lock
-    :initform (make-lock "Autolith queued terminal")
+    :initform (make-lock "Antaios queued terminal")
     :reader queued-recording-terminal-event-lock
     :type t
     :documentation "The lock protecting events submitted by test threads.")
@@ -410,10 +410,10 @@
                           :ui (terminal-ui-create
                                :terminal (make-instance 'recording-terminal
                                                         :columns 80))))
-         (saved-recovered (uiop:getenv "AUTOLITH_RECOVERED")))
+         (saved-recovered (uiop:getenv "ANTAIOS_RECOVERED")))
     (unwind-protect
          (progn
-           (platform-unsetenv "AUTOLITH_RECOVERED")
+           (platform-unsetenv "ANTAIOS_RECOVERED")
            (let* ((immutable-configuration
                     (configuration-copy configuration :immutable-p t))
                   (immutable-application
@@ -429,35 +429,35 @@
              (test-assert
               (search "mode          immutable" text)
               "the startup banner identifies immutable mode"))
-           (platform-setenv "AUTOLITH_RECOVERED" "1")
-           (let* ((spans (application-banner application))
-                  (recovery-styles
-                    (loop for span in spans
-                          for style = (terminal-span-style span)
-                          when (member style
-                                       *application-recovery-gradient-styles*)
-                            collect style)))
+           (platform-setenv "ANTAIOS_RECOVERED" "1")
+           (flet ((banner-text ()
+                    (format nil "~{~A~}"
+                            (mapcar #'terminal-span-text
+                                    (application-banner application)))))
              (test-assert
-              (equal recovery-styles *application-recovery-gradient-styles*)
-              "a recovered startup banner styles every logo row as recovered"))
-           (platform-unsetenv "AUTOLITH_RECOVERED")
+              (search "recovered     started by the recovery launcher" (banner-text))
+              "a recovered startup banner identifies the recovery start")
+             (platform-unsetenv "ANTAIOS_RECOVERED")
+             (test-assert
+              (not (search "started by the recovery launcher" (banner-text)))
+              "an ordinary startup banner carries no recovery row"))
            (let* ((text
                     (format nil "~{~A~}"
                             (mapcar #'terminal-span-text
                                     (application-banner application))))
-                  (notice-start (search "Autolith executes" text))
+                  (notice-start (search "Antaios executes" text))
                   (tip-start (search "Tip: " text)))
              (test-assert
               (and notice-start
                    tip-start
                    (< notice-start tip-start)
                    (= (terminal-tests--substring-count
-                       "Autolith executes" text)
+                       "Antaios executes" text)
                       1))
               "one security notice appears before the startup command tip")))
       (if saved-recovered
-          (platform-setenv "AUTOLITH_RECOVERED" saved-recovered)
-          (platform-unsetenv "AUTOLITH_RECOVERED"))
+          (platform-setenv "ANTAIOS_RECOVERED" saved-recovered)
+          (platform-unsetenv "ANTAIOS_RECOVERED"))
       (platform-delete-directory-tree *platform* root :validate t :if-does-not-exist ':ignore)))
   nil)
 
@@ -470,7 +470,7 @@
          (release-provenance
            (make-instance 'installation-provenance
                           :method ':release
-                          :current-tag (format nil "v~A" *autolith-version*)))
+                          :current-tag (format nil "v~A" *antaios-version*)))
          (release-availability
            (make-instance 'update-availability :tag tag :method ':release)))
     (labels ((make-application (events)
@@ -492,7 +492,7 @@
                     (text (format nil "~{~A~}"
                                   (mapcar #'terminal-span-text notice))))
                (test-assert
-                (and (search "Update available: Autolith" text)
+                (and (search "Update available: Antaios" text)
                      (search "Choose whether to install" text))
                 "a packaged release receives the cached banner warning")
                (with-terminal-ui (active-ui ui)
@@ -550,7 +550,7 @@
 
              (let* ((application (make-instance 'application))
                     (thread (make-thread (lambda () (sleep 0.01))
-                                         :name "Autolith update check test")))
+                                         :name "Antaios update check test")))
                (setf (application-update-check-thread application) thread)
                (application--quiesce-update-check application)
                (test-assert
@@ -584,7 +584,7 @@
             (let ((*update-check-fetch-function*
                     (lambda ()
                       (incf fetches)
-                      (format nil "v~A" *autolith-version*))))
+                      (format nil "v~A" *antaios-version*))))
               (dolist (case '((:source "running from source")
                               (:nix "installed through Nix")))
                 (destructuring-bind (method expected) case
@@ -600,7 +600,7 @@
                     (make-instance
                      'installation-provenance
                      :method ':release
-                     :current-tag (format nil "v~A" *autolith-version*))
+                     :current-tag (format nil "v~A" *antaios-version*))
                     (application-update-availability application)
                     (make-instance 'update-availability
                                    :tag "v99.0.0"
@@ -619,7 +619,15 @@
               (application-update application)
               (test-assert
                (search "could not check the release service" (first presented))
-               "a failed explicit check is nonfatal and reports no installation change"))))
+               "a failed explicit check is nonfatal and reports no installation change"))
+            (setf presented nil)
+            (with-test-environment (("ANTAIOS_RELEASE_LATEST_URL" nil)
+                                    ("ANTAIOS_RELEASE_BASE_URL" nil))
+              (application-update application)
+              (test-assert
+               (and (search "no default release service" (first presented))
+                    (not (update-check-configured-p)))
+               "an unconfigured packaged update names the alternatives without a request"))))
       (platform-delete-directory-tree *platform* root :validate t :if-does-not-exist ':ignore)))
   nil)
 
@@ -967,10 +975,10 @@
              (let ((output (interrupt-application durable)))
                (test-assert (search "To resume this conversation, run:" output)
                             "Ctrl-C explains how to resume a durable conversation")
-               (test-assert (search "autolith resume resume-this" output)
+               (test-assert (search "antaios resume resume-this" output)
                             "the Ctrl-C instruction carries the exact resume command"))
              (let ((output (interrupt-application empty)))
-               (test-assert (not (search "autolith resume" output))
+               (test-assert (not (search "antaios resume" output))
                             "Ctrl-C gives no resume command for an empty conversation")
                (test-assert
                 (not (conversation-storage-occupied-p
@@ -1031,11 +1039,11 @@
              (let ((output (recording-terminal-output terminal)))
                (test-assert
                 (search
-                 "Ctrl-C pressed twice within 2.5 seconds; forcing Autolith to exit."
+                 "Ctrl-C pressed twice within 2.5 seconds; forcing Antaios to exit."
                  output)
                 "forced interruption explains the active cancellation window")
                (test-assert
-                (search "autolith resume force-resume" output)
+                (search "antaios resume force-resume" output)
                 "forced cancellation carries the exact resume command"))))
       (platform-delete-directory-tree *platform* root :validate t :if-does-not-exist ':ignore)))
   nil)
@@ -1067,10 +1075,10 @@
       (let ((output (recording-terminal-output terminal)))
         (test-assert
          (search
-          "Ctrl-C pressed twice within 2.5 seconds; forcing Autolith to exit."
+          "Ctrl-C pressed twice within 2.5 seconds; forcing Antaios to exit."
           output)
-         "forced interruption still explains why Autolith exits")
-        (test-assert (not (search "autolith resume" output))
+         "forced interruption still explains why Antaios exits")
+        (test-assert (not (search "antaios resume" output))
                      "an unsaved conversation produces no resume command"))))
   nil)
 
@@ -1081,7 +1089,7 @@
     (let* ((terminal (make-instance 'queued-recording-terminal :columns 80))
            (ui (terminal-ui-create :terminal terminal))
            (application (make-instance 'application :ui ui))
-           (status-lock (make-lock "Autolith graceful shutdown test"))
+           (status-lock (make-lock "Antaios graceful shutdown test"))
            (forced-status nil)
            (controller nil))
       (unwind-protect
@@ -1121,7 +1129,7 @@
              (setf controller nil)
              (test-assert
               (search
-               "Ctrl-C pressed during shutdown; forcing Autolith to exit."
+               "Ctrl-C pressed during shutdown; forcing Antaios to exit."
                (recording-terminal-output terminal))
               "forced shutdown explains that cleanup was already pending"))
         (when controller
@@ -1588,7 +1596,7 @@
                       (queued-recording-terminal-enqueue
                        terminal '(:insert "/quit"))
                       (queued-recording-terminal-enqueue terminal ':submit))
-                    :name "Autolith active-turn stop-key test"))
+                    :name "Antaios active-turn stop-key test"))
              (unwind-protect
                   (let ((*application-forced-exit-function*
                           (lambda (status)
@@ -1641,9 +1649,9 @@
                                        :worker nil
                                        :agent nil
                                        :ui ui))
-         (command-lock  (make-lock "Autolith active command stop-key test"))
+         (command-lock  (make-lock "Antaios active command stop-key test"))
          (command-gate  (make-condition-variable
-                         :name "Autolith active command stop-key test"))
+                         :name "Antaios active command stop-key test"))
          (command-entered-p nil)
          (command-released-p nil)
          (registrations (application-command--registry-snapshot))
@@ -1714,7 +1722,7 @@
                                   "draft survives"))
                            (queued-recording-terminal-enqueue terminal ':interrupt)
                            (queued-recording-terminal-enqueue terminal ':interrupt)))
-                       :name "Autolith active command stop-key test"))
+                       :name "Antaios active command stop-key test"))
                 (let ((*application-forced-exit-function*
                         (lambda (status)
                           (setf forced-status status))))
@@ -1850,7 +1858,7 @@
                       (queued-recording-terminal-enqueue
                        terminal '(:insert "/quit"))
                       (queued-recording-terminal-enqueue terminal ':submit)))
-                  :name "Autolith active tool stop-key test"))
+                  :name "Antaios active tool stop-key test"))
            (unwind-protect
                 (let ((*application-forced-exit-function*
                         (lambda (status)
@@ -1988,8 +1996,8 @@
               :terminal terminal
               :clock-function (lambda () now)))
          (application (make-instance 'application :ui ui))
-         (gate (make-lock "Autolith hint contention test"))
-         (gate-condition (make-condition-variable :name "Autolith hint test"))
+         (gate (make-lock "Antaios hint contention test"))
+         (gate-condition (make-condition-variable :name "Antaios hint test"))
          (holding-p nil)
          (released-p nil)
          (holder nil)
@@ -2013,7 +2021,7 @@
                  (condition-notify gate-condition)
                  (loop until released-p
                        do (condition-wait gate-condition gate)))))
-           :name "Autolith hint contention holder"))
+           :name "Antaios hint contention holder"))
     (unwind-protect
          (progn
            (with-lock-held (gate)
@@ -2500,7 +2508,7 @@
                    (list :tool-result :seq 5 :time 0 :call-id 4
                           :tool "lisp.describe" :status ':ok
                          :output (format nil
-                                         "Symbol: FOO~%Package: AUTOLITH~%~
+                                         "Symbol: FOO~%Package: ANTAIOS~%~
                                           Function binding: yes~%~
                                           Lambda list: (X)~%Describe:~%details"))))
            (text (test-terminal-row-text entry)))
@@ -2605,12 +2613,12 @@
          (session-pathname
            (merge-pathnames
             "recovery-session-pointers/diagnosis.sexp" state-root))
-         (recovered-name "AUTOLITH_RECOVERED")
-         (pointer-name "AUTOLITH_CRASH_POINTER")
-         (session-name "AUTOLITH_RECOVERY_SESSION_POINTER")
-         (conversation-name "AUTOLITH_RECOVERY_CONVERSATION_ID")
-         (sequence-name "AUTOLITH_RECOVERY_RENDERED_SEQUENCE")
-         (floor-name "AUTOLITH_RECOVERY_HISTORY_FLOOR_SEQUENCE")
+         (recovered-name "ANTAIOS_RECOVERED")
+         (pointer-name "ANTAIOS_CRASH_POINTER")
+         (session-name "ANTAIOS_RECOVERY_SESSION_POINTER")
+         (conversation-name "ANTAIOS_RECOVERY_CONVERSATION_ID")
+         (sequence-name "ANTAIOS_RECOVERY_RENDERED_SEQUENCE")
+         (floor-name "ANTAIOS_RECOVERY_HISTORY_FLOOR_SEQUENCE")
          (environment-names
            (list recovered-name pointer-name session-name conversation-name
                  sequence-name floor-name))
@@ -2715,9 +2723,9 @@
            (conversation-create configuration :identifier "recover-source"))
          (explicit
            (conversation-create configuration :identifier "explicit-resume"))
-         (conversation-name "AUTOLITH_RECOVERY_CONVERSATION_ID")
-         (sequence-name "AUTOLITH_RECOVERY_RENDERED_SEQUENCE")
-         (floor-name "AUTOLITH_RECOVERY_HISTORY_FLOOR_SEQUENCE")
+         (conversation-name "ANTAIOS_RECOVERY_CONVERSATION_ID")
+         (sequence-name "ANTAIOS_RECOVERY_RENDERED_SEQUENCE")
+         (floor-name "ANTAIOS_RECOVERY_HISTORY_FLOOR_SEQUENCE")
          (environment-names
            (list conversation-name sequence-name floor-name))
          (previous-environment
@@ -3466,7 +3474,7 @@
   (let* ((source-root
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-skip-prompt-tests-~A/" (make-identifier))
+             (format nil "antaios-skip-prompt-tests-~A/" (make-identifier))
              (uiop:temporary-directory))))
          (configuration (test-configuration-for-source-root source-root))
          (source-pathname (merge-pathnames "src/definitions.lisp" source-root))
@@ -3481,7 +3489,7 @@
                                    :if-exists ':supersede
                                    :if-does-not-exist ':create
                                    :external-format ':utf-8)
-             (format stream "(in-package #:autolith)~2%")
+             (format stream "(in-package #:antaios)~2%")
              (format stream current)
              (terpri stream))
            (flet ((skip (source reason &rest arguments)
@@ -3622,7 +3630,7 @@
            (funcall send-text "final tail")
            (let* ((streamed (recording-terminal-output terminal))
                   (reasoning-position (search "◇ reasoning summary" streamed))
-                  (assistant-position (search "● autolith" streamed)))
+                  (assistant-position (search "● antaios" streamed)))
              (test-assert (and reasoning-position
                                assistant-position
                                (< reasoning-position assistant-position))
@@ -3654,7 +3662,7 @@
            (let ((completion (recording-terminal-output terminal)))
              (test-assert (search "final tail" completion)
                           "completing a request commits the fluid tail")
-             (test-assert (not (search "● autolith" completion))
+             (test-assert (not (search "● antaios" completion))
                           "streamed message records do not render again")
              (test-assert (not (search "◇ reasoning summary" completion))
                           "streamed reasoning records do not render below the answer"))
@@ -3819,7 +3827,7 @@
            (funcall send-text "Replacement answer")
            (let ((output (recording-terminal-output terminal)))
              (test-assert
-              (and (search "● autolith" output)
+              (and (search "● antaios" output)
                    (search "Replacement answer" output))
               "the replacement attempt starts a distinct assistant block"))
            (terminal-ui-stop (application-ui application)))
@@ -4951,7 +4959,7 @@
                       (setf waiter-started-p t)
                       (setf waited-work
                             (application-input-controller--next-work controller)))
-                    :name "Autolith held follow-up FIFO test"))
+                    :name "Antaios held follow-up FIFO test"))
              (test-assert
               (task-tests--wait-until (lambda () waiter-started-p) 2)
               "the FIFO waiter starts before the blocking assertion")
@@ -5116,7 +5124,7 @@
          (declare (ignore application))
          (setf observed-initial-command initial-command))))
      (lambda ()
-       (with-test-environment (("AUTOLITH_SESSION_STYLE" "direct"))
+       (with-test-environment (("ANTAIOS_SESSION_STYLE" "direct"))
          (main-dispatch '("resume")))))
     (test-assert
      (string= observed-initial-command "(resume)")
@@ -5145,7 +5153,7 @@
          (declare (ignore arguments))
          (setf observed-mode (application-permission-mode application)))))
      (lambda ()
-       (with-test-environment (("AUTOLITH_SESSION_STYLE" "direct"))
+       (with-test-environment (("ANTAIOS_SESSION_STYLE" "direct"))
          (main-dispatch '("--permissions" "sandbox")))))
     (test-assert (eq observed-mode ':sandboxed)
                  "--permissions sets the initial application mode"))
@@ -5164,14 +5172,14 @@
          (declare (ignore arguments))
          (setf observed-mode (application-permission-mode application)))))
      (lambda ()
-       (with-test-environment (("AUTOLITH_SESSION_STYLE" "direct"))
+       (with-test-environment (("ANTAIOS_SESSION_STYLE" "direct"))
          (main-dispatch '("--permissions" "full")))))
     (test-assert (eq observed-mode ':full-access)
                  "--permissions sets the initial reconnect mode"))
   (let* ((environment-names
-           '("AUTOLITH_RECOVERY_CONVERSATION_ID"
-             "AUTOLITH_RECOVERY_RENDERED_SEQUENCE"
-             "AUTOLITH_RECOVERY_HISTORY_FLOOR_SEQUENCE"))
+           '("ANTAIOS_RECOVERY_CONVERSATION_ID"
+             "ANTAIOS_RECOVERY_RENDERED_SEQUENCE"
+             "ANTAIOS_RECOVERY_HISTORY_FLOOR_SEQUENCE"))
          (previous-environment
            (loop for name in environment-names
                  collect (cons name (uiop:getenv name))))
@@ -5208,7 +5216,7 @@
                     observed-recovery-diagnosis recovery-diagnosis
                     observed-resume-offer-p resume-offer-p))))
           (lambda ()
-            (platform-setenv "AUTOLITH_RECOVERY_CONVERSATION_ID"
+            (platform-setenv "ANTAIOS_RECOVERY_CONVERSATION_ID"
                             "recovered")
             (main-dispatch '("resume"))
             (test-assert
@@ -5218,13 +5226,13 @@
                   (null observed-resume-offer-p))
              "automatic recovery ignores a replayed bare resume picker request")
             (test-assert
-             (null (uiop:getenv "AUTOLITH_RECOVERY_CONVERSATION_ID"))
+             (null (uiop:getenv "ANTAIOS_RECOVERY_CONVERSATION_ID"))
              "successful startup consumes one-shot recovery metadata")
             (setf observed-conversation-id :unset
                   observed-initial-command :unset
                   observed-recovery-diagnosis :unset
                   observed-resume-offer-p :unset)
-            (platform-setenv "AUTOLITH_RECOVERY_CONVERSATION_ID"
+            (platform-setenv "ANTAIOS_RECOVERY_CONVERSATION_ID"
                             "recovered")
             (main-dispatch '("resume" "explicit"))
             (test-assert
@@ -5234,7 +5242,7 @@
                   observed-resume-offer-p)
              "an explicit recovered resume still overrides crash reconnection")
             (setf reconnect-failure-p t)
-            (platform-setenv "AUTOLITH_RECOVERY_CONVERSATION_ID"
+            (platform-setenv "ANTAIOS_RECOVERY_CONVERSATION_ID"
                             "recovered")
             (test-assert
              (handler-case
@@ -5245,7 +5253,7 @@
                  t))
              "failed recovery application construction reports its error")
             (test-assert
-             (string= (uiop:getenv "AUTOLITH_RECOVERY_CONVERSATION_ID")
+             (string= (uiop:getenv "ANTAIOS_RECOVERY_CONVERSATION_ID")
                       "recovered")
              "failed recovery application construction preserves recovery metadata")))
       (dolist (entry previous-environment)
@@ -5420,7 +5428,7 @@
 
 (-> test-application-window-title () null)
 (defun test-application-window-title ()
-  "Test that a started UI writes autolith - workspace as OSC 0."
+  "Test that a started UI writes antaios - workspace as OSC 0."
   (let* ((configuration (test-configuration))
          (terminal (make-instance 'recording-terminal :columns 80))
          (application
@@ -5431,7 +5439,7 @@
          (title (application--window-title application)))
     (test-assert
      (and title
-          (uiop:string-prefix-p "autolith - " title)
+          (uiop:string-prefix-p "antaios - " title)
           (not (application-sync-window-title application)))
      "an unstarted UI writes no window title")
     (with-terminal-ui (ui (application-ui application))
@@ -5441,7 +5449,7 @@
        (and (application-sync-window-title application)
             (equal (recording-terminal-chunks terminal)
                    (list (window-title-sequence title))))
-       "a started UI writes autolith - workspace as the window title")))
+       "a started UI writes antaios - workspace as the window title")))
   nil)
 
 (-> test-working-directory-switch () null)
@@ -6966,7 +6974,7 @@
            (let* ((original-add-listener
                     (symbol-function 'task-orchestrator-add-listener))
                   (gate-lock
-                    (make-lock "Autolith task presentation connect race"))
+                    (make-lock "Antaios task presentation connect race"))
                   (gate-condition (make-condition-variable))
                   (first-add-entered-p nil)
                   (release-first-add-p nil)
@@ -7008,7 +7016,7 @@
                                      application)
                                   (condition (condition)
                                     (setf first-condition condition))))
-                              :name "Autolith first task presentation connect"))
+                              :name "Antaios first task presentation connect"))
                        (with-lock-held (gate-lock)
                          (loop until first-add-entered-p
                                unless
@@ -7037,7 +7045,7 @@
                                      application)
                                   (condition (condition)
                                     (setf second-condition condition))))
-                              :name "Autolith second task presentation connect"))
+                              :name "Antaios second task presentation connect"))
                        (with-lock-held (gate-lock)
                          (loop until second-started-p
                                unless
@@ -7185,10 +7193,10 @@
                (test-assert
                 (and
                  (search
-                  "● autolith [shared-diff-final-review] 2026-08-10 22:53"
+                  "● antaios [shared-diff-final-review] 2026-08-10 22:53"
                   plain-output)
                  (= (terminal-tests--substring-count
-                     "● autolith [shared-diff-final-review]" plain-output)
+                     "● antaios [shared-diff-final-review]" plain-output)
                     1)
                  (search "Use careful context." plain-output)
                  (search child-style output)
@@ -7248,10 +7256,10 @@
                  (test-assert
                   (and
                    (search
-                    "● autolith [replacement-review] 2026-08-10 22:53"
+                    "● antaios [replacement-review] 2026-08-10 22:53"
                     plain-output)
                    (= (terminal-tests--substring-count
-                       "● autolith [replacement-review]" plain-output)
+                       "● antaios [replacement-review]" plain-output)
                       1)
                    (not (search "shared-diff-final-review" plain-output)))
                   "only the active orchestrator presents its current child response"))))
@@ -8282,7 +8290,7 @@
   "Test branch discovery without spawning Git subprocesses."
   (let* ((root
            (merge-pathnames
-            (format nil "autolith-git-branch-~A/" (make-identifier))
+            (format nil "antaios-git-branch-~A/" (make-identifier))
             (uiop:temporary-directory)))
          (repository (merge-pathnames "repository/" root))
          (nested (merge-pathnames "src/deep/" repository))

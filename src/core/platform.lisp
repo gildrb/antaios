@@ -1,17 +1,17 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Platform Adapter Protocol --
 
-;;; Autolith keeps every operating-system dependency behind this protocol.
+;;; Antaios keeps every operating-system dependency behind this protocol.
 ;;; The generic functions below are the contract; platform-posix.lisp and
-;;; platform-win32.lisp implement it, and autolith.asd loads exactly one of
+;;; platform-win32.lisp implement it, and antaios.asd loads exactly one of
 ;;; them for the host. Callers pass *PLATFORM* and never use host reader
 ;;; conditionals themselves.
 
 (defclass platform ()
   ()
   (:documentation
-   "The host operating-system adapter behind Autolith's platform protocol."))
+   "The host operating-system adapter behind Antaios's platform protocol."))
 
 (defvar *platform* nil
   "The host platform adapter installed by the loaded implementation file.")
@@ -21,7 +21,7 @@
   '(member :file :directory :symbolic-link :socket :other))
 
 (deftype platform-root-kind ()
-  "The kinds of per-user directory Autolith keeps."
+  "The kinds of per-user directory Antaios keeps."
   '(member :config :data :state :cache))
 
 (deftype platform-failure-reason ()
@@ -217,7 +217,7 @@ libraries that read the environment, and to processes started afterwards."))
 
 (defgeneric platform-application-root (platform kind)
   (:documentation
-   "Return Autolith's per-user directory of KIND as an absolute directory pathname.
+   "Return Antaios's per-user directory of KIND as an absolute directory pathname.
 
 KIND is :CONFIG, :DATA, :STATE, or :CACHE. An absolute XDG_CONFIG_HOME,
 XDG_DATA_HOME, XDG_STATE_HOME, or XDG_CACHE_HOME variable places the root under
@@ -579,7 +579,7 @@ nothing is listening there, and PLATFORM-CAPABILITY-UNAVAILABLE without the
 
 ;;;; -- Conditions --
 
-(define-condition platform-error (autolith-error)
+(define-condition platform-error (antaios-error)
   ((operation
     :initarg :operation
     :reader platform-error-operation
@@ -605,7 +605,7 @@ nothing is listening there, and PLATFORM-CAPABILITY-UNAVAILABLE without the
     :documentation "The operating-system error number, when one was reported."))
   (:documentation "A platform operation failed in a way callers distinguish by reason."))
 
-(define-condition platform-capability-unavailable (autolith-error)
+(define-condition platform-capability-unavailable (antaios-error)
   ((capability
     :initarg :capability
     :reader platform-capability-unavailable-capability

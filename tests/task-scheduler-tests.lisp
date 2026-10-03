@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Scheduler Boundary Tests --
 
@@ -41,7 +41,7 @@
                (when blocking-role-p
                  (task-tests--write-native-form
                   (merge-pathnames
-                   ".autolith/agents/forced-blocking.sexp" root)
+                   ".antaios/agents/forced-blocking.sexp" root)
                   (task-tests--role-form
                    "forced-blocking"
                    "Always wait for this child."
@@ -82,7 +82,7 @@
                                      (serious-condition (condition)
                                        (setf run-condition condition))))
                                  :name
-                                 (format nil "Autolith ~A task wait test" label))))
+                                 (format nil "Antaios ~A task wait test" label))))
                       (test-assert
                        (task-tests--wait-until
                         (lambda ()
@@ -259,10 +259,10 @@
 (defun test-task-runtime-deadline ()
   "Test the bounded default and environment override of a stalled child."
   (let ((previous-runtime
-          (uiop:getenv "AUTOLITH_TASK_MAX_RUNTIME_MS")))
+          (uiop:getenv "ANTAIOS_TASK_MAX_RUNTIME_MS")))
     (unwind-protect
          (progn
-           (platform-unsetenv "AUTOLITH_TASK_MAX_RUNTIME_MS")
+           (platform-unsetenv "ANTAIOS_TASK_MAX_RUNTIME_MS")
            (let ((orchestrator (task-tests--orchestrator)))
              (test-assert
               (and
@@ -270,7 +270,7 @@
                (= (task-orchestrator-maximum-runtime-milliseconds orchestrator)
                   *task-default-maximum-runtime-milliseconds*))
               "task children have a bounded default runtime deadline"))
-           (platform-setenv "AUTOLITH_TASK_MAX_RUNTIME_MS" "1000")
+           (platform-setenv "ANTAIOS_TASK_MAX_RUNTIME_MS" "1000")
            (let* ((configuration (test-configuration))
                   (root          (test-configuration-root configuration))
                   (registry      (make-default-tool-registry))
@@ -326,7 +326,7 @@
                                            "blocking" t)))
                                  (serious-condition (condition)
                                    (setf run-condition condition))))
-                             :name "Autolith task deadline test"))
+                             :name "Antaios task deadline test"))
                       (test-assert
                        (task-tests--wait-until
                         (lambda ()
@@ -377,9 +377,9 @@
                                                       :if-does-not-exist
                                                       :ignore)))))
       (if previous-runtime
-          (platform-setenv "AUTOLITH_TASK_MAX_RUNTIME_MS"
+          (platform-setenv "ANTAIOS_TASK_MAX_RUNTIME_MS"
                           previous-runtime)
-          (platform-unsetenv "AUTOLITH_TASK_MAX_RUNTIME_MS"))))
+          (platform-unsetenv "ANTAIOS_TASK_MAX_RUNTIME_MS"))))
   nil)
 
 (-> test-task-artifact-retention () null)
@@ -542,7 +542,7 @@ exactly that race."
                             :context nil
                             :async t)
                       :detached t)))
-                  (pause-lock (make-lock "Autolith admission race pause"))
+                  (pause-lock (make-lock "Antaios admission race pause"))
                   (pause-condition (make-condition-variable))
                   (admission-paused-p nil)
                   (release-admission-p nil)
@@ -581,7 +581,7 @@ exactly that race."
                                            orchestrator viewer entries))))
                                 (condition (condition)
                                   (setf admission-failure condition))))
-                            :name "Autolith admission race"))
+                            :name "Antaios admission race"))
                      (with-lock-held (pause-lock)
                        (loop until admission-paused-p
                              unless
@@ -758,11 +758,11 @@ exactly that race."
              (let* ((orchestrator (task-tests--orchestrator))
                     (viewer (make-viewer orchestrator "concurrent-parent"))
                     (pool (task-orchestrator-pool orchestrator))
-                    (gate-lock (make-lock "Autolith hurry race gate"))
+                    (gate-lock (make-lock "Antaios hurry race gate"))
                     (gate-condition (make-condition-variable))
                     (gate-count 0)
                     (release-gate-p nil)
-                    (result-lock (make-lock "Autolith hurry race results"))
+                    (result-lock (make-lock "Antaios hurry race results"))
                     (success-count 0)
                     (conditions nil)
                     (threads nil)
@@ -809,7 +809,7 @@ exactly that race."
                                      (with-lock-held (result-lock)
                                        (push condition conditions)))))
                                :name (format nil
-                                             "Autolith hurry admission ~D"
+                                             "Antaios hurry admission ~D"
                                              index))))
                   (dolist (thread threads)
                     (join-thread thread))))
@@ -822,11 +822,11 @@ exactly that race."
                 "concurrent task.run calls atomically share the two-child allowance"))
              (let* ((orchestrator (task-tests--orchestrator))
                     (viewer (make-viewer orchestrator "limit-parent"))
-                    (submit-lock (make-lock "Autolith limit race submit"))
+                    (submit-lock (make-lock "Antaios limit race submit"))
                     (submit-condition (make-condition-variable))
                     (submission-entered-p nil)
                     (release-submission-p nil)
-                    (state-lock (make-lock "Autolith limit race state"))
+                    (state-lock (make-lock "Antaios limit race state"))
                     (reconfiguration-started-p nil)
                     (reconfiguration-finished-p nil)
                     (jobs nil)
@@ -860,7 +860,7 @@ exactly that race."
                                              (make-entries 3 "limit")))))
                                   (condition (condition)
                                     (setf submission-condition condition))))
-                              :name "Autolith limit race admission"))
+                              :name "Antaios limit race admission"))
                        (with-lock-held (submit-lock)
                          (loop until submission-entered-p
                                unless
@@ -876,7 +876,7 @@ exactly that race."
                                 (task-orchestrator-set-hurry-up orchestrator t)
                                 (with-lock-held (state-lock)
                                   (setf reconfiguration-finished-p t)))
-                              :name "Autolith limit race reconfiguration"))
+                              :name "Antaios limit race reconfiguration"))
                        (test-assert
                         (task-tests--wait-until
                          (lambda ()
@@ -932,7 +932,7 @@ exactly that race."
          (root          (test-configuration-root configuration))
          (orchestrator  (task-tests--orchestrator))
          (secret
-           "AUTOLITH-TERMINAL-ROLE-INSTRUCTION-SENTINEL-71D21A")
+           "ANTAIOS-TERMINAL-ROLE-INSTRUCTION-SENTINEL-71D21A")
          (definition
            (task-agent-definition-create
             :name "publication"
@@ -971,7 +971,7 @@ exactly that race."
                                      job :completed result))
                             (condition (condition)
                               (setf publication-condition condition)))))
-                      :name "Autolith coherent publication")))
+                      :name "Antaios coherent publication")))
                (unwind-protect
                     (progn
                       (test-assert
@@ -1056,7 +1056,7 @@ exactly that race."
                             (condition (condition)
                               (setf publication-condition condition))))
                         :name
-                        (format nil "Autolith publication ~A" failure))))
+                        (format nil "Antaios publication ~A" failure))))
                  (unwind-protect
                       (test-assert
                        (task-tests--wait-until
@@ -1120,11 +1120,11 @@ exactly that race."
          (result
            (task-tests--terminal-result
             job :status ':success :output "wake the waiter"))
-         (ready-lock (make-lock "Autolith waiter readiness"))
+         (ready-lock (make-lock "Antaios waiter readiness"))
          (ready-condition (make-condition-variable))
          (waiter-ready-p nil)
          (waiter-returned-p nil)
-         (listener-lock (make-lock "Autolith blocking lifecycle listener"))
+         (listener-lock (make-lock "Antaios blocking lifecycle listener"))
          (listener-condition (make-condition-variable))
          (listener-reached-p nil)
          (listener-released-p nil)
@@ -1156,7 +1156,7 @@ exactly that race."
                                 (cl-jobpond::job--condition-variable job)
                                 (cl-jobpond::job--lock job))))
                     (setf waiter-returned-p t))
-                  :name "Autolith terminal waiter"))
+                  :name "Antaios terminal waiter"))
            (test-assert
             (task-tests--wait-until (lambda () waiter-ready-p) 2)
             "the terminal waiter is parked before publication")
@@ -1164,7 +1164,7 @@ exactly that race."
                  (make-thread
                   (lambda ()
                     (task-tests--publish-terminal job :completed result))
-                  :name "Autolith listener-blocked publisher"))
+                  :name "Antaios listener-blocked publisher"))
            (test-assert
             (task-tests--wait-until (lambda () listener-reached-p) 2)
             "terminal publication reaches the blocking lifecycle listener")
@@ -2078,7 +2078,7 @@ exactly that race."
 (defun test-task-refresh-after-delayed-close ()
   "Test reopening after a timed-out close's final worker exits later."
   (let* ((orchestrator (task-tests--orchestrator))
-         (barrier-lock (make-lock "Autolith delayed close test"))
+         (barrier-lock (make-lock "Antaios delayed close test"))
          (barrier (make-condition-variable))
          (started-p nil)
          (released-p nil)
@@ -2090,7 +2090,7 @@ exactly that race."
                 (task--condition-broadcast barrier)
                 (loop until released-p
                       do (condition-wait barrier barrier-lock))))
-            :name "Autolith delayed closing worker")))
+            :name "Antaios delayed closing worker")))
     (unwind-protect
          (progn
            (test-assert
@@ -2158,7 +2158,7 @@ exactly that race."
          (primary
            (task-tests--primary-agent configuration "lifecycle-primary"))
          (events nil)
-         (event-lock (make-lock "Autolith task lifecycle event test")))
+         (event-lock (make-lock "Antaios task lifecycle event test")))
     (task-orchestrator-add-listener
      orchestrator
      (lambda (channel payload)
@@ -2233,13 +2233,13 @@ exactly that race."
                     (task-tests--terminal-result
                      race-job :status ':success :output "race winner"))
                   (barrier-lock
-                    (make-lock "Autolith terminal publication barrier"))
+                    (make-lock "Antaios terminal publication barrier"))
                   (barrier (make-condition-variable))
                   (ready 0)
                   (released-p nil)
                   (claims nil)
                   (claim-lock
-                    (make-lock "Autolith terminal publication claims")))
+                    (make-lock "Antaios terminal publication claims")))
              (labels ((publish ()
                         (with-lock-held (barrier-lock)
                           (incf ready)
@@ -2253,10 +2253,10 @@ exactly that race."
                             (push claimed-p claims)))))
                (let ((first-thread
                        (make-thread #'publish
-                                    :name "Autolith publication race one"))
+                                    :name "Antaios publication race one"))
                      (second-thread
                        (make-thread #'publish
-                                    :name "Autolith publication race two")))
+                                    :name "Antaios publication race two")))
                  (with-lock-held (barrier-lock)
                    (loop until (= ready 2)
                          do (condition-wait barrier barrier-lock))
@@ -2861,12 +2861,12 @@ exactly that race."
 (defun test-task-run-native-manifest ()
   "Test fair bounded native manifests for the largest synchronous batch."
   (let ((previous-concurrency
-          (uiop:getenv "AUTOLITH_TASK_MAX_CONCURRENCY"))
-        (previous-runtime (uiop:getenv "AUTOLITH_TASK_MAX_RUNTIME_MS")))
+          (uiop:getenv "ANTAIOS_TASK_MAX_CONCURRENCY"))
+        (previous-runtime (uiop:getenv "ANTAIOS_TASK_MAX_RUNTIME_MS")))
     (unwind-protect
          (progn
-           (platform-setenv "AUTOLITH_TASK_MAX_CONCURRENCY" "1")
-           (platform-setenv "AUTOLITH_TASK_MAX_RUNTIME_MS" "5000")
+           (platform-setenv "ANTAIOS_TASK_MAX_CONCURRENCY" "1")
+           (platform-setenv "ANTAIOS_TASK_MAX_RUNTIME_MS" "5000")
            (let* ((provider
                     (make-instance 'task-test-provider :mode ':manifest))
                   (tasks
@@ -2932,23 +2932,23 @@ exactly that race."
                (eq (getf last-result-value :status) :failed)
                (string=
                 (getf last-result-value :error)
-                "AUTOLITH-LAST-MANIFEST-CHILD-FAILED"))
+                "ANTAIOS-LAST-MANIFEST-CHILD-FAILED"))
               "a huge first result cannot hide the final failed child")
              (test-assert
               (and (> (length (getf (first artifacts) :output)) 90000)
                    (string=
                     (getf (car (last artifacts)) :error)
-                    "AUTOLITH-LAST-MANIFEST-CHILD-FAILED")
+                    "ANTAIOS-LAST-MANIFEST-CHILD-FAILED")
                    (every #'listp artifacts))
               "every child artifact remains exactly one readable native result")))
       (if previous-concurrency
-          (platform-setenv "AUTOLITH_TASK_MAX_CONCURRENCY"
+          (platform-setenv "ANTAIOS_TASK_MAX_CONCURRENCY"
                           previous-concurrency)
-          (platform-unsetenv "AUTOLITH_TASK_MAX_CONCURRENCY"))
+          (platform-unsetenv "ANTAIOS_TASK_MAX_CONCURRENCY"))
       (if previous-runtime
-          (platform-setenv "AUTOLITH_TASK_MAX_RUNTIME_MS"
+          (platform-setenv "ANTAIOS_TASK_MAX_RUNTIME_MS"
                           previous-runtime)
-          (platform-unsetenv "AUTOLITH_TASK_MAX_RUNTIME_MS"))))
+          (platform-unsetenv "ANTAIOS_TASK_MAX_RUNTIME_MS"))))
   nil)
 
 (-> test-task-closed-runtime-refresh () null)
@@ -2984,12 +2984,12 @@ exactly that race."
 (-> test-task-scheduler () null)
 (defun test-task-scheduler ()
   "Test bounded reusable workers, private artifacts, and nested help-join."
-  (let ((previous-concurrency (uiop:getenv "AUTOLITH_TASK_MAX_CONCURRENCY"))
-        (previous-runtime (uiop:getenv "AUTOLITH_TASK_MAX_RUNTIME_MS")))
+  (let ((previous-concurrency (uiop:getenv "ANTAIOS_TASK_MAX_CONCURRENCY"))
+        (previous-runtime (uiop:getenv "ANTAIOS_TASK_MAX_RUNTIME_MS")))
     (unwind-protect
          (progn
-           (platform-setenv "AUTOLITH_TASK_MAX_CONCURRENCY" "2")
-           (platform-setenv "AUTOLITH_TASK_MAX_RUNTIME_MS" "10000")
+           (platform-setenv "ANTAIOS_TASK_MAX_CONCURRENCY" "2")
+           (platform-setenv "ANTAIOS_TASK_MAX_RUNTIME_MS" "10000")
            (let* ((provider (make-instance 'task-test-provider
                                            :mode ':concurrent))
                   (tasks
@@ -3128,7 +3128,7 @@ exactly that race."
               (equal (mapcar (lambda (item) (json-get item "role")) inputs)
                      '("user"))
               "inheritance is disabled when its boundary exceeds the budget"))
-           (platform-setenv "AUTOLITH_TASK_MAX_CONCURRENCY" "1")
+           (platform-setenv "ANTAIOS_TASK_MAX_CONCURRENCY" "1")
            (let* ((provider (make-instance 'task-test-provider :mode ':nested))
                   (observation
                    (task-tests--run-scheduler-case
@@ -3160,17 +3160,17 @@ exactly that race."
                    (zerop (getf observation :active-count))
                    (zerop (getf observation :live-count)))
               "nested help-join drains the concurrency-one scheduler"))
-           (platform-setenv "AUTOLITH_TASK_MAX_CONCURRENCY" "999")
+           (platform-setenv "ANTAIOS_TASK_MAX_CONCURRENCY" "999")
            (let ((orchestrator (task-tests--orchestrator)))
              (test-assert
               (= (task-orchestrator-maximum-concurrency orchestrator)
                  *task-maximum-concurrency*)
               "environment concurrency cannot exceed the hard pool cap")))
       (if previous-concurrency
-          (platform-setenv "AUTOLITH_TASK_MAX_CONCURRENCY"
+          (platform-setenv "ANTAIOS_TASK_MAX_CONCURRENCY"
                           previous-concurrency)
-          (platform-unsetenv "AUTOLITH_TASK_MAX_CONCURRENCY"))
+          (platform-unsetenv "ANTAIOS_TASK_MAX_CONCURRENCY"))
       (if previous-runtime
-          (platform-setenv "AUTOLITH_TASK_MAX_RUNTIME_MS" previous-runtime)
-          (platform-unsetenv "AUTOLITH_TASK_MAX_RUNTIME_MS"))))
+          (platform-setenv "ANTAIOS_TASK_MAX_RUNTIME_MS" previous-runtime)
+          (platform-unsetenv "ANTAIOS_TASK_MAX_RUNTIME_MS"))))
   nil)

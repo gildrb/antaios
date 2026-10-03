@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Fullscreen Behavior --
 
@@ -275,7 +275,7 @@
   "Test Ctrl-Page jumps land on user and assistant headers while skipping activity rows."
   (let* ((terminal (make-instance 'recording-terminal :columns 40 :rows 12))
          (ui (terminal-ui-create :terminal terminal :fullscreen-p t :prompt "> "
-                                 :message-header-prefixes '("❯ you" "● autolith"))))
+                                 :message-header-prefixes '("❯ you" "● antaios"))))
     (with-terminal-ui (active ui)
       (terminal-ui-append-finalized-batch
        active
@@ -285,7 +285,7 @@
                           (list (list :tool turn)
                                 (format nil "▸ tool ~D~%│ output line~%│ more output" turn))
                           (list (list :agent turn)
-                                (format nil "● autolith~%answer ~D continues here" turn)))))
+                                (format nil "● antaios~%answer ~D continues here" turn)))))
       (terminal-ui-process-event active ':scroll-bottom)
       (terminal-ui-process-event active ':previous-section)
       (let ((top (fullscreen-terminal-ui-top active)))
@@ -293,7 +293,7 @@
                      "Ctrl-PgUp from the tail tops the newest header above the window"))
       (terminal-ui-process-event active ':previous-section)
       (let ((top (fullscreen-terminal-ui-top active)))
-        (test-assert (and top (uiop:string-prefix-p "● autolith" (fullscreen-test--row-text active top)))
+        (test-assert (and top (uiop:string-prefix-p "● antaios" (fullscreen-test--row-text active top)))
                      "a second Ctrl-PgUp skips tool rows and tops the previous assistant header"))
       (terminal-ui-process-event active ':next-section)
       (let ((top (fullscreen-terminal-ui-top active)))
@@ -308,7 +308,7 @@
                    "Ctrl-PgUp at the first row stays put")
       (terminal-ui-process-event active ':next-section)
       (let ((top (fullscreen-terminal-ui-top active)))
-        (test-assert (and top (uiop:string-prefix-p "● autolith" (fullscreen-test--row-text active top)))
+        (test-assert (and top (uiop:string-prefix-p "● antaios" (fullscreen-test--row-text active top)))
                      "Ctrl-PgDn from the first user header reaches the first assistant header"))
       (test-assert (string= "draft" (progn (terminal-ui-set-input active "draft")
                                            (line-editor-text (terminal-ui-editor active))))
@@ -324,12 +324,12 @@
     (terminal-ui-append-finalized ui ':first "transcript row")
     (terminal-ui-set-epilogue ui (list (terminal-span ':dim "To resume this conversation, run:")
                                        (terminal-span ':plain (string #\Newline))
-                                       (terminal-span ':code "  autolith resume abc")))
+                                       (terminal-span ':code "  antaios resume abc")))
     (recording-terminal-reset terminal)
     (terminal-ui-stop ui)
     (let* ((output (recording-terminal-output terminal))
            (leave (search (format nil "~C[?1049l" #\Escape) output))
-           (advice (search "autolith resume abc" output)))
+           (advice (search "antaios resume abc" output)))
       (test-assert (and leave advice (< leave advice))
                    "the epilogue is written after the alternate buffer is restored")))
   nil)

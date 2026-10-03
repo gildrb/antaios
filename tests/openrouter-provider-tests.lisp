@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- OpenRouter Provider Tests --
 
@@ -98,10 +98,10 @@
                     provider credentials conversation)))
              (test-assert
               (and (string= (rest (assoc "HTTP-Referer" headers :test #'string=))
-                            "https://github.com/lambda-symbolics/autolith")
+                            "https://github.com/gildrb/theseus")
                    (string= (rest (assoc "X-OpenRouter-Title" headers
                                          :test #'string=))
-                            "Autolith"))
+                            "Antaios"))
               "OpenRouter requests include application attribution"))
            (conversation-append-user-message conversation "Hello OpenRouter.")
             (let ((*provider-maximum-output-tokens* 321))
@@ -131,17 +131,17 @@
   "Test endpoint overrides, authenticated discovery, filtering, and validation."
   (let* ((configuration (openrouter-provider-test--configuration))
          (root (test-configuration-root configuration))
-         (saved-chat (uiop:getenv "AUTOLITH_OPENROUTER_PROVIDER_ENDPOINT"))
-         (saved-models (uiop:getenv "AUTOLITH_OPENROUTER_MODELS_ENDPOINT"))
+         (saved-chat (uiop:getenv "ANTAIOS_OPENROUTER_PROVIDER_ENDPOINT"))
+         (saved-models (uiop:getenv "ANTAIOS_OPENROUTER_MODELS_ENDPOINT"))
          (saved-key (uiop:getenv *openrouter-environment-variable*))
          (observed nil))
     (unwind-protect
          (progn
            ;; A key in the host environment would outrank the stored one.
            (platform-unsetenv *openrouter-environment-variable*)
-           (platform-setenv "AUTOLITH_OPENROUTER_PROVIDER_ENDPOINT"
+           (platform-setenv "ANTAIOS_OPENROUTER_PROVIDER_ENDPOINT"
                             "https://chat.openrouter.invalid/v1/chat/completions")
-           (platform-setenv "AUTOLITH_OPENROUTER_MODELS_ENDPOINT"
+           (platform-setenv "ANTAIOS_OPENROUTER_MODELS_ENDPOINT"
                             "https://models.openrouter.invalid/v1/models")
            (test-assert
             (string= (configuration--provider-endpoint-for
@@ -217,13 +217,13 @@
               (lambda (request)
                 (string= (rest (assoc "X-OpenRouter-Title" (second request)
                                       :test #'string=))
-                         "Autolith"))
+                         "Antaios"))
               observed)
              "OpenRouter external-boundary requests include attribution"))
       (openrouter-provider-test--restore-environment
-       "AUTOLITH_OPENROUTER_PROVIDER_ENDPOINT" saved-chat)
+       "ANTAIOS_OPENROUTER_PROVIDER_ENDPOINT" saved-chat)
       (openrouter-provider-test--restore-environment
-       "AUTOLITH_OPENROUTER_MODELS_ENDPOINT" saved-models)
+       "ANTAIOS_OPENROUTER_MODELS_ENDPOINT" saved-models)
       (openrouter-provider-test--restore-environment
        *openrouter-environment-variable* saved-key)
       (platform-delete-directory-tree *platform* root :validate t :if-does-not-exist ':ignore)))

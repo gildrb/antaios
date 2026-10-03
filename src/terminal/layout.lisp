@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 (-> layout-column-widths (list integer &key (:gap-width integer) (:minimum-widths (option list)) (:fill-p boolean)) list)
 (defun layout-column-widths (rows total-width &key (gap-width 1) minimum-widths fill-p)

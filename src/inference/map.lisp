@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Parallel Recursive Inference --
 
@@ -126,7 +126,7 @@ return (:task ... :error ...). Finished siblings are never discarded."
                                        *rlm-map-maximum-concurrency*
                                        (length items))))
              (pool (make-job-pool
-                    :name "Autolith inference map"
+                    :name "Antaios inference map"
                     :maximum-concurrency worker-count
                     :maximum-batch-size (length items)
                     :maximum-live-jobs (length items)

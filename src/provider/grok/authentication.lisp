@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Grok OAuth Endpoints --
 
@@ -31,7 +31,7 @@
 
 ;; The rotating refresh token is deliberately never imported. Spending it
 ;; would invalidate Grok Build's own copy and can revoke the whole token
-;; family, so Autolith only copies the bounded access token and obtains its
+;; family, so Antaios only copies the bounded access token and obtains its
 ;; own renewable credentials through device authentication.
 (defmethod credential-source-load ((source grok-bootstrap-credential-source))
   "Load one non-renewable Grok bootstrap credential without modifying Grok Build."
@@ -91,7 +91,7 @@
 (defmethod credential-manager-login-hint ((manager grok-credential-manager))
   "Point Grok credential failures at the Grok login command."
   (declare (ignore manager))
-  "run autolith auth grok")
+  "run antaios auth grok")
 
 (-> grok-credential-manager-create (configuration) grok-credential-manager)
 (defun grok-credential-manager-create (configuration)
@@ -99,7 +99,7 @@
   (make-instance 'grok-credential-manager
                  :primary-source
                  (make-instance
-                  'autolith-credential-source
+                  'antaios-credential-source
                   :pathname (configuration-grok-auth-path configuration))
                  :bootstrap-source
                  (make-instance

@@ -1,23 +1,20 @@
-#+TITLE: Autolith
+#+TITLE: Antaios
 #+SUBTITLE: A live, self-modifying Common Lisp terminal agent
 #+STARTUP: content
 
-#+ATTR_HTML: :alt Autolith terminal interface
-[[file:docs/autolith-banner.png]]
-
-Autolith, or AL, is a terminal agent inside a live Common Lisp image. It can
+Antaios is a terminal agent inside a live Common Lisp image. It can
 observe, self-modify, discover, introspect its own code, its live state and what
-it's doing. This lets Autolith adapt to the user's preferences or to what is needed
-for the task. This may sound unstable, but Autolith creates generations of this
+it's doing. This lets Antaios adapt to the user's preferences or to what is needed
+for the task. This may sound unstable, but Antaios creates generations of this
 image your or it can rollback to. Even a full frontal lobotomy is not a showstopper
-as AL will just reload into a recovery image and diagnose and optionally fix the
+as Antaios will just reload into a recovery image and diagnose and optionally fix the
 issue.
 
-Autolith has a moderate focus on good ergonomics, good visuals, following XDG
+Antaios has a moderate focus on good ergonomics, good visuals, following XDG
 standards and similar, and minimal intrusiveness. It is not a "small game engine",
 but it is pretty close to a Lisp Machine.
 
-Autolith supports the following platforms
+Antaios supports the following platforms
 - Linux (x86_64 + aarch64)
 - MacOS (x86_64 + aarch64)
 - FreeBSD (x86_64)
@@ -27,9 +24,8 @@ Autolith supports the following platforms
 
 Adding more platform support is always welcome!
 
-Autolith questions and issues can be discussed on the
-[[https://zulip.lambda-symbolics.com][Lambda Symbolics Zulip]]. Account confirmation emails are likely to land
-in spam.
+Antaios questions and issues can be discussed on the
+[[https://github.com/gildrb/theseus/issues][GitHub issue tracker]].
 
 * Sections
 
@@ -39,26 +35,15 @@ in spam.
 - [[file:docs/mcp.org][MCP]]
 - [[file:docs/rlm.org][RLM]]
 - [[file:AGENTS.md][Contributor rules]]
-- [[https://github.com/chakanysystems/autolith-remote][Autolith Remote]]
 
 * Install
 
-Autolith supports Linux, MacOS and the BSDs via standalone binary releases
-and Nix. Windows runs from a source checkout through =script\bootstrap.ps1=
-and =bin\autolith.cmd=; see the guide.
-
-The curl-into-sh installer installs or updates the packaged release for your
-platform. Inspect the [[https://sh.lambda-symbolics.com/autolith][installer script]] before piping it into a shell, or trust
-us with your life, hehe.
+Antaios supports Linux, MacOS and the BSDs through Nix, which supplies the
+complete runtime. Windows runs from a source checkout through
+=script\bootstrap.ps1= and =bin\antaios.cmd=; see the guide.
 
 #+BEGIN_SRC sh
-curl -fsSL https://sh.lambda-symbolics.com/autolith | sh
-#+END_SRC
-
-Nix also supplies the complete runtime:
-
-#+BEGIN_SRC sh
-nix run github:lambda-symbolics/autolith
+nix run github:gildrb/theseus
 #+END_SRC
 
 To build from a source checkout instead, follow the
@@ -67,33 +52,32 @@ To build from a source checkout instead, follow the
 Authenticate providers either with web flows or API keys:
 
 #+BEGIN_SRC sh
-autolith auth chatgpt
-autolith auth gemini
-autolith auth grok
-autolith auth nous
-autolith auth anthropic
-autolith auth fireworks
-autolith auth opencode
-autolith auth openrouter
-autolith auth mistral
+antaios auth chatgpt
+antaios auth gemini
+antaios auth grok
+antaios auth nous
+antaios auth anthropic
+antaios auth fireworks
+antaios auth opencode
+antaios auth openrouter
+antaios auth mistral
 #+END_SRC
 
-Then start Autolith:
+Then start Antaios:
 
 #+BEGIN_SRC sh
-autolith
+antaios
 #+END_SRC
 
 * Some features
 
-** Optional fullscreen terminal
+** Fullscreen terminal
 
-Autolith is inline by default. Start one session in the application-owned
-fullscreen viewport with =autolith --fullscreen=, or save the preference at the
-Autolith prompt for future launches:
+Antaios opens in the application-owned fullscreen viewport by default. Save the
+inline terminal presentation for future launches at the Antaios prompt:
 
 #+BEGIN_SRC lisp
-(preferences-set-fullscreen (application-configuration *active-application*) t)
+(setf (config :fullscreen-p) nil)
 #+END_SRC
 
 Fullscreen keeps the transcript scrollable and pins the composer at the bottom.
@@ -103,7 +87,7 @@ panel above the composer.
 
 ** The prompt input is the REPL
 
-In Autolith, the message window is just a LISP repl with familiar interactivity,
+In Antaios, the message window is just a LISP repl with familiar interactivity,
 you can make prompts in regular prose, or you can enter a form when you need an exact
 local action or a computed prompt.
 
@@ -116,16 +100,16 @@ local action or a computed prompt.
 The form runs in the active image.
 
 ** Tools for self modification and ephemeral Lisp REPLs
-Autolith has a well organized suite of *self* tools for inspecting and modifying itself live.
+Antaios has a well organized suite of *self* tools for inspecting and modifying itself live.
 You would think that doing live brain surgery on yourself would be catastrophic, but
-Autolith can triage and revert changes.
+Antaios can triage and revert changes.
 
-Similar set of *lisp* tools let Autolith avoid littering temporary Python3 scripts, instead
+Similar set of *lisp* tools let Antaios avoid littering temporary Python3 scripts, instead
 doing these things in its bundled Common Lisp runtime, but in REPLs that are pristine and
-separate from the agent's image. That's one less system dependency, and it also lets Autolith
+separate from the agent's image. That's one less system dependency, and it also lets Antaios
 observe its scripts better.
 
-Autolith can decide if it wants to keep the same Lisp REPL alive or to create a pristine one,
+Antaios can decide if it wants to keep the same Lisp REPL alive or to create a pristine one,
 and can maintain multiple.
 
 #+BEGIN_SRC lisp
@@ -135,11 +119,11 @@ and can maintain multiple.
 #+END_SRC
 
 =lisp.*= uses named, heap-isolated SBCL workers and can target read-only active
-inspection explicitly. =self.*= changes or reports the active Autolith image.
+inspection explicitly. =self.*= changes or reports the active Antaios image.
 
 ** Recursive inference
 
-Autolith can treat a large input as an environment instead of a prompt. =infer= runs one
+Antaios can treat a large input as an environment instead of a prompt. =infer= runs one
 bounded inference over context you pass explicitly, returns a Lisp value, and never touches
 your conversation:
 
@@ -172,23 +156,23 @@ See [[file:docs/rlm.org][RLM]] for contracts, budgets, policies and the design d
 ** Messages are just syntax sugar
 When you type a message like:
 #+BEGIN_SRC lisp
-Hello Autolith! How do you do?
+Hello Antaios! How do you do?
 #+END_SRC
 
 It is just syntactic sugar for:
 
 #+BEGIN_SRC lisp
-(prompt "Hello Autolith! how do you do?")
+(prompt "Hello Antaios! how do you do?")
 #+END_SRC
 
 This omits the default value for the *:to* parameter:
 
 #+BEGIN_SRC lisp
-(prompt :to 'autolith "Hello Autolith! how do you do?")
+(prompt :to 'antaios "Hello Antaios! how do you do?")
 #+END_SRC
 
 
-So if you ask Autolith to delegate work (it is likely to do it on its own with mostmodels), so it can keep working
+So if you ask Antaios to delegate work (it is likely to do it on its own with mostmodels), so it can keep working
 while the children run, you can talk to them as well.
 If one visible child is named =test-review=, you steer the sub-agent by prompting it:
 
@@ -207,13 +191,15 @@ If you want to pull an update, you can do so easily:
 (update)
 #+END_SRC
 
-Or do *autolith update* in your shell.
+Or do *antaios update* in your shell. Nix installations update through the flake
+or profile that provides Antaios, and source checkouts through Git followed by
+=./script/bootstrap=.
 
-* Autolith differences from other agents
+* Antaios differences from other agents
 
 ** Lisp-first control
 Plain text, callable commands, tools, and explicit Common Lisp share
-Autolith's REPL (or prompt window/input, as you may know it from other agents).
+Antaios's REPL (or prompt window/input, as you may know it from other agents).
 This means that you can construct scripts easily, and you can call tools just
 like the clanker does it.
 
@@ -228,11 +214,12 @@ For example, if you put your prompt to a file, you can just do:
 You could do templating, too, if you like.
 
 ** Responsive and inobtrusive terminal work
-Autolith defaults to inline presentation and generally uses your terminal's base
-16 colors. Use =--fullscreen= for an application-owned transcript viewport.
+Antaios defaults to the fullscreen viewport and generally uses your terminal's
+base 16 colors, without bold text. =(setf (config :fullscreen-p) nil)= selects
+inline presentation.
 
 Inline mode emits prompt markers, so terminals with shell-prompt navigation can
-also jump between messages to Autolith.
+also jump between messages to Antaios.
 
 The line editor is the fairly powerful [[https://github.com/luciusmagn/clinedi][clinedi]], it should support all the editing niceties
 and shortcuts you are used to.
@@ -251,12 +238,12 @@ You can use the following commands to interact with the vault:
 #+END_SRC
 
 Finally, checkpoints, private mutation commits, generations, and a pristine recovery image keep
-live work reconstructible, so it's hard to terminally lobotomize AL.
+live work reconstructible, so it's hard to terminally lobotomize Antaios.
 
 * License
-Autolith is ISC licensed. See [[file:LICENSE][LICENSE]].
+Antaios is ISC licensed. See [[file:LICENSE][LICENSE]].
 
-* Friends of Autolith
+* Friends of Antaios
 
 - [[https://github.com/yogthos/samizdat/][samizdat]]
 - [[https://github.com/browep/cl-sm-harness][sm-harness]]

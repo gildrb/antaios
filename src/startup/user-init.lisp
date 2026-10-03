@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- User Initialization --
 
@@ -69,7 +69,7 @@
 
 The optional site file loads first. Trusted directory files then load from
 outermost to nearest, followed by the global user file. They are read in the
-AUTOLITH package after tracked and privately committed definitions have loaded.
+ANTAIOS package after tracked and privately committed definitions have loaded.
 They execute with the user's full privileges. Registration changes roll back
 after failure, but arbitrary Lisp side effects do not generally have reversible
 semantics."
@@ -92,7 +92,7 @@ semantics."
               (setf current-entry entry)
               (let* ((layer (first entry))
                      (pathname (second entry))
-                     (*package* (find-package '#:autolith))
+                     (*package* (find-package '#:antaios))
                      (*user-init-loading-p* t)
                      (*user-init-configuration* configuration)
                       (*configuration* configuration)

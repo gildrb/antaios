@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Provider Protocol --
 
@@ -98,7 +98,7 @@
               (format nil
                       "~A~%Model discovery warnings:~%~{~A~%~}"
                       message
-                      (mapcar #'autolith-error-message failures))
+                      (mapcar #'antaios-error-message failures))
               message))
         message)))
 
@@ -143,7 +143,7 @@
         (provider-credential-manager provider)
         :stream stream
         :open-browser-p open-browser-p))))
-  "ChatGPT authentication was saved by Autolith.")
+  "ChatGPT authentication was saved by Antaios.")
 
 (defmethod provider-authenticate ((provider subscription-provider)
                                   &key stream open-browser-p)
@@ -153,7 +153,7 @@
    (provider-credential-manager provider)
    :stream (or stream *standard-output*)
    :open-browser-p open-browser-p)
-  (format nil "~A authentication was saved by Autolith."
+  (format nil "~A authentication was saved by Antaios."
           (provider-account-label provider)))
 
 (-> provider-note-response-headers (subscription-provider t) t)
@@ -186,7 +186,7 @@ otherwise parks the turn forever. NIL disables the bound.")
 
 (defmethod provider-family-for-registration
     ((registration provider-registration))
-  "Return the family declared by an Autolith provider registration."
+  "Return the family declared by an Antaios provider registration."
   (provider-registration-family registration))
 
 (defmethod provider-family ((provider codex-subscription-provider))
@@ -411,7 +411,7 @@ so authentication can bootstrap credentials before model discovery."
    "POST REQUEST to PROVIDER's native compaction endpoint and return its body."))
 
 ;; Modeled on the Codex context checkpoint compaction instructions at
-;; reference commit 6219b7c40f, restated for Autolith.
+;; reference commit 6219b7c40f, restated for Antaios.
 (defparameter *compaction-instructions*
   "You are performing a context checkpoint compaction. Write a handoff summary for another model that will resume this conversation. Include the current progress and key decisions, important context, constraints, and user preferences, what remains to be done as clear next steps, and any critical data or references needed to continue. Reference completed rlm.infer and rlm.map frames by their trace identifiers as inference:<trace-id> resources instead of restating frame content; the traces stay readable through resource.read. Do not call tools, wait for jobs, or perform additional work. Return only the handoff summary as visible assistant text. Be concise, structured, and complete enough that no earlier context is required."
   "The developer instructions driving one compaction request.")
@@ -429,7 +429,7 @@ response cannot dramatically overrun the shared subtree budget.")
 (defun provider-web-search-tool (configuration)
   "Return NIL because the subscription Responses endpoint does not execute web_search.
 
-Autolith exposes web.run instead. It calls the provider's authenticated
+Antaios exposes web.run instead. It calls the provider's authenticated
 standalone search endpoint and returns the cited result through the ordinary
 local tool protocol."
   (declare (ignore configuration))
@@ -509,9 +509,9 @@ checkpoint summarizes history rather than continuing it."
 
 (-> provider-user-agent () string)
 (defun provider-user-agent ()
-  "Return an honest, stable user agent for direct Autolith provider requests."
-  (format nil "autolith/~A (~A ~A; ~A)"
-          *autolith-version*
+  "Return an honest, stable user agent for direct Antaios provider requests."
+  (format nil "antaios/~A (~A ~A; ~A)"
+          *antaios-version*
           (software-type)
           (software-version)
           (machine-type)))
@@ -537,7 +537,7 @@ conversations, and a per-process value would route them all together."
     (cons "ChatGPT-Account-ID" (oauth-credentials-account-id credentials))
     (cons "Content-Type" "application/json")
     (cons "Accept" accept)
-    (cons "originator" "autolith")
+    (cons "originator" "antaios")
     (cons "User-Agent" (provider-user-agent))
     (cons "session-id" (conversation-identifier conversation))
     (cons "thread-id" (conversation-identifier conversation))
@@ -717,7 +717,7 @@ and codes follow the Codex reference at commit 6f51c65958."
 
 ;;;; -- SSE Decoding --
 
-;;; Bounded SSE decoding lives in cl-llm-provider-api. Autolith supplies the
+;;; Bounded SSE decoding lives in cl-llm-provider-api. Antaios supplies the
 ;;; runtime-specific pieces: an inactivity deadline around each line read and
 ;;; a provider condition class for stream size violations.
 
@@ -1041,10 +1041,10 @@ each attempt must stream through."
                                      :message
                                      (if refreshable-p
                                          (format nil
-                                                 "~A rejected Autolith's credentials after a bounded refresh."
+                                                 "~A rejected Antaios's credentials after a bounded refresh."
                                                  (provider-account-label provider))
                                          (format nil
-                                                 "~A rejected Autolith's API key; ~A."
+                                                 "~A rejected Antaios's API key; ~A."
                                                  (provider-account-label provider)
                                                  (credential-manager-login-hint manager))))))))
                (error 'authentication-error

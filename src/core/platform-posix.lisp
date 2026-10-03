@@ -1,10 +1,10 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- POSIX Platform Adapter --
 
 ;;; This file implements the platform protocol for Linux, macOS, and BSD
 ;;; hosts on top of SB-POSIX. Besides the Windows adapter, it is the only
-;;; Autolith source naming SB-POSIX process, permission, link, terminal,
+;;; Antaios source naming SB-POSIX process, permission, link, terminal,
 ;;; and signal operations, and the only one with host reader conditionals.
 
 (defclass posix-platform (platform)
@@ -164,7 +164,7 @@
   "Place each root under its XDG base directory or the XDG default below home."
   (let ((home (user-homedir-pathname)))
     (merge-pathnames
-     "autolith/"
+     "antaios/"
      (ecase kind
        (:config
         (posix--environment-directory "XDG_CONFIG_HOME"
@@ -383,10 +383,10 @@
 
 (defmethod platform-session-launch-command ((platform posix-platform) source-root)
   "Return the executable stable POSIX launcher."
-  (let ((pathname (merge-pathnames "bin/autolith" source-root)))
+  (let ((pathname (merge-pathnames "bin/antaios" source-root)))
     (unless (platform-executable-file-p platform pathname)
       (error 'platform-error :operation ':launch :pathname pathname
-             :message "The stable Autolith launcher is unavailable."))
+             :message "The stable Antaios launcher is unavailable."))
     (list (namestring pathname))))
 
 (defmethod platform-launch-detached-process
@@ -397,7 +397,7 @@
   (uiop:launch-program
    (append
     (list "bash" "-c" supervisor-script
-          "autolith-localgroup-handoff"
+          "antaios-localgroup-handoff"
           (first arguments)
           (namestring launcher-pid-pathname)
           (namestring gate-pathname))

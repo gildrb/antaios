@@ -3,36 +3,36 @@
 # Shared preflight for source, Nix, and packaged launchers. Application command
 # validation belongs to Clingon; this boundary only selects a launch or update.
 
-autolith_update_usage()
+antaios_update_usage()
 {
-  printf 'Usage: autolith update [--help]\n       autolith --update [--help]\n'
+  printf 'Usage: antaios update [--help]\n       antaios --update [--help]\n'
 }
 
-autolith_update_help()
+antaios_update_help()
 {
-  autolith_update_usage
+  antaios_update_usage
   printf '\nInstall the latest packaged release and exit without starting a session.\nSource checkouts: update the checkout, then run ./script/bootstrap.\nNix installations: update through your flake or Nix profile.\n'
 }
 
-autolith_uninstall_usage()
+antaios_uninstall_usage()
 {
-  printf 'Usage: autolith uninstall [--yes] [--help]\n'
+  printf 'Usage: antaios uninstall [--yes] [--help]\n'
 }
 
-autolith_uninstall_help()
+antaios_uninstall_help()
 {
-  autolith_uninstall_usage
-  printf '\nRemove the Autolith installation, managed runtimes, built images, and caches\nwithout starting a session. User data stays: conversations, memories, agendas,\nimage commits, settings, credentials, and configuration. --yes skips the\nconfirmation prompt.\n'
+  antaios_uninstall_usage
+  printf '\nRemove the Antaios installation, managed runtimes, built images, and caches\nwithout starting a session. User data stays: conversations, memories, agendas,\nimage commits, settings, credentials, and configuration. --yes skips the\nconfirmation prompt.\n'
 }
 
-autolith_launcher_parse()
+antaios_launcher_parse()
 {
   local installation_kind=$1
   shift
   local argument command_seen=false take_value=false options_ended=false
   local -a original_arguments=("$@")
 
-  autolith_installation_kind=$installation_kind
+  antaios_installation_kind=$installation_kind
   recovery_requested=false
   from_source_requested=false
   update_requested=false
@@ -104,7 +104,7 @@ autolith_launcher_parse()
       set -- "${original_arguments[@]:0:$#-1}"
     fi
     if [[ ${1:-} != uninstall ]]; then
-      autolith_uninstall_usage >&2
+      antaios_uninstall_usage >&2
       exit 64
     fi
     shift
@@ -112,11 +112,11 @@ autolith_launcher_parse()
       case $argument in
         --yes) uninstall_confirmed=true ;;
         --help|-h)
-          autolith_uninstall_help
+          antaios_uninstall_help
           exit 0
           ;;
         *)
-          autolith_uninstall_usage >&2
+          antaios_uninstall_usage >&2
           exit 64
           ;;
       esac
@@ -132,11 +132,11 @@ autolith_launcher_parse()
     fi
     if [[ (${1:-} != update && ${1:-} != --update) || $# -gt 2 ||
           ($# -eq 2 && ${2:-} != --help && ${2:-} != -h) ]]; then
-      autolith_update_usage >&2
+      antaios_update_usage >&2
       exit 64
     fi
     if [[ $# -eq 2 ]]; then
-      autolith_update_help
+      antaios_update_help
       exit 0
     fi
     case $installation_kind in
@@ -153,7 +153,7 @@ autolith_launcher_parse()
   fi
 }
 
-autolith_xdg_directory()
+antaios_xdg_directory()
 {
   case ${1:-} in
     /*) printf '%s\n' "$1" ;;
@@ -161,7 +161,7 @@ autolith_xdg_directory()
   esac
 }
 
-autolith_resolve_path()
+antaios_resolve_path()
 {
   local path=$1
   local directory
@@ -183,7 +183,7 @@ autolith_resolve_path()
   printf '%s/%s\n' "$directory" "$(basename "$path")"
 }
 
-autolith_uninstall_remove()
+antaios_uninstall_remove()
 {
   # Remove one file, link, or tree. Managed runtimes and release trees hold
   # read-only files, so directories are made writable first.
@@ -196,9 +196,9 @@ autolith_uninstall_remove()
   fi
 }
 
-autolith_uninstall()
+antaios_uninstall()
 {
-  # Remove every installed Autolith artifact and keep user data. KIND is the
+  # Remove every installed Antaios artifact and keep user data. KIND is the
   # launcher's installation kind; INSTALL_ROOT is the packaged release root
   # being removed, when the launcher runs from one; SOURCE_ROOT names the
   # checkout or Nix store path only for the closing advice.
@@ -212,14 +212,14 @@ autolith_uninstall()
   local -a links=()
 
   if [[ -z $home ]]; then
-    printf 'Autolith uninstall failed: HOME is not set.\n' >&2
+    printf 'Antaios uninstall failed: HOME is not set.\n' >&2
     return 1
   fi
-  data_root=$(autolith_xdg_directory "${XDG_DATA_HOME:-}" "$home/.local/share")/autolith
-  state_root=$(autolith_xdg_directory "${XDG_STATE_HOME:-}" "$home/.local/state")/autolith
-  cache_root=$(autolith_xdg_directory "${XDG_CACHE_HOME:-}" "$home/.cache")/autolith
-  config_root=$(autolith_xdg_directory "${XDG_CONFIG_HOME:-}" "$home/.config")/autolith
-  bin_directory=${AUTOLITH_BIN_DIR:-$home/.local/bin}
+  data_root=$(antaios_xdg_directory "${XDG_DATA_HOME:-}" "$home/.local/share")/antaios
+  state_root=$(antaios_xdg_directory "${XDG_STATE_HOME:-}" "$home/.local/state")/antaios
+  cache_root=$(antaios_xdg_directory "${XDG_CACHE_HOME:-}" "$home/.cache")/antaios
+  config_root=$(antaios_xdg_directory "${XDG_CONFIG_HOME:-}" "$home/.config")/antaios
+  bin_directory=${ANTAIOS_BIN_DIR:-$home/.local/bin}
 
   # Built images, managed runtimes, retained generation cores, worker images,
   # Nix image and cache trees, release markers, and the packaged installation.
@@ -250,9 +250,9 @@ autolith_uninstall()
     targets+=("$cache_root")
   fi
   # Command links that point into a removed installation.
-  for link in "$bin_directory/autolith" "$(command -v autolith 2>/dev/null || true)"; do
+  for link in "$bin_directory/antaios" "$(command -v antaios 2>/dev/null || true)"; do
     [[ -n $link && -L $link ]] || continue
-    target=$(autolith_resolve_path "$link" 2>/dev/null) || continue
+    target=$(antaios_resolve_path "$link" 2>/dev/null) || continue
     case $target in
       "$data_root/installation/"*) links+=("$link") ;;
       *)
@@ -264,9 +264,9 @@ autolith_uninstall()
   done
 
   if [[ ${#targets[@]} -eq 0 && ${#links[@]} -eq 0 ]]; then
-    printf 'Nothing to remove: no Autolith installation, runtime, image, or cache was found.\n' >&2
+    printf 'Nothing to remove: no Antaios installation, runtime, image, or cache was found.\n' >&2
   else
-    printf 'Autolith uninstall removes:\n' >&2
+    printf 'Antaios uninstall removes:\n' >&2
     for entry in ${targets[@]+"${targets[@]}"} ${links[@]+"${links[@]}"}; do
       printf '  %s\n' "$entry" >&2
     done
@@ -282,13 +282,13 @@ autolith_uninstall()
       case $entry in
         y|Y|yes|YES|Yes) ;;
         *)
-          printf 'Autolith is not removed.\n' >&2
+          printf 'Antaios is not removed.\n' >&2
           return 1
           ;;
       esac
     fi
     for entry in ${links[@]+"${links[@]}"} ${targets[@]+"${targets[@]}"}; do
-      if autolith_uninstall_remove "$entry"; then
+      if antaios_uninstall_remove "$entry"; then
         printf 'Removed %s\n' "$entry" >&2
       else
         printf 'Could not remove %s\n' "$entry" >&2

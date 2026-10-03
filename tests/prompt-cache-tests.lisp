@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Prompt-Cache Miss Tests --
 
@@ -210,6 +210,7 @@
               conversation
               (list :request-number 1
                     :usage (prompt-cache-tests--usage 30000 0)))
+             (setf (application-cache-miss-notices-p application) nil)
              (request (prompt-cache-tests--usage 31000 0))
              (test-assert (not (notice-p))
                           "notices stay silent while the preference is off")

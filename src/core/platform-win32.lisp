@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Win32 Platform Adapter --
 
@@ -311,7 +311,7 @@ opened by the directory's own name."
   (let ((launcher (merge-pathnames "script/launcher.lisp" source-root)))
     (unless (probe-file launcher)
       (error 'platform-error :operation ':launch :pathname launcher
-             :message "The stable Autolith launcher is unavailable."))
+             :message "The stable Antaios launcher is unavailable."))
     (list (namestring sb-ext:*runtime-pathname*) "--noinform"
           "--no-userinit" "--no-sysinit" "--script" (namestring launcher))))
 (defun win32--command-line-argument (argument)
@@ -706,24 +706,24 @@ Configuration lives under the roaming application data folder, and data,
 state, and cache under the local one, each in its own subdirectory."
   (ecase kind
     (:config
-     (merge-pathnames "autolith/"
+     (merge-pathnames "antaios/"
                       (or (win32--absolute-environment-directory "XDG_CONFIG_HOME")
                           (win32--known-folder "APPDATA"))))
     (:data
      (let ((xdg (win32--absolute-environment-directory "XDG_DATA_HOME")))
        (if xdg
-           (merge-pathnames "autolith/" xdg)
-           (merge-pathnames "autolith/data/" (win32--known-folder "LOCALAPPDATA")))))
+           (merge-pathnames "antaios/" xdg)
+           (merge-pathnames "antaios/data/" (win32--known-folder "LOCALAPPDATA")))))
     (:state
      (let ((xdg (win32--absolute-environment-directory "XDG_STATE_HOME")))
        (if xdg
-           (merge-pathnames "autolith/" xdg)
-           (merge-pathnames "autolith/state/" (win32--known-folder "LOCALAPPDATA")))))
+           (merge-pathnames "antaios/" xdg)
+           (merge-pathnames "antaios/state/" (win32--known-folder "LOCALAPPDATA")))))
     (:cache
      (let ((xdg (win32--absolute-environment-directory "XDG_CACHE_HOME")))
        (if xdg
-           (merge-pathnames "autolith/" xdg)
-           (merge-pathnames "autolith/cache/" (win32--known-folder "LOCALAPPDATA")))))))
+           (merge-pathnames "antaios/" xdg)
+           (merge-pathnames "antaios/cache/" (win32--known-folder "LOCALAPPDATA")))))))
 
 (defmethod platform-create-private-file ((platform win32-platform) pathname)
   "Create PATHNAME exclusively and restrict it to the current user."
@@ -782,7 +782,7 @@ defeating an administrator."
   "Withhold write access from PATHNAME's owner while keeping it private.
 
 Windows has no world-readable bit, so the file stays owner-only; every file
-Autolith publishes read-only lives below a private root anyway."
+Antaios publishes read-only lives below a private root anyway."
   (win32--set-mode pathname #o400))
 
 (defmethod platform-copy-file-permissions ((platform win32-platform)
@@ -1023,7 +1023,7 @@ can omit. Bounded retries cover handles released just after a child process exit
                         (unless (equal current previous)
                           (setf previous current)
                           (funcall function)))))
-           :name "Autolith console resize watcher"))
+           :name "Antaios console resize watcher"))
     watch))
 
 (defmethod platform-unwatch-terminal-resize ((platform win32-platform) token)
@@ -1055,9 +1055,9 @@ System application directories are available through AppContainer's system acces
 
 (-> win32--call-with-sandbox-lock (function) t)
 (defun win32--call-with-sandbox-lock (function)
-  "Serialize sandbox scope lifetimes across Autolith processes and threads."
+  "Serialize sandbox scope lifetimes across Antaios processes and threads."
   (let ((mutex (win32--create-mutex nil 0
-                                   "Global\\AutolithCommandSandbox-v1"))
+                                   "Global\\AntaiosCommandSandbox-v1"))
         (owned-p nil))
     (when (zerop mutex)
       (win32--fail ':command-sandbox-lock nil))
@@ -1115,11 +1115,11 @@ System application directories are available through AppContainer's system acces
   "Run FUNCTION with explicit workspace/tool scopes and a private Windows scratch directory."
   (unless (sandbox-supported-p ':network-isolated)
     (win32--unavailable ':command-sandbox
-                        "The native Windows sandbox helper is missing; rebuild or reinstall Autolith."))
+                        "The native Windows sandbox helper is missing; rebuild or reinstall Antaios."))
   (win32--call-with-sandbox-lock
    (lambda ()
      (let ((temporary (platform-make-temporary-directory
-                       platform (uiop:temporary-directory) "autolith-command-")))
+                       platform (uiop:temporary-directory) "antaios-command-")))
        (unwind-protect
             (funcall function
                      (cl-exec-sandbox:appcontainer-sandbox-policy

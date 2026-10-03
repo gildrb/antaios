@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Asynchronous Active-image Lisp --
 
@@ -24,7 +24,7 @@
          (*terminal-io* terminal)
          (*query-io* terminal)
          (*debug-io* terminal)
-         (*package* (find-package '#:autolith))
+         (*package* (find-package '#:antaios))
          (*application-operation-application* application)
          (*application-local-user-evaluation-p* t)
          (*application-command-interactive-p* nil)

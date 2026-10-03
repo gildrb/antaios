@@ -21,10 +21,10 @@ runs:
         $toolchain = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
         "toolchain=$toolchain" | Add-Content $env:GITHUB_OUTPUT
         "quicklisp=$env:USERPROFILE\quicklisp" | Add-Content $env:GITHUB_OUTPUT
-        "runtimes=$env:LOCALAPPDATA\autolith\data\runtimes" | Add-Content $env:GITHUB_OUTPUT
-        "fff=$env:LOCALAPPDATA\autolith\data\native\fff" | Add-Content $env:GITHUB_OUTPUT
+        "runtimes=$env:LOCALAPPDATA\antaios\data\runtimes" | Add-Content $env:GITHUB_OUTPUT
+        "fff=$env:LOCALAPPDATA\antaios\data\native\fff" | Add-Content $env:GITHUB_OUTPUT
         "colorlisp=$env:USERPROFILE\.cache\colorlisp" | Add-Content $env:GITHUB_OUTPUT
-        $asdf = (Join-Path $env:LOCALAPPDATA 'autolith\cache\ci-asdf').Replace('\', '/')
+        $asdf = (Join-Path $env:LOCALAPPDATA 'antaios\cache\ci-asdf').Replace('\', '/')
         "asdf=$asdf" | Add-Content $env:GITHUB_OUTPUT
         "asdf-output-translations=(:output-translations (t (`"$asdf/`" :implementation)) :ignore-inherited-configuration)" | Add-Content $env:GITHUB_OUTPUT
 

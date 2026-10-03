@@ -67,15 +67,15 @@
                             (uiop:read-file-string commit-pathname)))
        (checkout
          (merge-pathnames (format nil "build/fff/~A/" commit)
-                          (autolith-application-root :cache)))
+                          (antaios-application-root :cache)))
        (install-root (merge-pathnames "native/fff/"
-                                      (autolith-application-root :data)))
+                                      (antaios-application-root :data)))
        (library-name #+darwin "libfff_c.dylib"
                      #+win32 "fff_c.dll"
                      #-(or darwin win32) "libfff_c.so")
        (library (merge-pathnames library-name install-root))
        (static-build-p
-         (equal (uiop:getenv "AUTOLITH_BUILD_STATIC_NATIVE") "1"))
+         (equal (uiop:getenv "ANTAIOS_BUILD_STATIC_NATIVE") "1"))
        (static-library-name "libfff_c.a")
        (static-library (merge-pathnames static-library-name install-root))
        (manifest (merge-pathnames "manifest.sexp" install-root)))

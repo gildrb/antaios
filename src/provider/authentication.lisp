@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- OAuth Credentials --
 
@@ -6,7 +6,7 @@
   "True only while provider credentials are dynamically available to a request.")
 
 (defvar *active-secret-use-lock*
-  (make-lock "Autolith active secret use")
+  (make-lock "Antaios active secret use")
   "The lock protecting the process-wide active secret-use counter.")
 
 (defvar *active-secret-use-count* 0
@@ -86,9 +86,9 @@ its protocol-level close operation."
 
 (-> authentication-user-agent () string)
 (defun authentication-user-agent ()
-  "Return the honest Autolith user agent sent to authentication services."
-  (format nil "autolith/~A (~A ~A; ~A)"
-          *autolith-version*
+  "Return the honest Antaios user agent sent to authentication services."
+  (format nil "antaios/~A (~A ~A; ~A)"
+          *antaios-version*
           (software-type)
           (software-version)
           (machine-type)))
@@ -104,9 +104,9 @@ its protocol-level close operation."
     :documentation "The credential file read by this source."))
   (:documentation "A replaceable source of OAuth credentials."))
 
-(defclass autolith-credential-source (credential-source)
+(defclass antaios-credential-source (credential-source)
   ()
-  (:documentation "Autolith's private, writable S-expression credential store."))
+  (:documentation "Antaios's private, writable S-expression credential store."))
 
 (defclass codex-bootstrap-credential-source (credential-source)
   ()
@@ -147,14 +147,14 @@ The file belongs to another tool, so a symbolic link to it is followed."
                  (error condition))
                (sleep 0.02)))))
 
-(defmethod credential-source-load ((source autolith-credential-source))
-  "Load Autolith's private OAuth record from SOURCE."
+(defmethod credential-source-load ((source antaios-credential-source))
+  "Load Antaios's private OAuth record from SOURCE."
   (let ((pathname (credential-source-pathname source)))
     (when (probe-file pathname)
       (let ((record (read-portable-form pathname)))
         (unless (and (listp record) (eq (first record) :oauth))
           (error 'authentication-error
-                 :message (format nil "Invalid Autolith credential record at ~A." pathname)))
+                 :message (format nil "Invalid Antaios credential record at ~A." pathname)))
         (let ((access-token (getf (rest record) :access-token))
               (account-id (getf (rest record) :account-id)))
           (when (and (non-empty-string-p access-token)
@@ -198,9 +198,9 @@ The file belongs to another tool, so a symbolic link to it is followed."
         (error ()
           nil)))))
 
-(defmethod credential-source-save ((source autolith-credential-source)
+(defmethod credential-source-save ((source antaios-credential-source)
                                    (credentials oauth-credentials))
-  "Atomically save CREDENTIALS to Autolith's private store with mode 0600."
+  "Atomically save CREDENTIALS to Antaios's private store with mode 0600."
   (let* ((pathname (credential-source-pathname source))
          (record (list :oauth
                        :version 1
@@ -223,7 +223,7 @@ The file belongs to another tool, so a symbolic link to it is followed."
 
 (defclass credential-manager (cl-rfc8628:managed-credential-manager)
   ()
-  (:documentation "Autolith's product-specific credential manager base."))
+  (:documentation "Antaios's product-specific credential manager base."))
 
 (defclass chatgpt-credential-manager (credential-manager)
   ()
@@ -238,14 +238,14 @@ The file belongs to another tool, so a symbolic link to it is followed."
 (defmethod credential-manager-login-hint ((manager chatgpt-credential-manager))
   "Point ChatGPT credential failures at the default login command."
   (declare (ignore manager))
-  "run autolith auth")
+  "run antaios auth")
 
 (-> credential-manager-create (configuration) chatgpt-credential-manager)
 (defun credential-manager-create (configuration)
   "Create the ChatGPT credential manager for CONFIGURATION's private paths."
   (make-instance 'chatgpt-credential-manager
                  :primary-source (make-instance
-                                  'autolith-credential-source
+                                  'antaios-credential-source
                                   :pathname (configuration-auth-path configuration))
                  :bootstrap-source (make-instance
                                     'codex-bootstrap-credential-source
@@ -255,7 +255,7 @@ The file belongs to another tool, so a symbolic link to it is followed."
     (credential-manager oauth-credentials string)
     oauth-credentials)
 (defun oauth-refresh-response-credentials (manager credentials body)
-  "Validate refresh BODY and return account-continuous Autolith credentials."
+  "Validate refresh BODY and return account-continuous Antaios credentials."
   (handler-case
       (let ((response (json-decode body)))
         (unless (json-object-p response)
@@ -379,7 +379,7 @@ The file belongs to another tool, so a symbolic link to it is followed."
     t)
 
 (defun call-with-credentials (manager function &key force-refresh)
-  "Call FUNCTION inside Autolith's credential request scope."
+  "Call FUNCTION inside Antaios's credential request scope."
   (let ((*credentials-in-request-scope* t))
     (cl-rfc8628:call-with-credentials manager function :force-refresh force-refresh)))
 

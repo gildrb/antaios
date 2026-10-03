@@ -1,4 +1,4 @@
-;;;; Shared host-runtime probe for launchers that have not loaded Autolith.
+;;;; Shared host-runtime probe for launchers that have not loaded Antaios.
 
 (require :asdf)
 (load (merge-pathnames "runtime-requirement.lisp"
@@ -6,5 +6,5 @@
 
 (let ((source-root (uiop:pathname-parent-directory-pathname
                     (uiop:pathname-directory-pathname *load-truename*))))
-  (autolith-require-minimum-runtime (merge-pathnames "sbcl.version" source-root))
+  (antaios-require-minimum-runtime (merge-pathnames "sbcl.version" source-root))
   (write-string (lisp-implementation-version)))

@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Management REPL Test Support --
 
@@ -18,8 +18,8 @@
                (maximum-frame-size 65536))
   "Return an enabled management configuration rooted under ROOT."
   (configuration-create
-   :source-root (asdf:system-source-directory :autolith)
-   :working-directory (asdf:system-source-directory :autolith)
+   :source-root (asdf:system-source-directory :antaios)
+   :working-directory (asdf:system-source-directory :antaios)
    :management-repl-enabled-p t
    :management-repl-transport transport
    :management-repl-unix-socket-path (merge-pathnames "private/repl.sock" root)
@@ -159,15 +159,15 @@
            (test-assert
             (not (config :management-repl-enabled-p
                   (configuration-create
-                   :source-root (asdf:system-source-directory :autolith)
+                   :source-root (asdf:system-source-directory :antaios)
                    :working-directory
-                   (asdf:system-source-directory :autolith))))
+                   (asdf:system-source-directory :antaios))))
             "management endpoint is disabled by default")
            (let ((relative
                    (configuration-create
-                    :source-root (asdf:system-source-directory :autolith)
+                    :source-root (asdf:system-source-directory :antaios)
                     :working-directory
-                    (asdf:system-source-directory :autolith)
+                    (asdf:system-source-directory :antaios)
                     :management-repl-unix-socket-path #P"relative/repl.sock"
                     :management-repl-token-file-path #P"relative/token")))
              (test-assert

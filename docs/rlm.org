@@ -1,4 +1,4 @@
-#+TITLE: Autolith RLM
+#+TITLE: Antaios RLM
 #+STARTUP: content
 
 * Recursive inference
@@ -6,7 +6,7 @@
 A recursive language model treats long context as an external
 environment instead of a prompt. The model decomposes a task, runs
 bounded inference over selected snippets, and composes the returned
-values. Autolith realizes this as a middle layer between a tool call
+values. Antaios realizes this as a middle layer between a tool call
 and a child agent, so recursion becomes an ordinary Lisp operation:
 
 #+BEGIN_SRC lisp
@@ -19,7 +19,7 @@ and a child agent, so recursion becomes an ordinary Lisp operation:
        :budget (rlm-budget-create :calls 16 :tokens 80000 :depth 3))
 #+END_SRC
 
-Autolith already has the outer level. Task children are persistent
+Antaios already has the outer level. Task children are persistent
 agents with conversations, tool registries, and orchestrator
 scheduling. RLM adds the two inner levels plus the paper-defining
 root operation, =rlm-complete=, described below:
@@ -256,7 +256,7 @@ Settled trade-offs, recorded so review rounds do not relitigate them.
 ** The environment is privileged and unsandboxed
 
 =env.eval= runs model-authored Lisp in a heap-isolated worker with the
-user's privileges, exactly like =lisp.*= always has; Autolith's stance
+user's privileges, exactly like =lisp.*= always has; Antaios's stance
 is that sandboxing is no substitute for oversight. Opaque context
 handles with host-proxied =context-slice= and =context-search= were
 considered and rejected: they add a socket round trip per operation

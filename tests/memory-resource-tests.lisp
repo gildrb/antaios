@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Memory Resource Test Support --
 
@@ -473,7 +473,7 @@
                                        :direction ':output
                                        :if-exists ':supersede
                                        :if-does-not-exist ':create)
-                 (write-line "(in-package #:autolith)" stream))
+                 (write-line "(in-package #:antaios)" stream))
                 (read-resource first-context "workspace:sample.lisp")
                 (read-resource first-context "agenda:current"))
              (let* ((expiry-conversation

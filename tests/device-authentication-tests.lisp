@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- ChatGPT Device Authentication Test Support --
 
@@ -9,11 +9,11 @@
   (make-instance
    'credential-manager
    :primary-source
-   (make-instance 'recording-autolith-credential-source
-                  :pathname #P"/tmp/autolith-device-authentication/auth.sexp")
+   (make-instance 'recording-antaios-credential-source
+                  :pathname #P"/tmp/antaios-device-authentication/auth.sexp")
    :bootstrap-source
    (make-instance 'codex-bootstrap-credential-source
-                  :pathname #P"/tmp/autolith-device-authentication/codex-auth.json")))
+                  :pathname #P"/tmp/antaios-device-authentication/codex-auth.json")))
 
 (-> device-authentication-test--base64url (string) string)
 (defun device-authentication-test--base64url (source)
@@ -170,7 +170,7 @@
                       (getf exchange-request :content)))
          "the code exchange contains the exact device grant fields")
         (test-assert (typep saved 'oauth-credentials)
-                     "credentials are published through Autolith's store protocol")
+                     "credentials are published through Antaios's store protocol")
         (test-assert
          (string= (oauth-credentials-account-id saved) account-id)
          "the nested ChatGPT account identifier is extracted")
@@ -179,8 +179,8 @@
          "the exchanged access token reaches only the credential store")
         (test-assert
          (equal (oauth-credentials-source-path saved)
-                #P"/tmp/autolith-device-authentication/auth.sexp")
-         "saved credentials are attributed to Autolith's private store")))
+                #P"/tmp/antaios-device-authentication/auth.sexp")
+         "saved credentials are attributed to Antaios's private store")))
     nil))
 
 (-> device-authentication-test--injected-poll () null)

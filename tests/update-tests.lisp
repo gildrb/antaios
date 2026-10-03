@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Update State and Provenance Tests --
 
@@ -38,7 +38,7 @@
   (let* ((release-root (merge-pathnames
                         (format nil "releases/~A/" directory-name)
                         install-root))
-         (packaged-source (merge-pathnames "libexec/autolith/" release-root)))
+         (packaged-source (merge-pathnames "libexec/antaios/" release-root)))
     (ensure-directories-exist (merge-pathnames ".keep" packaged-source))
     (update-tests--write-release-record
      (merge-pathnames "RELEASE" release-root)
@@ -61,13 +61,13 @@
   (let* ((configuration (test-configuration))
          (root (test-configuration-root configuration))
          (state-path (configuration-update-state-path configuration))
-         (release-tag (format nil "v~A" *autolith-version*))
+         (release-tag (format nil "v~A" *antaios-version*))
          (newer-tag "v99.0.0")
          (install-root (merge-pathnames "installation/" root))
          (release-root (merge-pathnames
                         (format nil "releases/~A/" release-tag)
                         install-root))
-         (packaged-source (merge-pathnames "libexec/autolith/" release-root)))
+         (packaged-source (merge-pathnames "libexec/antaios/" release-root)))
     (unwind-protect
          (progn
            (test-assert (release-tag-valid-p "v1.2.3")
@@ -88,9 +88,9 @@
                           "a release environment marker alone remains source"))
            (test-assert
             (and (installation--nix-store-directory-p
-                  #p"/nix/store/0123456789-autolith/")
+                  #p"/nix/store/0123456789-antaios/")
                  (not (installation--nix-store-directory-p
-                       #p"/tmp/nix/store/0123456789-autolith/")))
+                       #p"/tmp/nix/store/0123456789-antaios/")))
             "Nix provenance accepts only concrete paths below the Nix store")
 
            (ensure-directories-exist (merge-pathnames ".keep" packaged-source))

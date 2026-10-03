@@ -1,28 +1,28 @@
 param([string]$OutputDirectory='dist',[Parameter(Mandatory=$true)][string]$Tag)
 $ErrorActionPreference='Stop'; Set-StrictMode -Version Latest
 if ($Tag -notmatch '^v\d+\.\d+\.\d+(?:-dev\.\d+)?$') { throw 'Tag is malformed.' }
-$root=Split-Path -Parent $PSScriptRoot; $platform='x86_64-windows'; $name="autolith-$Tag-$platform"
+$root=Split-Path -Parent $PSScriptRoot; $platform='x86_64-windows'; $name="antaios-$Tag-$platform"
 $out=[IO.Path]::GetFullPath((Join-Path $root $OutputDirectory)); $stage=Join-Path $env:RUNNER_TEMP "package-$PID"; $release=Join-Path $stage $name
 try {
-  New-Item -ItemType Directory -Force -Path $out,(Join-Path $release 'libexec\autolith'),(Join-Path $release 'bin'),(Join-Path $release 'native')|Out-Null
-  $tar=Join-Path $stage 'source.tar'; & git -C $root archive --format=tar --output=$tar HEAD; if($LASTEXITCODE){throw 'git archive failed.'}; & tar.exe -xf $tar -C (Join-Path $release 'libexec\autolith'); if($LASTEXITCODE){throw 'tar extraction failed.'}
-  $packagedSource = Join-Path $release 'libexec\autolith'
+  New-Item -ItemType Directory -Force -Path $out,(Join-Path $release 'libexec\antaios'),(Join-Path $release 'bin'),(Join-Path $release 'native')|Out-Null
+  $tar=Join-Path $stage 'source.tar'; & git -C $root archive --format=tar --output=$tar HEAD; if($LASTEXITCODE){throw 'git archive failed.'}; & tar.exe -xf $tar -C (Join-Path $release 'libexec\antaios'); if($LASTEXITCODE){throw 'tar extraction failed.'}
+  $packagedSource = Join-Path $release 'libexec\antaios'
   & git -C $packagedSource init --quiet
   if ($LASTEXITCODE) { throw 'packaged source Git initialization failed.' }
   & git -C $packagedSource config core.autocrlf false
-  & git -C $packagedSource config user.name 'Autolith package builder'
+  & git -C $packagedSource config user.name 'Antaios package builder'
   & git -C $packagedSource config user.email 'package@localhost'
   & git -C $packagedSource add --all
   if ($LASTEXITCODE) { throw 'packaged source Git staging failed.' }
-  & git -C $packagedSource commit --quiet -m 'Packaged Autolith source'
+  & git -C $packagedSource commit --quiet -m 'Packaged Antaios source'
   if ($LASTEXITCODE) { throw 'packaged source Git commit failed.' }
   Add-Content -LiteralPath (Join-Path $packagedSource '.git\info\exclude') -Value '.qlot/'
-  Copy-Item -Recurse -Force -LiteralPath (Join-Path $root '.qlot') -Destination (Join-Path $release 'libexec\autolith\.qlot')
-  $version=(Get-Content -Raw (Join-Path $root 'sbcl.version')).Trim(); $data=Join-Path $env:LOCALAPPDATA 'autolith\data'; $runtimeRoot=Join-Path $data "runtimes\$version"
+  Copy-Item -Recurse -Force -LiteralPath (Join-Path $root '.qlot') -Destination (Join-Path $release 'libexec\antaios\.qlot')
+  $version=(Get-Content -Raw (Join-Path $root 'sbcl.version')).Trim(); $data=Join-Path $env:LOCALAPPDATA 'antaios\data'; $runtimeRoot=Join-Path $data "runtimes\$version"
   Copy-Item -Recurse -Force -LiteralPath (Join-Path $runtimeRoot 'installation') -Destination (Join-Path $release 'runtime')
   & (Join-Path $PSScriptRoot 'prepare-windows-runtime.ps1') -Runtime (Join-Path $release 'runtime\sbcl.exe')
   Copy-Item -Recurse -Force -LiteralPath (Join-Path $runtimeRoot 'source') -Destination (Join-Path $release 'libexec\sbcl-source')
-  Copy-Item -Force (Join-Path $root 'bin\autolith.cmd') (Join-Path $release 'bin\autolith.cmd'); Copy-Item -Force (Join-Path $root 'bin\autolith-release.ps1') (Join-Path $release 'bin\autolith.ps1')
+  Copy-Item -Force (Join-Path $root 'bin\antaios.cmd') (Join-Path $release 'bin\antaios.cmd'); Copy-Item -Force (Join-Path $root 'bin\antaios-release.ps1') (Join-Path $release 'bin\antaios.ps1')
   $fff = Get-ChildItem -Recurse -File -LiteralPath (Join-Path $data 'native\fff') -Filter '*.dll' | Select-Object -First 1
   $colorlisp = Get-ChildItem -Recurse -File -LiteralPath (Join-Path $env:USERPROFILE '.cache\colorlisp') | Where-Object { $_.Name -match 'colorlisp' } | Select-Object -First 1
   if (-not $fff -or -not $colorlisp) { throw 'Built FFF or ColorLisp DLL is missing.' }

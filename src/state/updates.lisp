@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Release Versions --
 
@@ -7,10 +7,6 @@
 
 (defparameter *update-check-interval* (* 20 60 60)
   "Seconds between nonblocking release-availability attempts.")
-
-(defparameter *update-latest-url*
-  "https://sh.lambda-symbolics.com/releases/latest"
-  "The default redirect identifying the newest complete release.")
 
 (-> release-tag->version (string) (option list))
 (defun release-tag->version (tag)
@@ -206,13 +202,13 @@ that carries a platform accepts only that platform's qualified name."
       (when (and release-root
                  source-root
                  tag
-                 (string= version *autolith-version*)
+                 (string= version *antaios-version*)
                  (stringp release-directory-name)
                  (installation--release-directory-name-p
                   release-directory-name tag platform)
                  (installation--same-directory-p
                   source-root
-                  (merge-pathnames "libexec/autolith/" release-root))
+                  (merge-pathnames "libexec/antaios/" release-root))
                  (installation--same-directory-p current release-root))
         (make-instance 'installation-provenance
                        :method ':release
@@ -245,7 +241,7 @@ that carries a platform accepts only that platform's qualified name."
                (equal source-root nix-source-root))
       (make-instance 'installation-provenance
                      :method ':nix
-                     :current-tag (format nil "v~A" *autolith-version*)))))
+                     :current-tag (format nil "v~A" *antaios-version*)))))
 
 (-> installation-provenance-detect
     (configuration &key (:kind (option string))
@@ -254,9 +250,9 @@ that carries a platform accepts only that platform's qualified name."
     installation-provenance)
 (defun installation-provenance-detect
     (configuration &key
-                     (kind (uiop:getenv "AUTOLITH_INSTALLATION_KIND"))
-                     (release-root (uiop:getenv "AUTOLITH_RELEASE_ROOT"))
-                     (nix-source-root (uiop:getenv "AUTOLITH_NIX_SOURCE_ROOT")))
+                     (kind (uiop:getenv "ANTAIOS_INSTALLATION_KIND"))
+                     (release-root (uiop:getenv "ANTAIOS_RELEASE_ROOT"))
+                     (nix-source-root (uiop:getenv "ANTAIOS_NIX_SOURCE_ROOT")))
   "Return structurally validated installation provenance for CONFIGURATION."
   (or (installation--release-provenance configuration kind release-root)
       (installation--nix-provenance configuration kind nix-source-root)
@@ -292,7 +288,7 @@ that carries a platform accepts only that platform's qualified name."
     :documentation "The exact release tag the user chose to skip."))
   (:documentation "Validated cached release availability and dismissal state."))
 
-(defvar *update-state-lock* (make-lock "Autolith update state")
+(defvar *update-state-lock* (make-lock "Antaios update state")
   "The in-process lock serializing cached update-state replacement.")
 
 (defvar *update-check-fetch-function* nil
@@ -459,7 +455,7 @@ that carries a platform accepts only that platform's qualified name."
          (state (update-state-load configuration))
          (latest-tag (update-state-latest-tag state)))
     (when (and (not (string= (or (uiop:getenv
-                                  "AUTOLITH_SUPPRESS_UPDATE_OFFER") "")
+                                  "ANTAIOS_SUPPRESS_UPDATE_OFFER") "")
                              "1"))
                (member method '(:nix :release))
                current-tag
@@ -483,23 +479,47 @@ that carries a platform accepts only that platform's qualified name."
     (error ()
       nil)))
 
+(-> update-latest-url () (option string))
+(defun update-latest-url ()
+  "Return the configured redirect identifying the newest release, or NIL.
+
+Antaios has no default release service. ANTAIOS_RELEASE_LATEST_URL names the
+redirect directly, and ANTAIOS_RELEASE_BASE_URL implies its latest path."
+  (let ((latest (uiop:getenv "ANTAIOS_RELEASE_LATEST_URL"))
+        (base   (uiop:getenv "ANTAIOS_RELEASE_BASE_URL")))
+    (cond
+      ((non-empty-string-p latest)
+       latest)
+      ((non-empty-string-p base)
+       (format nil "~A/latest" (string-right-trim "/" base)))
+      (t
+       nil))))
+
+(-> update-check-configured-p () boolean)
+(defun update-check-configured-p ()
+  "Return true when a newest-release request has somewhere to go."
+  (not (null (or *update-check-fetch-function* (update-latest-url)))))
+
 (-> update-check--fetch-latest-tag () string)
 (defun update-check--fetch-latest-tag ()
   "Return the newest release tag through one bounded HTTPS redirect request."
-  (multiple-value-bind (body status headers final-uri)
-      (dexador:get (or (uiop:getenv "AUTOLITH_RELEASE_LATEST_URL")
-                       *update-latest-url*)
-                   :connect-timeout 3
-                   :read-timeout 5
-                   :max-redirects 5
-                   :force-string t)
-    (declare (ignore body headers))
-    (let ((tag (and (= status 200)
-                    (update-check--tag-from-uri final-uri))))
-      (unless tag
-        (error 'configuration-error
-               :message "The release service did not identify a valid release."))
-      tag)))
+  (let ((url (update-latest-url)))
+    (unless url
+      (error 'configuration-error
+             :message "No release service is configured."))
+    (multiple-value-bind (body status headers final-uri)
+        (dexador:get url
+                     :connect-timeout 3
+                     :read-timeout 5
+                     :max-redirects 5
+                     :force-string t)
+      (declare (ignore body headers))
+      (let ((tag (and (= status 200)
+                      (update-check--tag-from-uri final-uri))))
+        (unless tag
+          (error 'configuration-error
+                 :message "The release service did not identify a valid release."))
+        tag))))
 
 (-> update-check--fetch () string)
 (defun update-check--fetch ()
@@ -534,7 +554,8 @@ that carries a platform accepts only that platform's qualified name."
   "Start one due background availability refresh, returning its thread or NIL."
   (block nil
     (when (or (eq (installation-provenance-method provenance) ':source)
-              (string= (or (uiop:getenv "AUTOLITH_NO_UPDATE_CHECK") "") "1"))
+              (not (update-check-configured-p))
+              (string= (or (uiop:getenv "ANTAIOS_NO_UPDATE_CHECK") "") "1"))
       (return nil))
     (let ((now (get-universal-time)))
       (unless (update-state-check-due-p (update-state-load configuration)
@@ -551,6 +572,6 @@ that carries a platform accepts only that platform's qualified name."
                       configuration now (update-check--fetch))
                    (serious-condition ()
                      nil))))
-             :name "Autolith release availability"))
+             :name "Antaios release availability"))
         (serious-condition ()
           nil)))))

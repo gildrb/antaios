@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Nous Device Authentication Test Support --
 
@@ -13,7 +13,7 @@
       (make-instance
        'nous-credential-manager
        :primary-source
-       (make-instance 'recording-autolith-credential-source
+       (make-instance 'recording-antaios-credential-source
                       :pathname (merge-pathnames "nous-auth.sexp" root))
        :refresh-request-function
        (lambda (&key method url headers content)

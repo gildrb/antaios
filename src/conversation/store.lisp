@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Conversation Object --
 
@@ -184,7 +184,7 @@
     :type (integer 0)
     :documentation "The count of active-log replacements since this object loaded.")
    (append-lock
-    :initform (make-recursive-lock "Autolith conversation append")
+    :initform (make-recursive-lock "Antaios conversation append")
     :reader conversation-append-lock
     :type t
     :documentation "The lock serializing durable record sequence assignment.")
@@ -263,7 +263,7 @@
     :documentation
     "Transient model-visible resource revisions in FIFO insertion order.")
    (resource-observation-lock
-    :initform (make-recursive-lock "Autolith resource observations")
+    :initform (make-recursive-lock "Antaios resource observations")
     :reader conversation-resource-observation-lock
     :type t
     :documentation
@@ -505,7 +505,7 @@ not yet been told that work from the previous process is gone.")
    :message
    (format
     nil
-    "Conversation ~A is already active in another Autolith process."
+    "Conversation ~A is already active in another Antaios process."
     (conversation-identifier-display identifier))
    :pathname conversation-pathname
    :sequence nil
@@ -1819,7 +1819,7 @@ copied."
    blocks))
 
 (defparameter *conversation-interrupted-tool-output*
-  "Autolith interrupted this tool call before recording its result. The call may have changed external state. Inspect the relevant state before deciding whether to retry it."
+  "Antaios interrupted this tool call before recording its result. The call may have changed external state. Inspect the relevant state before deciding whether to retry it."
   "The provider-visible result synthesized for a tool call with an unknown outcome.")
 
 (-> conversation-append-tool-result
@@ -2696,7 +2696,7 @@ later picker searches read it without scanning the log."
 
 (-> conversation--repair-provider-item-arguments (json-object) json-object)
 (defun conversation--repair-provider-item-arguments (item)
-  "Repair malformed function-call arguments persisted by older Autolith releases."
+  "Repair malformed function-call arguments persisted by older Antaios releases."
   ;; Compatibility reader for records written through v0.46.0. Remove only when
   ;; upgrading from v0.46.x conversation histories is no longer supported.
   (when (and (function-call-item-p item)

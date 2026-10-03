@@ -17,7 +17,7 @@ jobs:
       - name: Validate tag
         shell: bash
         run: |
-          version=$(sed -n 's/^  :version "\([0-9][0-9.]*\)"$/\1/p' autolith.asd)
+          version=$(sed -n 's/^  :version "\([0-9][0-9.]*\)"$/\1/p' antaios.asd)
           test "v$version" = "$GITHUB_REF_NAME"
           test -s "docs/releases/$GITHUB_REF_NAME.md"
 
@@ -31,7 +31,7 @@ jobs:
             gh release create "$GITHUB_REF_NAME" \
               --verify-tag \
               --notes-file "docs/releases/$GITHUB_REF_NAME.md" \
-              --title "Autolith ${GITHUB_REF_NAME#v}"
+              --title "Antaios ${GITHUB_REF_NAME#v}"
           fi
 
   package-linux-x86_64:
@@ -76,7 +76,7 @@ jobs:
       - name: Validate Linux release
         run: |
           ./script/validate-linux-release-artifact \
-            dist/autolith-"$GITHUB_REF_NAME"-x86_64-linux.tar.gz \
+            dist/antaios-"$GITHUB_REF_NAME"-x86_64-linux.tar.gz \
             x86_64-linux x86_64 /lib64/ld-linux-x86-64.so.2
 
       - name: Upload Linux release artifacts
@@ -84,8 +84,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release upload "$GITHUB_REF_NAME" \
-            dist/autolith-"$GITHUB_REF_NAME"-x86_64-linux.tar.gz \
-            dist/autolith-"$GITHUB_REF_NAME"-x86_64-linux.tar.gz.sha256 \
+            dist/antaios-"$GITHUB_REF_NAME"-x86_64-linux.tar.gz \
+            dist/antaios-"$GITHUB_REF_NAME"-x86_64-linux.tar.gz.sha256 \
             --clobber
 
   package-linux-aarch64:
@@ -126,13 +126,13 @@ jobs:
 
       - name: Package Linux release
         env:
-          AUTOLITH_HOST_BOOTSTRAP: "1"
+          ANTAIOS_HOST_BOOTSTRAP: "1"
         run: ./script/ci-package-release dist/
 
       - name: Validate Linux release
         run: |
           ./script/validate-linux-release-artifact \
-            dist/autolith-"$GITHUB_REF_NAME"-aarch64-linux.tar.gz \
+            dist/antaios-"$GITHUB_REF_NAME"-aarch64-linux.tar.gz \
             aarch64-linux aarch64 /lib/ld-linux-aarch64.so.1
 
       - name: Upload Linux release artifacts
@@ -140,8 +140,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release upload "$GITHUB_REF_NAME" \
-            dist/autolith-"$GITHUB_REF_NAME"-aarch64-linux.tar.gz \
-            dist/autolith-"$GITHUB_REF_NAME"-aarch64-linux.tar.gz.sha256 \
+            dist/antaios-"$GITHUB_REF_NAME"-aarch64-linux.tar.gz \
+            dist/antaios-"$GITHUB_REF_NAME"-aarch64-linux.tar.gz.sha256 \
             --clobber
 
   package-linux-x86_64-musl:
@@ -167,9 +167,9 @@ jobs:
               export PATH=/root/.cargo/bin:$PATH
                 export RUSTUP_TOOLCHAIN=1.97.1
               git config --global --add safe.directory "*"
-              AUTOLITH_HOST_BOOTSTRAP=1 ./script/ci-package-release dist/
+              ANTAIOS_HOST_BOOTSTRAP=1 ./script/ci-package-release dist/
               ./script/validate-linux-release-artifact \
-                dist/autolith-"$GITHUB_REF_NAME"-x86_64-linux-musl.tar.gz \
+                dist/antaios-"$GITHUB_REF_NAME"-x86_64-linux-musl.tar.gz \
                 x86_64-linux-musl x86_64 static
             '
 
@@ -178,8 +178,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release upload "$GITHUB_REF_NAME" \
-            dist/autolith-"$GITHUB_REF_NAME"-x86_64-linux-musl.tar.gz \
-            dist/autolith-"$GITHUB_REF_NAME"-x86_64-linux-musl.tar.gz.sha256 \
+            dist/antaios-"$GITHUB_REF_NAME"-x86_64-linux-musl.tar.gz \
+            dist/antaios-"$GITHUB_REF_NAME"-x86_64-linux-musl.tar.gz.sha256 \
             --clobber
 
   package-linux-aarch64-musl:
@@ -205,9 +205,9 @@ jobs:
               export PATH=/root/.cargo/bin:$PATH
                 export RUSTUP_TOOLCHAIN=1.97.1
               git config --global --add safe.directory "*"
-              AUTOLITH_HOST_BOOTSTRAP=1 ./script/ci-package-release dist/
+              ANTAIOS_HOST_BOOTSTRAP=1 ./script/ci-package-release dist/
               ./script/validate-linux-release-artifact \
-                dist/autolith-"$GITHUB_REF_NAME"-aarch64-linux-musl.tar.gz \
+                dist/antaios-"$GITHUB_REF_NAME"-aarch64-linux-musl.tar.gz \
                 aarch64-linux-musl aarch64 static
             '
 
@@ -216,8 +216,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release upload "$GITHUB_REF_NAME" \
-            dist/autolith-"$GITHUB_REF_NAME"-aarch64-linux-musl.tar.gz \
-            dist/autolith-"$GITHUB_REF_NAME"-aarch64-linux-musl.tar.gz.sha256 \
+            dist/antaios-"$GITHUB_REF_NAME"-aarch64-linux-musl.tar.gz \
+            dist/antaios-"$GITHUB_REF_NAME"-aarch64-linux-musl.tar.gz.sha256 \
             --clobber
   package-macos-arm64:
     name: Package macOS arm64
@@ -239,8 +239,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release upload "$GITHUB_REF_NAME" \
-            dist/autolith-"$GITHUB_REF_NAME"-arm64-darwin.tar.gz \
-            dist/autolith-"$GITHUB_REF_NAME"-arm64-darwin.tar.gz.sha256 \
+            dist/antaios-"$GITHUB_REF_NAME"-arm64-darwin.tar.gz \
+            dist/antaios-"$GITHUB_REF_NAME"-arm64-darwin.tar.gz.sha256 \
             --clobber
 
   package-macos-x86_64:
@@ -263,8 +263,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release upload "$GITHUB_REF_NAME" \
-            dist/autolith-"$GITHUB_REF_NAME"-x86_64-darwin.tar.gz \
-            dist/autolith-"$GITHUB_REF_NAME"-x86_64-darwin.tar.gz.sha256 \
+            dist/antaios-"$GITHUB_REF_NAME"-x86_64-darwin.tar.gz \
+            dist/antaios-"$GITHUB_REF_NAME"-x86_64-darwin.tar.gz.sha256 \
             --clobber
 
   package-freebsd-x86_64:
@@ -294,8 +294,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release upload "$GITHUB_REF_NAME" \
-            dist/autolith-"$GITHUB_REF_NAME"-x86_64-freebsd.tar.gz \
-            dist/autolith-"$GITHUB_REF_NAME"-x86_64-freebsd.tar.gz.sha256 \
+            dist/antaios-"$GITHUB_REF_NAME"-x86_64-freebsd.tar.gz \
+            dist/antaios-"$GITHUB_REF_NAME"-x86_64-freebsd.tar.gz.sha256 \
             --clobber
 
   package-netbsd-x86_64:
@@ -334,8 +334,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release upload "$GITHUB_REF_NAME" \
-            dist/autolith-"$GITHUB_REF_NAME"-x86_64-netbsd.tar.gz \
-            dist/autolith-"$GITHUB_REF_NAME"-x86_64-netbsd.tar.gz.sha256 \
+            dist/antaios-"$GITHUB_REF_NAME"-x86_64-netbsd.tar.gz \
+            dist/antaios-"$GITHUB_REF_NAME"-x86_64-netbsd.tar.gz.sha256 \
             --clobber
 
   package-openbsd-x86_64:
@@ -357,7 +357,7 @@ jobs:
             pkg_add bash curl git gmake rust cmake zstd sbcl coreutils gtar-- icu4c
           run: |
               set -eu
-              export HOME=/tmp/autolith-home
+              export HOME=/tmp/antaios-home
               mkdir -p "$HOME"
               for mountpoint in / /usr/local /home /tmp; do
                 if mount | grep " $mountpoint "; then
@@ -372,8 +372,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release upload "$GITHUB_REF_NAME" \
-            dist/autolith-"$GITHUB_REF_NAME"-x86_64-openbsd.tar.gz \
-            dist/autolith-"$GITHUB_REF_NAME"-x86_64-openbsd.tar.gz.sha256 \
+            dist/antaios-"$GITHUB_REF_NAME"-x86_64-openbsd.tar.gz \
+            dist/antaios-"$GITHUB_REF_NAME"-x86_64-openbsd.tar.gz.sha256 \
             --clobber
 
   package-windows-x86_64:

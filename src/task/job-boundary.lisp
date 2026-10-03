@@ -1,8 +1,8 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Non-interactive Job Boundary --
 
-(define-condition run-job-error (autolith-error)
+(define-condition run-job-error (antaios-error)
   ((category
     :initarg :category
     :reader run-job-error-category
@@ -226,8 +226,8 @@
 (-> run-job--envelope-pairs (t) list)
 (defun run-job--envelope-pairs (form)
   "Validate FORM's version-one envelope shape and return field pairs."
-  (unless (and (proper-list-p form) (eq (first form) :autolith-job))
-    (run-job--error ':invalid-envelope "The input must begin with :AUTOLITH-JOB."))
+  (unless (and (proper-list-p form) (eq (first form) :antaios-job))
+    (run-job--error ':invalid-envelope "The input must begin with :ANTAIOS-JOB."))
   (handler-case
       (task--plist-alist
        (rest form)
@@ -277,7 +277,7 @@
 (-> run-job--recover-identifier (t) string)
 (defun run-job--recover-identifier (form)
   "Return FORM's unique bounded identifier, or an empty string when unavailable."
-  (if (and (proper-list-p form) (eq (first form) ':autolith-job))
+  (if (and (proper-list-p form) (eq (first form) ':antaios-job))
       (let ((identifiers nil))
         (loop for tail = (rest form) then (cddr tail)
               while (and (consp tail) (consp (rest tail)))
@@ -376,7 +376,7 @@
      &key result trace-id usage category message started-at finished-at)
   "Return one version-one terminal result envelope."
   (append
-   (list :autolith-job-result :version 1 :id identifier :status status)
+   (list :antaios-job-result :version 1 :id identifier :status status)
    (when (eq status :succeeded) (list :result result))
    (unless (eq status :succeeded)
      (list :failure

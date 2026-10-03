@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Private Image Commits --
 
@@ -208,8 +208,8 @@
            (list "add" "--" relative-directory))
           (image-history--git-command
            configuration
-           (list "-c" "user.name=Autolith"
-                 "-c" "user.email=autolith@localhost"
+           (list "-c" "user.name=Antaios"
+                 "-c" "user.email=antaios@localhost"
                  "commit" "--quiet" "--no-gpg-sign" "--only"
                  "-m" title "--" relative-directory))
           (let ((commit
@@ -646,7 +646,7 @@ running image holds their tracked definitions, so the next commit drops them."
          (entry (list :kind (getf properties :kind)
                       :id (getf properties :id)
                       :target (getf properties :target)
-                      :package (or (getf properties :package) "AUTOLITH")
+                      :package (or (getf properties :package) "ANTAIOS")
                       :source (getf properties :proposed))))
     (multiple-value-bind (present home-package)
         (get-properties properties '(:home-package))
@@ -713,7 +713,7 @@ A definition entry that already records its tracked base keeps it."
    (format nil "Mutation ~A: ~A" (getf entry :id) (getf entry :target)))
   (case (getf entry :kind)
     (:definition
-     (let ((package-name (or (getf entry :package) "AUTOLITH")))
+     (let ((package-name (or (getf entry :package) "ANTAIOS")))
        (format stream "(self-replay-definition ~S ~S"
                package-name (getf entry :source))
        (multiple-value-bind (present home-package)
@@ -744,10 +744,10 @@ A definition entry that already records its tracked base keeps it."
   (image-commit--write-atomically
    pathname
    (lambda (stream)
-     (format stream ";;;; Autolith image reconstruction script~%")
+     (format stream ";;;; Antaios image reconstruction script~%")
      (image-commit--write-comment
       stream (format nil "Commit ~A: ~A" identifier title))
-     (format stream "(in-package #:autolith)~2%")
+     (format stream "(in-package #:antaios)~2%")
      (dolist (entry entries)
        (image-commit--write-entry stream entry)))))
 
@@ -755,7 +755,7 @@ A definition entry that already records its tracked base keeps it."
 ;;;; -- Clean Replay Probe --
 
 (defparameter *image-commit-replay-probe-argument*
-  "--autolith-internal-image-commit-replay-probe"
+  "--antaios-internal-image-commit-replay-probe"
   "The private command argument requesting a clean replay probe.")
 
 (defparameter *image-commit-replay-probe-version* 1
@@ -764,7 +764,7 @@ A definition entry that already records its tracked base keeps it."
 (-> image-commit-replay-probe-output (string) string)
 (defun image-commit-replay-probe-output (identifier)
   "Return the canonical success marker for private commit IDENTIFIER."
-  (format nil "(:AUTOLITH-IMAGE-COMMIT-REPLAY :VERSION ~D :ID ~S)"
+  (format nil "(:ANTAIOS-IMAGE-COMMIT-REPLAY :VERSION ~D :ID ~S)"
           *image-commit-replay-probe-version*
           identifier))
 
@@ -831,7 +831,7 @@ broken commit becomes selectable."
              :tool-name "self.commit"
              :pathname script
              :stage ':replay-probe))
-    (let ((*package* (find-package '#:autolith)))
+    (let ((*package* (find-package '#:antaios)))
       (load script)))
   (image-commit-surface-verify)
   (write-string (image-commit-replay-probe-output identifier)
@@ -859,7 +859,7 @@ signal and the middle is the safe part to drop."
 
 (-> image-commit-replay-probe (configuration pathname string) null)
 (defun image-commit-replay-probe (configuration script identifier)
-  "Require SCRIPT to load successfully in a clean pinned Autolith process.
+  "Require SCRIPT to load successfully in a clean pinned Antaios process.
 
 A failing probe keeps its complete output beside SCRIPT in
 replay-probe.log and carries the output tail in the signaled error, so
@@ -1079,7 +1079,7 @@ definitions the replay skipped are kept in *IMAGE-REPLAY-SKIPS* instead."
                         :history-commit history-commit))
                (pathname (image-commit-script-pathname commit)))
           (handler-case
-              (let ((*package* (find-package '#:autolith))
+              (let ((*package* (find-package '#:antaios))
                     (*image-replay-context*
                       (make-instance
                        'image-replay-context
@@ -1195,7 +1195,7 @@ the actual proposed sources instead. PATHNAME only labels failures."
         (when (non-empty-string-p proposed)
           (handler-case
               (with-input-from-string (stream proposed)
-                (let ((*package* (find-package '#:autolith))
+                (let ((*package* (find-package '#:antaios))
                       (*read-eval* nil)
                       (end-marker (cons nil nil)))
                   (loop for form = (read stream nil end-marker)

@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Localgroup Process Handoff Tests --
 
@@ -40,7 +40,7 @@
   (let* ((site-container
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-handoff-site-tests-~A/" (make-identifier))
+             (format nil "antaios-handoff-site-tests-~A/" (make-identifier))
              (uiop:temporary-directory))))
          (site-root (merge-pathnames "site/" site-container))
          (configuration nil)
@@ -220,7 +220,7 @@
          (application-localgroup-request-handoff application ':take-over)
          (let ((orchestrator
                 (make-instance 'task-orchestrator :pool
-                               (make-job-pool :name "Autolith handoff test" :job-class
+                               (make-job-pool :name "Antaios handoff test" :job-class
                                               'task-job :maximum-concurrency 1
                                               :maximum-batch-size 1 :maximum-live-jobs 1
                                               :maximum-runtime-milliseconds 0
@@ -569,7 +569,7 @@
                   (progn (localgroup-handoff-spawn-fresh configuration) nil)
                 (localgroup-error (condition)
                   (search "did not start"
-                          (autolith-error-message condition))))
+                          (antaios-error-message condition))))
               "a replacement that never starts signals instead of attaching")
              (test-assert
               (= (length (directory

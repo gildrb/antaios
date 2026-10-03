@@ -1,6 +1,6 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
-;;;; -- Autolith Skill Policy --
+;;;; -- Antaios Skill Policy --
 
 (defparameter *skill-selection-character-limit* (* 128 1024)
   "The maximum selected skill instruction characters injected in one request.")
@@ -24,7 +24,7 @@
     :type list
     :documentation "Exact skill names selected during this logical user turn.")
    (lock
-    :initform (make-lock "Autolith skill logical turn")
+    :initform (make-lock "Antaios skill logical turn")
     :reader skill-logical-turn-state-lock
     :type t
     :documentation "The lock serializing selection updates and snapshots."))
@@ -47,7 +47,7 @@
           (copy-list (skill-logical-turn-state-selection-names state)))
         nil)))
 
-(define-condition skill-selection-error (autolith-error)
+(define-condition skill-selection-error (antaios-error)
   ((name
     :initarg :name
     :reader skill-selection-error-name
@@ -148,29 +148,29 @@ SKILL.LOAD selects a skill; catalog text and durable conversation text do not."
 
 (-> skill--catalog-prefix () string)
 (defun skill--catalog-prefix ()
-  "Return the Autolith model-visible skill catalog introduction."
+  "Return the Antaios model-visible skill catalog introduction."
   (format nil
-          "## Skills~2%An Autolith skill is a reusable instruction set stored in SKILL.sexp or standard SKILL.md. The entries below contain metadata and exact source locations only. Descriptions may be shortened to keep this catalog bounded.~2%### Available skills~%"))
+          "## Skills~2%An Antaios skill is a reusable instruction set stored in SKILL.sexp or standard SKILL.md. The entries below contain metadata and exact source locations only. Descriptions may be shortened to keep this catalog bounded.~2%### Available skills~%"))
 
 (-> skill--catalog-guidance () string)
 (defun skill--catalog-guidance ()
-  "Return Autolith skill.load and progressive-disclosure guidance."
+  "Return Antaios skill.load and progressive-disclosure guidance."
   (format nil
-          "~%### Skill rules~%When the user names a listed skill or the task clearly matches a description, call `skill.load` with its exact name before other task actions. Call it once for every applicable skill. Do not read the skill source through `resource.read`; `skill.load` makes Autolith inject only its instruction body ephemerally into subsequent provider requests in this logical turn. Do not carry a skill into later turns unless it is selected again.~2%Before acting, read every selected instruction body completely from request-local context. Resolve linked relative paths from the source file's directory and load only resources needed for the task. Prefer provided scripts and assets. If a skill cannot be read or applied, state that briefly and continue with the best fallback."))
+          "~%### Skill rules~%When the user names a listed skill or the task clearly matches a description, call `skill.load` with its exact name before other task actions. Call it once for every applicable skill. Do not read the skill source through `resource.read`; `skill.load` makes Antaios inject only its instruction body ephemerally into subsequent provider requests in this logical turn. Do not carry a skill into later turns unless it is selected again.~2%Before acting, read every selected instruction body completely from request-local context. Resolve linked relative paths from the source file's directory and load only resources needed for the task. Prefer provided scripts and assets. If a skill cannot be read or applied, state that briefly and continue with the best fallback."))
 
 (-> skill-catalog-render
     (skill-catalog &key (:character-budget (integer 1)))
     (values string (integer 0) (integer 0)))
 (defun skill-catalog-render
     (catalog &key (character-budget *skill-catalog-character-budget*))
-  "Render CATALOG through cl-skills with Autolith-specific selection guidance."
+  "Render CATALOG through cl-skills with Antaios-specific selection guidance."
   (cl-skills:skill-catalog-render
    catalog
    :character-budget character-budget
    :prefix (skill--catalog-prefix)
    :guidance (skill--catalog-guidance)))
 
-;;;; -- Autolith Skill Roots --
+;;;; -- Antaios Skill Roots --
 
 (-> skill-shared-user-root () pathname)
 (defun skill-shared-user-root ()
@@ -179,7 +179,7 @@ SKILL.LOAD selects a skill; catalog text and durable conversation text do not."
 
 (-> skill-roots (configuration) list)
 (defun skill-roots (configuration)
-  "Return skill roots by precedence: project, Autolith user, shared user,
+  "Return skill roots by precedence: project, Antaios user, shared user,
 optional site, and bundled.
 
 The shared user root ~/.agents/skills/ is the cross-agent convention for
@@ -190,7 +190,7 @@ discovered without copying."
      nil
      (list
       (merge-pathnames
-       ".autolith/skills/"
+       ".antaios/skills/"
        (workspace-project-root
         (config :working-directory configuration)))
       (merge-pathnames "skills/"

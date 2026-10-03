@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Request-Local Context Tests --
 
@@ -73,7 +73,7 @@
       (fmakunbound name))
     (unregister-context-contributor identifier)
     (let ((undo (self--definition-undo-action
-                 definition nil (find-package '#:autolith))))
+                 definition nil (find-package '#:antaios))))
       (unwind-protect
            (progn
              (test-assert (definition-form-p definition)
@@ -102,7 +102,7 @@
          (*context-last-delivery-order* nil)
          (state (list 0))
          (*context-test-invocation-state* state)
-         (ready-lock (make-lock "Autolith context test ready"))
+         (ready-lock (make-lock "Antaios context test ready"))
          (ready-condition (make-condition-variable))
          (ready-p nil)
          (thread nil)
@@ -128,7 +128,7 @@
                        (context-resolve-request configuration conversation #())
                      (error (condition)
                        (setf thread-error condition)))))
-               :name "Autolith context serialization test"))
+               :name "Antaios context serialization test"))
         (with-lock-held (ready-lock)
           (loop until ready-p
                 do (condition-wait ready-condition ready-lock)))

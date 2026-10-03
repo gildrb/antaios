@@ -33,9 +33,9 @@ set +e
 constant_matches=$(
   grep -r -n -I -i -E \
     --include='*.lisp' \
-    --include='autolith.asd' \
+    --include='antaios.asd' \
     "$constant_pattern" \
-    "$source_root/autolith.asd" \
+    "$source_root/antaios.asd" \
     "$source_root/src" \
     "$source_root/recovery" \
     "$source_root/server" \
@@ -48,7 +48,7 @@ set -e
 case "$constant_status" in
   0)
     printf '%s\n' \
-      'Autolith source must not declare constants:' \
+      'Antaios source must not declare constants:' \
       "$constant_matches" >&2
     exit 1
     ;;
@@ -56,11 +56,11 @@ case "$constant_status" in
     ;;
   *)
     printf '%s\n' \
-      'Could not inspect Autolith source for constant declarations:' \
+      'Could not inspect Antaios source for constant declarations:' \
       "$constant_matches" >&2
     exit "$constant_status"
     ;;
 esac
 
-exec "$source_root/bin/autolith-runtime" \
+exec "$source_root/bin/antaios-runtime" \
   --script "$source_root/script/check.lisp" "$@"

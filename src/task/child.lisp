@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Task Child Execution --
 
@@ -241,7 +241,7 @@ boundary cannot fit within that budget."
          (context (getf item :context))
          (output (task-output-definition-text definition)))
     (format nil
-            "You are child agent ~A of type ~A, depth ~D. Your specialized role follows.~2%~A~@[~2%Shared parent context:~%~A~]~@[~2%Your yield data must satisfy this native output contract:~%~A~]~2%You are not the primary Autolith session. self.* tools are deliberately unavailable. Work only in ~A. Complete the assignment in the user message. You MUST end by calling yield.submit exactly once. A normal assistant stop without yield is a failed child run. Put the useful parent-facing answer in yield.text and structured data in yield.data when requested."
+            "You are child agent ~A of type ~A, depth ~D. Your specialized role follows.~2%~A~@[~2%Shared parent context:~%~A~]~@[~2%Your yield data must satisfy this native output contract:~%~A~]~2%You are not the primary Antaios session. self.* tools are deliberately unavailable. Work only in ~A. Complete the assignment in the user message. You MUST end by calling yield.submit exactly once. A normal assistant stop without yield is a failed child run. Put the useful parent-facing answer in yield.text and structured data in yield.data when requested."
             (getf identity :id) (task-agent-definition-name definition)
             (1+ (task-parent-depth (task-job-parent-agent job)))
             (task-agent-definition-instructions definition) context output
@@ -375,11 +375,11 @@ boundary cannot fit within that budget."
 (defun task--bounded-output (text)
   "Bound TEXT by configured UTF-8 bytes and lines, marking truncation."
   (let* ((maximum-bytes
-          (task--environment-integer "AUTOLITH_TASK_MAX_OUTPUT_BYTES"
+          (task--environment-integer "ANTAIOS_TASK_MAX_OUTPUT_BYTES"
                                      *task-default-maximum-output-bytes*
                                      :minimum 1))
          (maximum-lines
-          (task--environment-integer "AUTOLITH_TASK_MAX_OUTPUT_LINES"
+          (task--environment-integer "ANTAIOS_TASK_MAX_OUTPUT_LINES"
                                      *task-default-maximum-output-lines*
                                      :minimum 1))
          (lines (task--split-lines (or text "")))

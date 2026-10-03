@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Nous Device Authentication --
 
@@ -112,7 +112,7 @@
   "Display the Nous verification URL and one-time code."
   (declare (ignore client))
   (format stream
-          "~&Sign in with Nous Research:~%  Open: ~A~%  Code: ~A~%~%Continue only if you started this login in Autolith and the browser shows the same code.~%"
+          "~&Sign in with Nous Research:~%  Open: ~A~%  Code: ~A~%~%Continue only if you started this login in Antaios and the browser shows the same code.~%"
           (device-authorization-verification-url authorization)
           (device-authorization-user-code authorization))
   (finish-output stream)

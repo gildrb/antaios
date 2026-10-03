@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- User-Facing Operation Protocol --
 
@@ -94,7 +94,7 @@
 (defvar *application-local-user-evaluation-p* nil
   "Whether evaluation came from one explicit local Lisp submission.")
 
-(define-condition prompt-error (autolith-error)
+(define-condition prompt-error (antaios-error)
   ((reason
     :initarg :reason
     :reader prompt-error-reason
@@ -160,9 +160,9 @@
      (lambda (location)
        (handler-case
            (image-input-validate-pathname location)
-         (autolith-error (condition)
+         (antaios-error (condition)
            (prompt--error ':invalid-image
-                          (autolith-error-message condition)
+                          (antaios-error-message condition)
                           :target location))))
      locations)))
 
@@ -227,7 +227,7 @@
 (defgeneric application-submit-prompt
     (application target input &key prefer-steering-p)
   (:documentation
-   "Submit INPUT to primary AUTOLITH or to one named running child TARGET."))
+   "Submit INPUT to primary ANTAIOS or to one named running child TARGET."))
 
 (-> read-file ((or string pathname)) string)
 (defun read-file (path)
@@ -253,16 +253,16 @@
 
 (-> prompt (&rest t) list)
 (defun prompt (&rest arguments)
-  "Prompt primary Autolith or steer a named running child with optional images."
+  "Prompt primary Antaios or steer a named running child with optional images."
   (unless (typep *application-operation-application* 'application)
     (prompt--error
      ':no-application
-     "PROMPT requires an active local Autolith evaluation."))
+     "PROMPT requires an active local Antaios evaluation."))
   (unless (and arguments (oddp (length arguments)))
     (prompt--error
      ':malformed-arguments
      "Use (prompt [:to TARGET] [:images IMAGES] CONTENT)."))
-  (let ((target 'autolith)
+  (let ((target 'antaios)
         (images nil)
         (target-supplied-p nil)
         (images-supplied-p nil)
@@ -316,7 +316,7 @@ local-user override."
   (list
    (make-instance 'application-local-operation
                   :name "prompt"
-                  :description "Prompt primary Autolith or steer a named running child."
+                  :description "Prompt primary Antaios or steer a named running child."
                   :backend 'prompt)
    (make-instance 'application-local-operation
                   :name "read-file"
@@ -888,7 +888,7 @@ Only top-level EVAL-NOW, a vault control, or a registered operation with literal
 argument forms may run immediately. Arbitrary Lisp and computed operation arguments
 wait for the serialized application boundary."
   (handler-case
-      (let* ((*package* (find-package '#:autolith))
+      (let* ((*package* (find-package '#:antaios))
              (form (self-read-form source :read-eval nil)))
         (cond
           ((application-operation--immediate-vault-form-p form)
@@ -1027,8 +1027,8 @@ wait for the serialized application boundary."
 
 (-> application-operation--function-symbol (non-empty-string) symbol)
 (defun application-operation--function-symbol (name)
-  "Return the AUTOLITH symbol naming canonical operation NAME."
-  (intern (string-upcase name) '#:autolith))
+  "Return the ANTAIOS symbol naming canonical operation NAME."
+  (intern (string-upcase name) '#:antaios))
 
 (defmethod application-command-validate-registration ((command application-command))
   "Reject COMMAND when its canonical Lisp operation would shadow a function."
@@ -1054,7 +1054,7 @@ wait for the serialized application boundary."
       (error 'configuration-error
              :message
              (format nil
-                     "Operation ~A requires an active local Autolith evaluation."
+                     "Operation ~A requires an active local Antaios evaluation."
                      name)))
     (apply #'application-operation-call
            *application-operation-application* name arguments)))

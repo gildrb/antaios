@@ -1,12 +1,12 @@
-#+TITLE: Autolith Context Cost Report
+#+TITLE: Antaios Context Cost Report
 #+STARTUP: content
 
-Where Autolith spends provider tokens it does not need to spend. Reviewed at
+Where Antaios spends provider tokens it does not need to spend. Reviewed at
 master =ba5ac68= against the two pricing mechanisms that matter: raw prompt
 size, and prompt-cache stability (cached input replays at roughly 0.1x list
 price on OpenAI and Anthropic, and on subscription routes a cache miss burns
 the rate-limit window that =later= exists to ration). Sizes below were
-measured in a live image, not estimated from source: the real Autolith workspace
+measured in a live image, not estimated from source: the real Antaios workspace
 configuration, the full default-plus-task tool registry, tokens approximated
 as characters over four.
 
@@ -14,15 +14,15 @@ as characters over four.
 
 | Fixed request prefix              | chars  | ~tokens |
 |-----------------------------------+--------+---------|
-| System prompt (Autolith workspace) | 43,252 | 10,800  |
+| System prompt (Antaios workspace) | 43,252 | 10,800  |
 | Tool definitions, 46 tools        | 48,924 | 12,200  |
 | Total before any history          | 92,176 | 23,000  |
 
 Every provider request carries roughly 23k tokens before the first message of
 history. For comparison, the two OSS inspirations ship a fixed prefix of
 about 3-5k tokens: codex sends ~5 tools and a ~2.5k-token prompt, pi sends ~7
-tools over a static prompt. Autolith's prefix is 5-8x that, which is
-defensible for what Autolith is - but only while the prefix actually caches.
+tools over a static prompt. Antaios's prefix is 5-8x that, which is
+defensible for what Antaios is - but only while the prefix actually caches.
 The findings below show it mostly does not.
 
 The cost shape to keep in mind: a 40-turn conversation that has grown to
@@ -132,7 +132,7 @@ only =todo=, =doing=, =blocked=, and =note= items. Completed history remains
 available through =resource.read agenda:current= without paying to inject it on
 every provider request. The existing complete-line character bound still limits
 unusually large active agendas.
-On the same Autolith workspace, this reduced the live =session-state= contribution
+On the same Antaios workspace, this reduced the live =session-state= contribution
 from 48,291 to 3,153 instruction characters, or about 12,079 to 795 tokens in
 =context-status=.
 
@@ -158,7 +158,7 @@ Measured composition (wire form, encoded names):
   (=system-prompt--web-run-p=). Gate registration on
   =configuration-web-search-mode= and filter it wherever a hosted tool is
   served, mirroring Grok.
-- =lisp= plus =self= are 25 of the 46 tools. They are Autolith's identity,
+- =lisp= plus =self= are 25 of the 46 tools. They are Antaios's identity,
   but several (=self.rollback=, =self.discard=, =agenda.transport=,
   =lisp.discard-image= class of operations) are rare-path administration.
   Worth an audit pass for description length rather than removal: the
@@ -250,11 +250,11 @@ Worth listing so nobody "fixes" it:
 
 * Further measures
 
-** 8. Cache telemetry first: Autolith cannot see its own hit rate
+** 8. Cache telemetry first: Antaios cannot see its own hit rate
 
 No reference to =cached_tokens=, =prompt_cache_hit_tokens=, or
 =cache_read_input_tokens= exists under =src/=, so none of the effects in
-this report are observable from inside Autolith today. Providers report the
+this report are observable from inside Antaios today. Providers report the
 split on every response: OpenAI-family under
 =usage.prompt_tokens_details.cached_tokens=, DeepSeek as
 =prompt_cache_hit_tokens=, Anthropic as =cache_read_input_tokens= and
@@ -344,7 +344,7 @@ provider round trip.
 
 * Method
 
-Measured in a live image at =ba5ac68= with the real Autolith workspace: full
+Measured in a live image at =ba5ac68= with the real Antaios workspace: full
 default registry plus task tools (MCP excluded, so user configurations sit
 above these numbers), Codex wire encoding, =json-encode= lengths, tokens
 approximated as chars/4 (JSON and base64 tokenize denser, so tool figures

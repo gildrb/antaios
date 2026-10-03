@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Lisp Machine Test Support --
 
@@ -215,8 +215,8 @@
                                    :message "requested update"
                                    :tag "v9.9.9")))
       (test-assert
-       (and (typep condition 'autolith-control-condition)
-            (not (typep condition 'autolith-error))
+       (and (typep condition 'antaios-control-condition)
+            (not (typep condition 'antaios-error))
             (not (typep condition 'serious-condition)))
        "process handoff controls use the non-error control hierarchy")
       (let ((selector-calls 0))
@@ -231,7 +231,7 @@
                   (incf selector-calls)
                   (values nil nil)))
                nil)
-           (autolith-control-condition (signaled-condition)
+           (antaios-control-condition (signaled-condition)
              (and (eq signaled-condition condition)
                   (zerop selector-calls))))
          "process handoff controls bypass generic debugger boundaries")))
@@ -250,7 +250,7 @@
              nil)
          (application-operation-loop-action ()
            (zerop selector-calls)))
-       "Autolith control conditions bypass the user restart selector"))
+       "Antaios control conditions bypass the user restart selector"))
     (let ((selector-calls 0))
       (test-assert
        (handler-case
@@ -287,7 +287,7 @@
          (and (eq status ':ok)
               (equal values '(:restart-package))
               (string= selected-restart-name "USE-VALUE"))
-         "restart argument forms read unqualified symbols in AUTOLITH")))
+         "restart argument forms read unqualified symbols in ANTAIOS")))
     (let ((items nil)
           (preferred-index nil))
       (multiple-value-bind
@@ -481,7 +481,7 @@
                                (declare (ignore observed-application))
                                (setf expected-condition condition)))
                             ':failed)
-                           "typed Autolith errors retain expected command handling")))
+                           "typed Antaios errors retain expected command handling")))
                        (test-assert
                         (and (zerop selector-calls)
                              (typep expected-condition 'configuration-error))
@@ -888,7 +888,7 @@
         (unwind-protect
              (progn
                (terminal-ui-start ui)
-               (let ((choices (list "ask-autolith" "AUTOLITH-RECOVERY-1"))
+               (let ((choices (list "ask-antaios" "ANTAIOS-RECOVERY-1"))
                      (cancel-count 0)
                      (all-items-valid-p t)
                      (proposal
@@ -949,7 +949,7 @@
                                    "selected diagnosis recovery returns replacement values")
                       (test-assert (string= selected-restart-name "RETURN-VALUES")
                                    "diagnosis resolves a stable name to its recovery object")))))
-               (let ((choices (list "ask-autolith" "0"))
+               (let ((choices (list "ask-antaios" "0"))
                      (cancel-count 0))
                  (test-call-with-function-replacements
                   (list
@@ -988,7 +988,7 @@
                             (equal values '(:continued))
                             (string= selected-restart-name "CONTINUE"))
                       "selecting a live restart cancels an active diagnosis"))))))
-                (let ((choices (list "ask-autolith" "diagnosis-info" "0"))
+                (let ((choices (list "ask-antaios" "diagnosis-info" "0"))
                       (cancel-count 0)
                       (explanation-visible-p nil))
                   (test-call-with-function-replacements

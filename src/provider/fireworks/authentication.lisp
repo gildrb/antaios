@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 
 ;;;; -- Fireworks API Key Authentication --
@@ -6,9 +6,9 @@
 (define-static-api-key-provider fireworks
   :display-name "Fireworks"
   :environment-variable "FIREWORKS_API_KEY"
-  :source-class autolith-credential-source
+  :source-class antaios-credential-source
   :source-path (configuration-fireworks-auth-path configuration)
-  :login-hint "run autolith auth fireworks")
+  :login-hint "run antaios auth fireworks")
 
 
 ;;;; -- Fireworks API Key Validation --
@@ -29,7 +29,7 @@
         60
         (lambda ()
           (dexador:post
-           (or (uiop:getenv "AUTOLITH_FIREWORKS_PROVIDER_ENDPOINT")
+           (or (uiop:getenv "ANTAIOS_FIREWORKS_PROVIDER_ENDPOINT")
                *fireworks-responses-endpoint*)
            :headers (list (cons "Authorization" (format nil "Bearer ~A" key))
                           (cons "Content-Type" "application/json")

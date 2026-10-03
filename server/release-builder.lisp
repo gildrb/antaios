@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Release Builder Configuration --
 
@@ -6,11 +6,11 @@
   "The default delay between remote release-tag checks.")
 
 (defparameter *release-builder-default-repository*
-  "https://github.com/lambda-symbolics/autolith.git"
+  "https://github.com/gildrb/theseus.git"
   "The public source repository inspected for release tags.")
 
 (defparameter *release-builder-container-image*
-  "autolith-release-builder:ubuntu-22.04"
+  "antaios-release-builder:ubuntu-22.04"
   "The local container image used for portable release builds.")
 
 (defparameter *release-builder-default-container-timeout-seconds* 1800
@@ -150,37 +150,37 @@
    :source-root
    (uiop:ensure-directory-pathname
     (or source-root
-        (let ((configured (uiop:getenv "AUTOLITH_RELEASE_SOURCE_ROOT")))
+        (let ((configured (uiop:getenv "ANTAIOS_RELEASE_SOURCE_ROOT")))
           (and configured (pathname configured)))
-        (asdf:system-source-directory :autolith)))
+        (asdf:system-source-directory :antaios)))
    :state-root
    (uiop:ensure-directory-pathname
     (or state-root
-        (let ((configured (uiop:getenv "AUTOLITH_RELEASE_STATE_ROOT")))
+        (let ((configured (uiop:getenv "ANTAIOS_RELEASE_STATE_ROOT")))
           (and configured (pathname configured)))
-        #p"/var/lib/autolith-release-server/"))
+        #p"/var/lib/antaios-release-server/"))
    :public-root
    (uiop:ensure-directory-pathname
     (or public-root
-        (let ((configured (uiop:getenv "AUTOLITH_RELEASE_PUBLIC_ROOT")))
+        (let ((configured (uiop:getenv "ANTAIOS_RELEASE_PUBLIC_ROOT")))
           (and configured (pathname configured)))
-        #p"/srv/autolith-release-server/"))
+        #p"/srv/antaios-release-server/"))
    :repository (or repository
-                   (uiop:getenv "AUTOLITH_RELEASE_REPOSITORY")
+                   (uiop:getenv "ANTAIOS_RELEASE_REPOSITORY")
                    *release-builder-default-repository*)
    :poll-seconds
    (or poll-seconds
        (release-builder--positive-integer
-        (uiop:getenv "AUTOLITH_RELEASE_POLL_SECONDS")
+        (uiop:getenv "ANTAIOS_RELEASE_POLL_SECONDS")
         *release-builder-default-poll-seconds*
         "release poll interval"))
    :container-command (or container-command
-                          (uiop:getenv "AUTOLITH_RELEASE_CONTAINER_COMMAND")
+                          (uiop:getenv "ANTAIOS_RELEASE_CONTAINER_COMMAND")
                           "docker")
    :container-timeout-seconds
    (or container-timeout-seconds
        (release-builder--positive-integer
-        (uiop:getenv "AUTOLITH_RELEASE_CONTAINER_TIMEOUT_SECONDS")
+        (uiop:getenv "ANTAIOS_RELEASE_CONTAINER_TIMEOUT_SECONDS")
         *release-builder-default-container-timeout-seconds*
         "release container timeout"))))
 
@@ -332,7 +332,7 @@ semantic order so a temporary builder outage cannot skip a version."
   "Read the single ASDF version declared by CHECKOUT."
   (let ((prefix "  :version \"")
         (versions nil))
-    (with-open-file (stream (merge-pathnames "autolith.asd" checkout)
+    (with-open-file (stream (merge-pathnames "antaios.asd" checkout)
                             :direction ':input
                             :external-format ':utf-8)
       (loop for line = (read-line stream nil nil)
@@ -388,7 +388,7 @@ tree intact lets one tag's object files fail a later tag's checks."
 (-> release-builder--container-name (release-source-tag) string)
 (defun release-builder--container-name (source-tag)
   "Return a unique managed container name for SOURCE-TAG."
-  (format nil "autolith-release-builder-~A-~D"
+  (format nil "antaios-release-builder-~A-~D"
           (release-source-tag-name source-tag)
           (sb-posix:getpid)))
 
@@ -761,7 +761,7 @@ tree intact lets one tag's object files fail a later tag's checks."
                  (t
                   (release-builder--install-artifact archive published-archive)
                   (release-builder--install-artifact checksum published-checksum)
-                  (format t "~&Added ~A to Autolith ~A.~%" archive-name tag)
+                  (format t "~&Added ~A to Antaios ~A.~%" archive-name tag)
                   (finish-output))))))
       (sb-posix:chmod (namestring target) #o555))
     target)
@@ -803,7 +803,7 @@ tree intact lets one tag's object files fail a later tag's checks."
                                    temporary))))
     (sb-posix:chmod (namestring temporary) #o555)
     (rename-file temporary target)
-    (format t "~&Published Autolith ~A at ~A.~%" tag target)
+    (format t "~&Published Antaios ~A at ~A.~%" tag target)
     (finish-output)
       target))
 
@@ -830,7 +830,7 @@ tree intact lets one tag's object files fail a later tag's checks."
              :public-root (release-builder-configuration-public-root configuration))
             tag)))
       (t
-       (format t "~&Waiting for the GitHub Linux archive of Autolith ~A.~%" tag)
+       (format t "~&Waiting for the GitHub Linux archive of Antaios ~A.~%" tag)
        (finish-output)
        nil))))
 
@@ -852,7 +852,7 @@ tree intact lets one tag's object files fail a later tag's checks."
 (-> release-builder-run (release-builder-configuration) null)
 (defun release-builder-run (configuration)
   "Poll forever, building and publishing newly tagged releases."
-  (format t "~&Autolith release builder polling ~A every ~D seconds.~%"
+  (format t "~&Antaios release builder polling ~A every ~D seconds.~%"
           (release-builder-configuration-repository configuration)
           (release-builder-configuration-poll-seconds configuration))
   (finish-output)

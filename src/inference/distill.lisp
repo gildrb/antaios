@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Trace-Driven Policy Distillation --
 
@@ -103,7 +103,7 @@ evaluates or installs the method."
     (let ((form
             (with-standard-io-syntax
               (let ((*read-eval* nil)
-                    (*package* (find-package '#:autolith)))
+                    (*package* (find-package '#:antaios)))
                 (multiple-value-bind (form position)
                     (handler-case
                         (read-from-string method-source)

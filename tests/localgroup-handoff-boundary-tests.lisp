@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Localgroup Handoff Boundary Tests --
 
@@ -23,7 +23,7 @@
          (startup-cancelled-p nil)
          (claimed-pathname nil)
          (claim-thread nil)
-         (claim-lock (make-lock "Autolith claimed handoff race"))
+         (claim-lock (make-lock "Antaios claimed handoff race"))
          (claim-entered-p nil)
          (release-claim-p nil))
     (unwind-protect
@@ -57,7 +57,7 @@
                                     (localgroup-handoff-begin-startup record)
                                     nil)
                                 (localgroup-error () t)))))
-                    :name "Autolith delayed handoff startup"))
+                    :name "Antaios delayed handoff startup"))
              (test-assert
               (localgroup-handoff--stop-replacement process pathname)
               "timeout cancellation positively reaps the launched process")
@@ -87,7 +87,7 @@
                                   (sleep 0.01))
                                 0)))
                         (localgroup-handoff-begin-startup record)))
-                    :name "Autolith claimed handoff race"))
+                    :name "Antaios claimed handoff race"))
              (test-assert
               (task-tests--wait-until
                (lambda ()

@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Recording Terminal --
 
@@ -186,7 +186,7 @@
 (defun test-terminal-primary-screen-controls ()
   "Test primary-screen rendering, bounded live updates, and finalized deduplication."
   (let* ((terminal (make-instance 'recording-terminal :columns 24))
-         (ui (terminal-ui-create :terminal terminal :prompt "autolith> ")))
+         (ui (terminal-ui-create :terminal terminal :prompt "antaios> ")))
     (with-terminal-ui (active-ui ui)
       (terminal-ui-set-status active-ui "working")
       (terminal-ui-process-event active-ui '(:insert "hello"))
@@ -426,7 +426,7 @@
 
 (-> test-terminal-line-editor () null)
 (defun test-terminal-line-editor ()
-  "Test Autolith event dispatch, submission, control policy, and reader actions."
+  "Test Antaios event dispatch, submission, control policy, and reader actions."
   (let* ((raw-content
            (format nil "a~Cb~Cc~Cd"
                    #\Tab #\Return *terminal-escape-character*))
@@ -857,9 +857,9 @@
   "Test notice updates never wait behind ordinary presentation work."
   (let* ((terminal (make-instance 'recording-terminal :columns 60))
          (ui (terminal-ui-create :terminal terminal))
-         (state-lock (make-lock "Autolith notice contention test"))
+         (state-lock (make-lock "Antaios notice contention test"))
          (condition (make-condition-variable
-                     :name "Autolith notice contention test"))
+                     :name "Antaios notice contention test"))
          (ui-lock-held-p nil)
          (release-ui-lock-p nil)
          (notice-call-returned-p nil)
@@ -877,7 +877,7 @@
                         (condition-notify condition)
                         (unless release-ui-lock-p
                           (condition-wait condition state-lock :timeout 2)))))
-                  :name "Autolith notice lock holder"))
+                  :name "Antaios notice lock holder"))
            (test-assert
             (task-tests--wait-until
              (lambda ()
@@ -892,7 +892,7 @@
                     (with-lock-held (state-lock)
                       (setf notice-call-returned-p t)
                       (condition-notify condition)))
-                  :name "Autolith nonblocking notice setter"))
+                  :name "Antaios nonblocking notice setter"))
            (test-assert
             (task-tests--wait-until
              (lambda ()
@@ -1492,13 +1492,13 @@
       (recording-terminal-reset terminal)
       (terminal-ui-stream-update
        active-ui
-       :rows (list (list (terminal-span :brand "● autolith"))
+       :rows (list (list (terminal-span :brand "● antaios"))
                    (list (terminal-span :plain "  first line")))
        :tail "  partial")
       (let ((output (recording-terminal-output terminal)))
         (test-assert (= (length (recording-terminal-chunks terminal)) 1)
                      "committed rows and tail use one terminal write")
-        (test-assert (search "● autolith" output)
+        (test-assert (search "● antaios" output)
                      "streamed rows append the block header")
         (test-assert (search "  first line" output)
                      "streamed rows append committed lines")
@@ -1578,8 +1578,8 @@
            '((:name "/help" :argument nil :description "show this reference")
              (:name "/resume" :argument "ID" :description "load a conversation")
              (:name "/rollback" :argument "ID" :description "select a generation")
-             (:name "/quit" :argument nil :description "leave Autolith")
-             (:name "/exit" :argument nil :description "leave Autolith (alias of /quit)"
+             (:name "/quit" :argument nil :description "leave Antaios")
+             (:name "/exit" :argument nil :description "leave Antaios (alias of /quit)"
               :primary "/quit")))
          (ui (terminal-ui-create :terminal terminal
                                  :completions completions)))
@@ -1661,7 +1661,7 @@
                      "history recall restores the newest command")
         (test-assert (not (terminal-ui-completion-active-p active-ui))
                      "history recall does not begin completion")
-        (test-assert (not (search "leave Autolith"
+        (test-assert (not (search "leave Antaios"
                                   (recording-terminal-output terminal)))
                      "history recall does not paint command suggestions")
          (test-assert
@@ -1878,7 +1878,7 @@
   (let ((root
           (uiop:ensure-directory-pathname
            (merge-pathnames
-            (format nil "autolith-path-completion-~A/" (make-identifier))
+            (format nil "antaios-path-completion-~A/" (make-identifier))
             (uiop:temporary-directory)))))
     (unwind-protect
          (let* ((docs (merge-pathnames "docs/" root))

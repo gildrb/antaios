@@ -1,11 +1,11 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- ChatGPT OAuth Test Support --
 
 (defvar *chatgpt-test-saved-credentials* nil
   "Credentials observed by the ChatGPT recording source.")
 
-(defclass chatgpt-test-credential-source (autolith-credential-source)
+(defclass chatgpt-test-credential-source (antaios-credential-source)
   ()
   (:documentation "A ChatGPT credential source that records test writes."))
 
@@ -97,7 +97,7 @@
             :code-challenge "challenge-test"
             :issuer "https://issuer.test/"
             :client-id "client-test"
-            :originator "autolith-test")))
+            :originator "antaios-test")))
     (test-assert (string= (subseq url 0 (position #\? url))
                           "https://issuer.test/oauth/authorize")
                  "ChatGPT authorization uses the configured issuer")
@@ -111,7 +111,7 @@
                ("id_token_add_organizations" . "true")
                ("codex_cli_simplified_flow" . "true")
                ("state" . "state-test")
-               ("originator" . "autolith-test")))
+               ("originator" . "antaios-test")))
       (test-assert
        (string= (chatgpt-test--parameter url (first case)) (rest case))
        (format nil "ChatGPT authorization includes ~A" (first case)))))
@@ -275,7 +275,7 @@
           (null browser-setting)
           (null device-setting)
           (string= browser-message
-                   "ChatGPT authentication was saved by Autolith.")
+                   "ChatGPT authentication was saved by Antaios.")
           (string= device-message browser-message))
      "The ChatGPT auth command offers browser and device OAuth")
     (test-assert

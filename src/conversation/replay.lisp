@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Read-only Conversation Replay --
 
@@ -624,7 +624,7 @@ A bare HH:MM[:SS] value uses the selected record's local date."
   (let* ((conversation (conversation-replay-load configuration identifier))
          (session (conversation-replay-create conversation)))
     (conversation-replay-apply-selection session selection)
-    (format output "~&Autolith replay ~A~@[  ~A~]~%"
+    (format output "~&Antaios replay ~A~@[  ~A~]~%"
             (conversation-identifier-display
              (conversation-identifier conversation))
             (conversation-title conversation))
@@ -640,7 +640,7 @@ A bare HH:MM[:SS] value uses the selected record's local date."
           (handler-case
               (unless (conversation-replay-execute-command session line output)
                 (return))
-            (autolith-error (condition)
+            (antaios-error (condition)
               (format output "~A~%" condition))
             (error (condition)
               (format output "~A~%" condition)))))))

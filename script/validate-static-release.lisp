@@ -4,29 +4,29 @@
        (source-root
          (and (first arguments)
               (uiop:ensure-directory-pathname (first arguments))))
-       (library (uiop:getenv "AUTOLITH_FFF_LIBRARY"))
+       (library (uiop:getenv "ANTAIOS_FFF_LIBRARY"))
        (cache-root
          (merge-pathnames
-          (format nil "autolith-static-smoke-~D/" (get-universal-time))
+          (format nil "antaios-static-smoke-~D/" (get-universal-time))
           (uiop:temporary-directory))))
   (labels ((fail (control &rest values)
              "Signal a static release smoke-test failure."
              (error "Static release smoke test failed: ~?" control values))
 
            (load-project ()
-             "Load the locked Autolith system from SOURCE-ROOT."
+             "Load the locked Antaios system from SOURCE-ROOT."
              (let ((setup (merge-pathnames ".qlot/setup.lisp" source-root)))
                (unless (probe-file setup)
                  (fail "locked dependencies are absent."))
                (load setup)
-               (asdf:load-asd (merge-pathnames "autolith.asd" source-root))
-               (asdf:load-system :autolith))))
+               (asdf:load-asd (merge-pathnames "antaios.asd" source-root))
+               (asdf:load-system :antaios))))
     (handler-case
         (progn
           (unless (and (= (length arguments) 1) source-root)
             (fail "usage: validate-static-release.lisp SOURCE"))
           (unless (and library (probe-file library))
-            (fail "AUTOLITH_FFF_LIBRARY does not name the runtime."))
+            (fail "ANTAIOS_FFF_LIBRARY does not name the runtime."))
           (load-project)
           (unless (find ':number
                         (uiop:symbol-call
@@ -48,11 +48,11 @@
                  (let ((result
                          (uiop:symbol-call
                           :clifff :engine-search-files
-                          engine "autolith.asd" :page-size 1)))
-                   (unless (find "autolith.asd" (getf result :items)
+                          engine "antaios.asd" :page-size 1)))
+                   (unless (find "antaios.asd" (getf result :items)
                                  :key (lambda (item) (getf item :path))
                                  :test #'string=)
-                     (fail "FFF did not find autolith.asd.")))
+                     (fail "FFF did not find antaios.asd.")))
               (uiop:symbol-call :clifff :engine-close engine)))
           (format t "~&Static native smoke test passed.~%"))
       (error (condition)

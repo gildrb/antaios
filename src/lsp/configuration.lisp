@@ -1,9 +1,9 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Native LSP Configuration --
 
 (defparameter *lsp-configuration-version* 1
-  "The native LSP configuration version accepted by Autolith.")
+  "The native LSP configuration version accepted by Antaios.")
 (defparameter *lsp-configuration-maximum-bytes* (* 256 1024)
   "The maximum byte length of lsp.sexp.")
 (defparameter *lsp-configuration-maximum-servers* 32

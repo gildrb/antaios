@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Durable Mutation Checks --
 
@@ -18,7 +18,7 @@ in-image gate only has to prove the rendered source is structurally sound."))
 (defclass full-suite-mutation-checker (mutation-checker)
   ()
   (:documentation
-   "A checker running the complete in-image Autolith test suite.
+   "A checker running the complete in-image Antaios test suite.
 
 This is minutes of silent work, needs the test system loadable beside the
 active image, and inherits whatever dynamic state the live session holds,
@@ -43,14 +43,14 @@ so it is opt-in rather than the default commit gate."))
     ((checker full-suite-mutation-checker)
      (configuration configuration)
      (definition-source string))
-  "Run Autolith's ASDF tests against the installed active-image definition."
+  "Run Antaios's ASDF tests against the installed active-image definition."
   (declare (ignore checker configuration definition-source))
   (with-output-to-string (stream)
     (let ((*standard-output* stream)
           (*error-output* stream)
           (*trace-output* stream)
            (*skill-logical-turn-state* nil))
-      (asdf:test-system :autolith))))
+      (asdf:test-system :antaios))))
 
 (defmethod mutation-checker-check-active
     ((checker callback-mutation-checker)
@@ -415,7 +415,7 @@ Historical journals may name tracked src/ files or retired overlay paths."
                (self--definition-state-undo-action
                 definition
                 (and (non-empty-string-p previous-source) previous-source)
-                (find-package '#:autolith)))
+                (find-package '#:antaios)))
              (mutation
                (durable-mutation-create configuration
                                         definition
@@ -446,7 +446,7 @@ Historical journals may name tracked src/ files or retired overlay paths."
                        (list (list :kind ':definition
                                    :id (durable-mutation-identifier mutation)
                                    :target target
-                                   :package "AUTOLITH"
+                                   :package "ANTAIOS"
                                    :home-package home-package
                                    :source definition-source))
                        :identifier commit-identifier)))

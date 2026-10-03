@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Agent Events --
 
@@ -66,7 +66,7 @@
     :type agent-observer
     :documentation "The observer receiving callbacks under the serialization lock.")
    (lock
-    :initform (make-recursive-lock "Autolith agent observer callbacks")
+    :initform (make-recursive-lock "Antaios agent observer callbacks")
     :reader serialized-agent-observer-lock
     :documentation "The recursive lock serializing callbacks from tool workers."))
   (:documentation
@@ -118,7 +118,7 @@
     :type boolean
     :documentation "Whether provider requests use the urgent execution profile.")
    (turn-lock
-    :initform (make-lock "Autolith agent turn")
+    :initform (make-lock "Antaios agent turn")
     :reader agent-turn-lock
     :documentation "The lock preventing concurrent mutation of conversation turn state."))
   (:documentation "A model-driven conversation loop with namespaced Common Lisp tools."))
@@ -155,7 +155,7 @@ needs the few most recent calls to recognize an oscillation."
 
 ;;;; -- Agent Conditions --
 
-(define-condition agent-loop-error (autolith-error)
+(define-condition agent-loop-error (antaios-error)
   ((conversation-id
     :initarg :conversation-id
     :reader agent-loop-error-conversation-id
@@ -817,12 +817,12 @@ restricted turn cannot discover tools outside its allowlist."
            (cond
              (identical-p
               (format nil
-                      "Autolith withheld repeated call ~A after ~D matching calls this turn. Reassess the approach before choosing another mutating action."
+                      "Antaios withheld repeated call ~A after ~D matching calls this turn. Reassess the approach before choosing another mutating action."
                       tool-name
                       (1- *agent-tool-storm-identical-call-limit*)))
              (oscillation-p
               (format nil
-                      "Autolith withheld call ~A because the recent mutating calls formed an A-B-A-B oscillation. Reassess the approach before retrying."
+                      "Antaios withheld call ~A because the recent mutating calls formed an A-B-A-B oscillation. Reassess the approach before retrying."
                       tool-name)))))
     (incf (gethash signature repetitions 0))
     (setf history (append history (list signature)))
@@ -1057,7 +1057,7 @@ restricted turn cannot discover tools outside its allowlist."
                   (lambda ()
                     (tool-registry-execute-call
                      (agent-tool-registry agent) call context))))))
-      ((or autolith-control-condition
+      ((or antaios-control-condition
            serious-condition)
        (failure)
         (setf condition failure)))
@@ -1195,7 +1195,7 @@ worker results become explicit unknown outcomes so provider history stays valid.
               (agent--execute-tool-plan
                agent (first plans) observer tool-restriction-p t))
         (let ((next-index 0)
-              (claim-lock (make-lock "Autolith tool wave claims"))
+              (claim-lock (make-lock "Antaios tool wave claims"))
               (threads nil)
               (thread-creation-condition nil)
               (thread-join-condition nil))
@@ -1225,7 +1225,7 @@ worker results become explicit unknown outcomes so provider history stays valid.
                                (push
                                  (make-thread
                                   (agent--tool-thread-function #'work)
-                                  :name "autolith-tool-call")
+                                  :name "antaios-tool-call")
                                 threads)
                              (serious-condition (condition)
                                (setf thread-creation-condition condition))))

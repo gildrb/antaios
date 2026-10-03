@@ -1,10 +1,10 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Durable Settings --
 
 (defclass preferences-store (setting-store)
   ((lock
-    :initform (make-lock "Autolith preferences store")
+    :initform (make-lock "Antaios preferences store")
     :reader preferences-store-lock
     :type t
     :documentation "The lock serializing preferences file reads and writes."))

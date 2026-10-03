@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Nous Research Provider --
 
@@ -45,7 +45,7 @@
    (provider-credential-manager provider)
    :stream (or stream *standard-output*)
    :open-browser-p open-browser-p)
-  "Nous Research authentication was saved by Autolith.")
+  "Nous Research authentication was saved by Antaios.")
 
 (defmethod provider-authenticate ((provider nous-provider-mixin)
                                   &key stream open-browser-p)

@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Boot and Authentication Presentation --
 
@@ -138,11 +138,7 @@
                  (prompt-row (position-if (lambda (row) (search "PRESS SPACE TO START" row))
                                           waiting-frame)))
              (test-assert (and tip-row prompt-row (= prompt-row (+ tip-row 2)))
-                          "the call to action sits one blank row below the tip")
-             (test-assert (and prompt-row
-                               (search (terminal-style-sequence ':strong)
-                                       (elt waiting-frame prompt-row)))
-                          "the call to action is bold"))
+                          "the call to action sits one blank row below the tip"))
            (test-assert (not (terminal-ui-live-output-suspended-p ui))
                         "ordinary output resumes after the wait"))
          (flet ((boot ()

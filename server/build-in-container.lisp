@@ -14,7 +14,7 @@
        (quicklisp-setup (and home (merge-pathnames "quicklisp/setup.lisp" home)))
        (quicklisp-installer
          (and state-root (merge-pathnames "quicklisp.lisp" state-root)))
-       (runtime-command (uiop:getenv "AUTOLITH_SBCL")))
+       (runtime-command (uiop:getenv "ANTAIOS_SBCL")))
   (labels ((run (command &key directory)
              "Run one container build COMMAND with inherited terminal streams."
              (uiop:run-program command
@@ -27,7 +27,7 @@
           (unless (and (= (length arguments) 3)
                        source-root state-root output-root runtime-command)
             (error
-             "usage: build-in-container.lisp SOURCE STATE OUTPUT with AUTOLITH_SBCL"))
+             "usage: build-in-container.lisp SOURCE STATE OUTPUT with ANTAIOS_SBCL"))
           (unless (probe-file quicklisp-setup)
             (run
              (list "curl" "--fail" "--location" "--show-error" "--retry" "3"
@@ -43,7 +43,7 @@
           (run (list "./script/build-release" (namestring output-root))
                :directory source-root))
       (error (condition)
-        (format *error-output* "~&Autolith container build failed: ~A~%"
+        (format *error-output* "~&Antaios container build failed: ~A~%"
                 condition)
         (finish-output *error-output*)
         (uiop:quit 1)))))

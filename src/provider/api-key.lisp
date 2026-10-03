@@ -1,11 +1,11 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Persistent API-Key Credential Sources --
 
 (defparameter *api-key-store-version* 1
-  "The portable version of Autolith's OpenAI-compatible API-key store.")
+  "The portable version of Antaios's OpenAI-compatible API-key store.")
 
-(defclass api-key-credential-source (autolith-credential-source)
+(defclass api-key-credential-source (antaios-credential-source)
   ((provider-name
     :initarg :provider-name
     :reader api-key-credential-source-provider-name
@@ -40,7 +40,7 @@
 (defun api-key--invalid-store (pathname)
   "Signal that PATHNAME is not a valid private API-key store."
   (error 'authentication-error
-         :message (format nil "Invalid Autolith API-key store at ~A." pathname)))
+         :message (format nil "Invalid Antaios API-key store at ~A." pathname)))
 
 (-> api-key--entry-provider-name (list) (option string))
 (defun api-key--entry-provider-name (entry)
@@ -309,7 +309,7 @@
 
 (defmethod credential-manager-login-hint ((manager api-key-credential-manager))
   "Describe the command that stores this provider's API key."
-  (format nil "run autolith auth ~A to enter it"
+  (format nil "run antaios auth ~A to enter it"
           (credential-manager-provider-label manager)))
 
 (defmethod credential-manager-refreshable-p ((manager api-key-credential-manager))
@@ -396,7 +396,7 @@ never retains the resulting credential after this call."
   (merge-pathnames
    (format nil "~A-auth.sexp" account-id)
    (merge-pathnames
-    "autolith/"
+    "antaios/"
     (environment-directory
      "XDG_STATE_HOME"
      (merge-pathnames ".local/state/" (user-homedir-pathname))))))
@@ -449,7 +449,7 @@ never retains the resulting credential after this call."
    "A read-only source that reads one provider API key from a file on each request.
 
 The file belongs to whoever issues the key, so a rotated key takes effect without
-re-entering it in Autolith's private store."))
+re-entering it in Antaios's private store."))
 
 (defmethod credential-source-load ((source file-api-key-credential-source))
   "Load SOURCE's API key from its file into request scope.
@@ -490,7 +490,7 @@ AUTHENTICATION-ERROR when it cannot be read."
 
 (defmethod credential-source-save ((source file-api-key-credential-source)
                                    (credentials oauth-credentials))
-  "Reject writes: the key file is owned by the key issuer, not by Autolith."
+  "Reject writes: the key file is owned by the key issuer, not by Antaios."
   (declare (ignore credentials))
   (error 'authentication-error
          :message
@@ -648,4 +648,4 @@ AUTHENTICATION-ERROR when it cannot be read."
        (when validate
          (funcall validate key))
        (api-key-credential-manager-persist-key manager key)
-       (format nil "~A authentication was saved by Autolith." label)))))
+       (format nil "~A authentication was saved by Antaios." label)))))

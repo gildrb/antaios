@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- FiveAM Suite Registration --
 
@@ -20,7 +20,7 @@
 
 Each case is an existing zero-argument function, invoked inside a FiveAM test.
 Reloading a suite replaces its registration without duplicating cases."
-  (let ((suite (intern (format nil "TEST-SUITE-~A" name) '#:autolith))
+  (let ((suite (intern (format nil "TEST-SUITE-~A" name) '#:antaios))
         (label (string-downcase name)))
     `(progn
        (fiveam:def-suite ,suite)
@@ -148,5 +148,5 @@ Include each case's timing unless CASE-TIMINGS-P is NIL."
 Use script/check --jobs N for process-isolated parallel execution."
   (let ((result (tests-run-cases (tests-select :suites suites :tests tests))))
     (unless (tests-report result *standard-output* :case-timings-p nil)
-      (error "Autolith tests failed."))
+      (error "Antaios tests failed."))
     t))

@@ -22,7 +22,7 @@ Some Quicklisp releases carry test fixtures named with characters such as
 < (nyaml does), and the client's tarball unpacker aborts the whole release on
 the first such entry. On Windows those entries are consumed and reported
 instead, so the rest of the release installs; the skipped files are never
-loaded by Autolith."
+loaded by Antaios."
   (let* ((package (find-package "QL-MINITAR"))
          (save-file (and package (find-symbol "SAVE-FILE" package))))
     (unless (and save-file (fboundp save-file))
@@ -44,7 +44,7 @@ loaded by Autolith."
        (quicklisp-setup (merge-pathnames "quicklisp/setup.lisp"
                                          (user-homedir-pathname))))
   (unless (probe-file quicklisp-setup)
-    (error "Autolith bootstrap needs Quicklisp at ~A" quicklisp-setup))
+    (error "Antaios bootstrap needs Quicklisp at ~A" quicklisp-setup))
   (load quicklisp-setup)
   (uiop:symbol-call '#:ql '#:quickload :cffi :silent t)
   (let ((profile-library-directory

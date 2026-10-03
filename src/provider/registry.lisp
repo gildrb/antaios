@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Provider Model Metadata --
 
@@ -142,7 +142,7 @@
   "The next monotonic provider registration sequence number.")
 
 (defvar *provider-registry-lock*
-  (make-recursive-lock "Autolith provider registry")
+  (make-recursive-lock "Antaios provider registry")
   "The recursive lock protecting provider registration layers.")
 
 (defparameter *provider-registration-sources*
@@ -153,7 +153,7 @@
   "The portable version of the successful provider model cache.")
 
 (defvar *provider-model-cache-lock*
-  (make-lock "Autolith provider model cache")
+  (make-lock "Antaios provider model cache")
   "The lock protecting provider model cache read-modify-write operations.")
 
 

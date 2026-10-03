@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Built-in Provider Registrations --
 
@@ -37,7 +37,7 @@
   (gemini-oauth-login (provider-credential-manager provider)
                       :stream (or stream *standard-output*)
                       :open-browser-p open-browser-p)
-  "Gemini authentication was saved by Autolith.")
+  "Gemini authentication was saved by Antaios.")
 
 (-> provider--nous-registration-factory
     (configuration &key (:reasoning-summaries-p boolean))

@@ -11,11 +11,11 @@ RUN apt-get update \
 
 COPY --from=rust-toolchain /usr/local/cargo /usr/local/cargo
 COPY --from=rust-toolchain /usr/local/rustup /usr/local/rustup
-COPY build-in-container /usr/local/libexec/autolith-release-build
+COPY build-in-container /usr/local/libexec/antaios-release-build
 
 ENV CARGO_HOME=/usr/local/cargo \
     RUSTUP_HOME=/usr/local/rustup \
     RUSTUP_TOOLCHAIN=1.97.1 \
     PATH=/usr/local/cargo/bin:$PATH
 
-ENTRYPOINT ["/bin/bash", "/usr/local/libexec/autolith-release-build"]
+ENTRYPOINT ["/bin/bash", "/usr/local/libexec/antaios-release-build"]

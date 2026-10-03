@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Project Adaptation Tests --
 
@@ -65,12 +65,12 @@
            (let* ((configuration
                     (configuration-copy base :working-directory nested))
                   (project-root (workspace-project-root nested))
-                  (notes (workspace-autolith-notes-path nested))
+                  (notes (workspace-antaios-notes-path nested))
                   (now 4000000000))
              (configuration-ensure-directories configuration)
              (test-assert (equal project-root (truename repository))
                           "project identity walks from a nested workspace to Git")
-             (test-assert (equal notes (merge-pathnames "AUTOLITH.org" repository))
+             (test-assert (equal notes (merge-pathnames "ANTAIOS.org" repository))
                           "adaptation notes live only at the project root")
              (test-assert
               (project-adaptation-offer-due-p configuration project-root now)
@@ -118,7 +118,7 @@
                                        :if-exists ':supersede
                                        :if-does-not-exist ':create)
                  (write-string
-                  "#.(setf autolith::*project-adaptation-test-read-eval-p* t)"
+                  "#.(setf antaios::*project-adaptation-test-read-eval-p* t)"
                   stream))
                (test-assert
                 (handler-case
@@ -293,7 +293,7 @@
                  (test-assert
                   (and (probe-file notes)
                        (search "Created" create-output))
-                  "the default offer choice creates AUTOLITH.org"))
+                  "the default offer choice creates ANTAIOS.org"))
                (delete-file notes)
                (delete-file
                 (configuration-project-adaptation-offers-path configuration))
@@ -365,7 +365,7 @@
                (test-assert
                 (null
                  (project-adaptation--context-contributor compaction-request))
-                "AUTOLITH.org advice is absent from compaction context")
+                "ANTAIOS.org advice is absent from compaction context")
                (let* ((provider (provider-create configuration))
                       (normal-request
                         (provider-request-object provider conversation #()))

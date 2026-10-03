@@ -1,10 +1,10 @@
 ;;;; Runtime provisioning shared by the PowerShell launchers.
 
-;;; bin/autolith-runtime.ps1 selects an SBCL that satisfies sbcl.version and
-;;; runs this script in it. The script mirrors the rest of bin/autolith-runtime:
+;;; bin/antaios-runtime.ps1 selects an SBCL that satisfies sbcl.version and
+;;; runs this script in it. The script mirrors the rest of bin/antaios-runtime:
 ;;; it records the runtime command for later launches, installs the matching
-;;; SBCL source tree when asked, exports AUTOLITH_SBCL and
-;;; AUTOLITH_SBCL_SOURCE_ROOT, and then loads the requested Lisp entry point
+;;; SBCL source tree when asked, exports ANTAIOS_SBCL and
+;;; ANTAIOS_SBCL_SOURCE_ROOT, and then loads the requested Lisp entry point
 ;;; with the remaining arguments as its command line.
 ;;;
 ;;; Usage: sbcl --script script/runtime.lisp [--install] --script PATH [ARGUMENT...]
@@ -21,7 +21,7 @@
 
 (defun runtime-fail (control &rest arguments)
   "Report a runtime setup failure and exit with status 1."
-  (format *error-output* "~&Autolith runtime setup failed: ~?~%" control arguments)
+  (format *error-output* "~&Antaios runtime setup failed: ~?~%" control arguments)
   (finish-output *error-output*)
   (uiop:quit 1))
 
@@ -121,7 +121,7 @@
 
 (defun runtime-configured-source (version)
   "Return the explicit matching SBCL source directory, or NIL."
-  (let ((configured (uiop:getenv "AUTOLITH_SBCL_SOURCE_ROOT")))
+  (let ((configured (uiop:getenv "ANTAIOS_SBCL_SOURCE_ROOT")))
     (when (and configured (plusp (length configured)))
       (let ((directory (uiop:ensure-directory-pathname
                         (uiop:parse-native-namestring configured))))
@@ -131,7 +131,7 @@
                       (merge-pathnames "version.lisp-expr" directory)
                       version))
           (runtime-fail
-           "AUTOLITH_SBCL_SOURCE_ROOT does not contain matching SBCL ~A source."
+           "ANTAIOS_SBCL_SOURCE_ROOT does not contain matching SBCL ~A source."
            version))
         directory))))
 
@@ -154,13 +154,13 @@
                                       :if-does-not-exist :create
                                       :external-format :utf-8)
       (write-line content stream))
-    (autolith-script-replace-file temporary pathname)))
+    (antaios-script-replace-file temporary pathname)))
 
 (defun runtime-install-source (runtime-root managed-source identity-pathname
                                version expected-sha256)
   "Download, verify, and publish the SBCL VERSION source tree below RUNTIME-ROOT."
-  (unless (autolith-version-components version)
-    (runtime-fail "SBCL ~A is not an official release with a published source archive; set AUTOLITH_SBCL to a release build."
+  (unless (antaios-version-components version)
+    (runtime-fail "SBCL ~A is not an official release with a published source archive; set ANTAIOS_SBCL to a release build."
                   version))
   (unless expected-sha256
     (runtime-fail "SBCL ~A has no tracked source archive identity." version))
@@ -178,7 +178,7 @@
          (progn
            (uiop:delete-directory-tree temporary :validate t :if-does-not-exist :ignore)
            (ensure-directories-exist archive)
-           (format *error-output* "~&Installing matching SBCL ~A source for Autolith.~%"
+           (format *error-output* "~&Installing matching SBCL ~A source for Antaios.~%"
                    version)
            (finish-output *error-output*)
            (uiop:run-program (list "curl" "--fail" "--location" "--show-error"
@@ -246,10 +246,10 @@
          (version-pathname (merge-pathnames "sbcl.version" source-root))
          (checksums-pathname (merge-pathnames "sbcl-source-releases.sha256" source-root))
          (version (lisp-implementation-version))
-         (runtimes-root (merge-pathnames "runtimes/" (autolith-application-root :data)))
+         (runtimes-root (merge-pathnames "runtimes/" (antaios-application-root :data)))
          (runtime-command (uiop:native-namestring sb-ext:*runtime-pathname*)))
     (handler-case
-        (autolith-require-minimum-runtime version-pathname)
+        (antaios-require-minimum-runtime version-pathname)
       (error (condition)
         (runtime-fail "~A" condition)))
     (unless (probe-file checksums-pathname)
@@ -259,13 +259,13 @@
     (let* ((runtime-root (merge-pathnames (format nil "~A/" version) runtimes-root))
            (managed-source (merge-pathnames "source/" runtime-root))
            (identity-pathname (merge-pathnames "source.identity" runtime-root))
-           (expected-sha256 (and (autolith-version-components version)
+           (expected-sha256 (and (antaios-version-components version)
                                  (runtime-source-checksum checksums-pathname version))))
       (when (and install-p
                  (not (runtime-source-available-p managed-source identity-pathname
                                                   version expected-sha256)))
         ;; Only the pinned release has a verified source archive. A newer
-        ;; SBCL still satisfies the minimum, so it runs Autolith; workers
+        ;; SBCL still satisfies the minimum, so it runs Antaios; workers
         ;; then report that matching implementation source is unavailable.
         (if expected-sha256
             (runtime-install-source runtime-root managed-source identity-pathname
@@ -273,15 +273,15 @@
             (format *error-output*
                     "~&SBCL ~A has no tracked source archive; implementation source stays unavailable to Lisp workers until the release pinned in sbcl.version is used.~%"
                     version)))
-      (autolith-script-setenv "AUTOLITH_SBCL" runtime-command)
+      (antaios-script-setenv "ANTAIOS_SBCL" runtime-command)
       (let ((source (or (runtime-configured-source version)
                         (and (runtime-source-available-p
                               managed-source identity-pathname version expected-sha256)
                              managed-source))))
         (if source
-            (autolith-script-setenv "AUTOLITH_SBCL_SOURCE_ROOT"
+            (antaios-script-setenv "ANTAIOS_SBCL_SOURCE_ROOT"
                                     (uiop:native-namestring source))
-            (autolith-script-unsetenv "AUTOLITH_SBCL_SOURCE_ROOT"))))
+            (antaios-script-unsetenv "ANTAIOS_SBCL_SOURCE_ROOT"))))
     ;; The entry point sees only its own arguments, as it would under --script.
     (setf sb-ext:*posix-argv* (cons (first sb-ext:*posix-argv*) script-arguments))
     (load (truename script))))

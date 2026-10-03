@@ -2,13 +2,13 @@
 
 (require :sb-posix)
 
-;;; The scripts run before the Autolith system is loaded, so they cannot ask
+;;; The scripts run before the Antaios system is loaded, so they cannot ask
 ;;; the platform adapter. This mirrors PLATFORM-APPLICATION-ROOT from
 ;;; src/core/platform-posix.lisp and src/core/platform-win32.lisp: an absolute
 ;;; XDG variable wins on every host, otherwise POSIX uses the XDG defaults
 ;;; below the home directory and Windows uses the application data folders.
 
-(defun autolith-script-setenv (name value)
+(defun antaios-script-setenv (name value)
   "Set environment variable NAME to VALUE for this process and its children.
 
 Windows keeps two environments: sb-posix:setenv updates the C runtime's copy,
@@ -27,7 +27,7 @@ SetEnvironmentVariableW, found at run time so POSIX hosts never reference it."
          name value))))
   nil)
 
-(defun autolith-script-unsetenv (name)
+(defun antaios-script-unsetenv (name)
   "Remove environment variable NAME for this process and its children."
   (sb-posix:unsetenv name)
   (when (uiop:os-windows-p)
@@ -41,7 +41,7 @@ SetEnvironmentVariableW, found at run time so POSIX hosts never reference it."
          name nil))))
   nil)
 
-(defun autolith-script-clear-read-only (pathname)
+(defun antaios-script-clear-read-only (pathname)
   "Clear the Windows read-only attribute of PATHNAME when it carries one.
 
 A file an older build protected with chmod carries the attribute, and Windows
@@ -67,12 +67,12 @@ hosts have no such attribute and return at once."
              native (logandc2 attributes 1)))))))
   nil)
 
-(defun autolith-script-replace-file (source target)
+(defun antaios-script-replace-file (source target)
   "Rename SOURCE over TARGET, first clearing a Windows read-only attribute on TARGET."
-  (autolith-script-clear-read-only target)
+  (antaios-script-clear-read-only target)
   (uiop:rename-file-overwriting-target source target))
 
-(defun autolith-script-set-file-mode (pathname mode)
+(defun antaios-script-set-file-mode (pathname mode)
   "Give PATHNAME POSIX MODE where modes exist.
 
 Windows keeps the access list the private data root gives its files: chmod
@@ -82,7 +82,7 @@ next build performs."
     (sb-posix:chmod (uiop:native-namestring pathname) mode))
   nil)
 
-(defun autolith-script-environment-directory (variable)
+(defun antaios-script-environment-directory (variable)
   "Return the absolute directory VARIABLE names, or NIL when unset or relative."
   (let ((value (uiop:getenv variable)))
     (when (and value (plusp (length value)))
@@ -92,15 +92,15 @@ next build performs."
         (when (uiop:absolute-pathname-p pathname)
           (uiop:ensure-directory-pathname pathname))))))
 
-(defun autolith-script-known-folder (variable)
+(defun antaios-script-known-folder (variable)
   "Return the Windows shell folder that environment VARIABLE names."
-  (or (autolith-script-environment-directory variable)
+  (or (antaios-script-environment-directory variable)
       (error "The ~A environment variable does not name an absolute directory."
              variable)))
 
-(defun autolith-application-root (kind)
-  "Return Autolith's per-user directory of KIND, one of :config, :data, :state, or :cache."
-  (let ((xdg (autolith-script-environment-directory
+(defun antaios-application-root (kind)
+  "Return Antaios's per-user directory of KIND, one of :config, :data, :state, or :cache."
+  (let ((xdg (antaios-script-environment-directory
               (ecase kind
                 (:config "XDG_CONFIG_HOME")
                 (:data "XDG_DATA_HOME")
@@ -108,17 +108,17 @@ next build performs."
                 (:cache "XDG_CACHE_HOME")))))
     (cond
       (xdg
-       (merge-pathnames "autolith/" xdg))
+       (merge-pathnames "antaios/" xdg))
       ((and (uiop:os-windows-p) (eq kind :config))
-       (merge-pathnames "autolith/" (autolith-script-known-folder "APPDATA")))
+       (merge-pathnames "antaios/" (antaios-script-known-folder "APPDATA")))
       ((uiop:os-windows-p)
        (merge-pathnames (ecase kind
-                          (:data "autolith/data/")
-                          (:state "autolith/state/")
-                          (:cache "autolith/cache/"))
-                        (autolith-script-known-folder "LOCALAPPDATA")))
+                          (:data "antaios/data/")
+                          (:state "antaios/state/")
+                          (:cache "antaios/cache/"))
+                        (antaios-script-known-folder "LOCALAPPDATA")))
       (t
-       (merge-pathnames "autolith/"
+       (merge-pathnames "antaios/"
                         (merge-pathnames (ecase kind
                                            (:config ".config/")
                                            (:data ".local/share/")

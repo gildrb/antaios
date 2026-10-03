@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 (-> test-workspace-plan () null)
 (defun test-workspace-plan ()

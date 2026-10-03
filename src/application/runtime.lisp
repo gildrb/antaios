@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Active Application --
 
@@ -109,11 +109,11 @@
     :type hash-table
     :documentation "Session-cached model permission decisions per command and directory.")
    (command-authorization-lock
-    :initform (make-lock "Autolith command authorization")
+    :initform (make-lock "Antaios command authorization")
     :reader application-command-authorization-lock
     :documentation "The lock serializing command prompts from concurrent agents.")
    (task-presentation-lock
-    :initform (make-lock "Autolith task presentation")
+    :initform (make-lock "Antaios task presentation")
     :reader application-task-presentation-lock
     :documentation "The lock serializing scheduler snapshots into the active UI.")
    (task-presentation-orchestrator
@@ -166,7 +166,7 @@
     :type boolean
     :documentation "Whether this session omits private mutations and user init.")
    (render-lock
-    :initform (make-recursive-lock "Autolith transcript rendering")
+    :initform (make-recursive-lock "Antaios transcript rendering")
     :reader application-render-lock
     :type t
     :documentation "The lock serializing transcript cursors and history boundaries.")
@@ -216,7 +216,7 @@
     :type boolean
     :documentation
     "Whether command-line resume should offer project adaptation notes."))
-  (:documentation "The globally rooted logical state and reconnectable resources of Autolith."))
+  (:documentation "The globally rooted logical state and reconnectable resources of Antaios."))
 
 ;;;; -- Setting-Backed Application State --
 
@@ -290,7 +290,7 @@
     (option pathname))
 (defun application--recovery-session-pointer (configuration)
   "Return this launcher's contained recovery-session pointer, when configured."
-  (let ((value (uiop:getenv "AUTOLITH_RECOVERY_SESSION_POINTER")))
+  (let ((value (uiop:getenv "ANTAIOS_RECOVERY_SESSION_POINTER")))
     (when (non-empty-string-p value)
       (let* ((pathname (pathname value))
              (root
@@ -343,7 +343,7 @@
 (-> application--recovery-conversation-id () (option string))
 (defun application--recovery-conversation-id ()
   "Return the conversation selected by automatic recovery, when present."
-  (let ((value (uiop:getenv "AUTOLITH_RECOVERY_CONVERSATION_ID")))
+  (let ((value (uiop:getenv "ANTAIOS_RECOVERY_CONVERSATION_ID")))
     (and (non-empty-string-p value) value)))
 
 (-> application--recovery-sequence (string) (option integer))
@@ -369,9 +369,9 @@
 (-> application--clear-recovery-environment () null)
 (defun application--clear-recovery-environment ()
   "Remove one-shot recovery reconnection metadata after successful startup."
-  (platform-unsetenv "AUTOLITH_RECOVERY_CONVERSATION_ID")
-  (platform-unsetenv "AUTOLITH_RECOVERY_RENDERED_SEQUENCE")
-  (platform-unsetenv "AUTOLITH_RECOVERY_HISTORY_FLOOR_SEQUENCE")
+  (platform-unsetenv "ANTAIOS_RECOVERY_CONVERSATION_ID")
+  (platform-unsetenv "ANTAIOS_RECOVERY_RENDERED_SEQUENCE")
+  (platform-unsetenv "ANTAIOS_RECOVERY_HISTORY_FLOOR_SEQUENCE")
   nil)
 
 (-> application-pending-terminal-size
@@ -397,14 +397,14 @@ truthful source of dimensions."
 (defparameter *application-prompt* "❯ "
   "The styled input prompt shown on the live editor row.")
 
-(defparameter *application-message-header-prefixes* '("❯ you" "● autolith")
+(defparameter *application-message-header-prefixes* '("❯ you" "● antaios")
   "The transcript header prefixes opening user and assistant messages.
 
 The fullscreen viewport jumps between these lines, so a reader can follow the
 exchange without scrolling through reasoning and tool activity.")
 
 (defparameter *application-placeholder*
-  "Ask Autolith anything. Type (help) for operations."
+  "Ask Antaios anything. Type (help) for operations."
   "The dim hint shown on the prompt row while input is empty.")
 
 (-> application-terminal-ui-create () terminal-ui)
@@ -1501,7 +1501,7 @@ command replaced the active conversation."
 (defun application--window-title (application)
   "Return APPLICATION's terminal window title from its workspace directory."
   (when (slot-boundp application 'configuration)
-    (format nil "autolith - ~A"
+    (format nil "antaios - ~A"
             (application--window-title-path
              (namestring
               (config :working-directory
@@ -1962,7 +1962,7 @@ the fence's raw source; that span becomes a widget copying the source."
                  (string-trim '(#\Space #\Tab #\Newline #\Return) text)))
                timestamp-text)
       (append
-       (list (terminal-span ':brand "● autolith [")
+       (list (terminal-span ':brand "● antaios [")
              (terminal-span ':child-name safe-child-name)
              (terminal-span ':brand "] ")
              (terminal-span ':dim timestamp-text)
@@ -2207,7 +2207,7 @@ column is WIDTH cells, or otherwise wide enough for the longest label present."
            (append (application--transcript-entry
                     application
                     :style ':brand
-                    :header "● autolith"
+                    :header "● antaios"
                     :timestamp timestamp)
                    (list (terminal-span ':plain (string #\Newline)))
                    (application--markdown-body application text)))))
@@ -3134,7 +3134,7 @@ remain finalized so later conversation replay cannot duplicate streamed rows."
                       (application--transcript-entry
                        application
                        :style ':brand
-                       :header "● autolith"
+                       :header "● antaios"
                        :timestamp stream-started-at)
                       rows))
                    (loop for newline = (position #\Newline stream-pending)

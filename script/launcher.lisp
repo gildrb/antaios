@@ -1,15 +1,15 @@
 ;;;; The stable launcher for hosts without Bash.
 
-;;; bin/autolith is Bash. bin/autolith.ps1 runs this script instead, through
-;;; bin/autolith-runtime.ps1, which has already selected the runtime and set
-;;; AUTOLITH_SBCL and AUTOLITH_SBCL_SOURCE_ROOT. The script does what the Bash
+;;; bin/antaios is Bash. bin/antaios.ps1 runs this script instead, through
+;;; bin/antaios-runtime.ps1, which has already selected the runtime and set
+;;; ANTAIOS_SBCL and ANTAIOS_SBCL_SOURCE_ROOT. The script does what the Bash
 ;;; launcher does: it separates launcher options from application arguments,
 ;;; runs the preloaded active image or the source loader, offers a bootstrap
 ;;; when the image is missing, restores the console afterwards, and enters
 ;;; pristine recovery when a session ends with a crash status.
 ;;;
 ;;; The console section binds kernel32 directly because this script runs
-;;; before the Autolith system, and with it the platform adapter, is loaded.
+;;; before the Antaios system, and with it the platform adapter, is loaded.
 
 (require :asdf)
 (require :sb-posix)
@@ -18,11 +18,11 @@
 #+win32
 (unless (let ((value (uiop:getenv "CL_EXEC_SANDBOX_WINDOWS_HELPER")))
           (and value (plusp (length value))))
-  (autolith-script-setenv
+  (antaios-script-setenv
    "CL_EXEC_SANDBOX_WINDOWS_HELPER"
    (uiop:native-namestring
     (merge-pathnames "native/sandbox/cl-exec-sandbox-windows.exe"
-                     (autolith-application-root ':data)))))
+                     (antaios-application-root ':data)))))
 
 
 ;;;; -- Launcher Options --
@@ -48,19 +48,19 @@
 
 (defun launcher-update-usage ()
   "Print the update sub-command usage to standard error."
-  (format *error-output* "Usage: autolith update [--help]~%       autolith --update [--help]~%"))
+  (format *error-output* "Usage: antaios update [--help]~%       antaios --update [--help]~%"))
 
 (defun launcher-update-help ()
   "Print the update sub-command help to standard output."
-  (format t "Usage: autolith update [--help]~%       autolith --update [--help]~%~%Install the latest packaged release and exit without starting a session.~%Source checkouts: update the checkout, then run script/bootstrap.ps1.~%"))
+  (format t "Usage: antaios update [--help]~%       antaios --update [--help]~%~%Install the latest packaged release and exit without starting a session.~%Source checkouts: update the checkout, then run script/bootstrap.ps1.~%"))
 
 (defun launcher-uninstall-usage ()
   "Print the uninstall sub-command usage to standard error."
-  (format *error-output* "Usage: autolith uninstall [--yes] [--help]~%"))
+  (format *error-output* "Usage: antaios uninstall [--yes] [--help]~%"))
 
 (defun launcher-uninstall-help ()
   "Print the uninstall sub-command help to standard output."
-  (format t "Usage: autolith uninstall [--yes] [--help]~%~%Remove the Autolith installation, managed runtimes, built images, and caches~%without starting a session. User data stays: conversations, memories, agendas,~%image commits, settings, credentials, and configuration.~%"))
+  (format t "Usage: antaios uninstall [--yes] [--help]~%~%Remove the Antaios installation, managed runtimes, built images, and caches~%without starting a session. User data stays: conversations, memories, agendas,~%image commits, settings, credentials, and configuration.~%"))
 
 (defun launcher-uninstall-instructions ()
   "Print the manual Windows removal steps to standard error.
@@ -69,7 +69,7 @@ The running runtime lives inside the trees to remove, and Windows refuses to
 delete an executable in use, so the launcher names the exact folders instead
 of deleting them, as the Windows update path also hands off to the user."
   (format *error-output*
-          "Uninstall is manual on Windows. Close every Autolith session, then delete:~%  %LOCALAPPDATA%\\autolith\\installation~%  %LOCALAPPDATA%\\autolith\\bin (and remove it from your user Path)~%  %LOCALAPPDATA%\\autolith\\data\\runtimes, active, recovery, generations, lisp-images, release-images~%  %LOCALAPPDATA%\\autolith\\cache~%  .autolith-images beside an extracted release~%Keep %LOCALAPPDATA%\\autolith\\data (conversations, memories, agendas, image commits),~%%LOCALAPPDATA%\\autolith\\state (settings, credentials, mutation history), and %APPDATA%\\autolith.~%"))
+          "Uninstall is manual on Windows. Close every Antaios session, then delete:~%  %LOCALAPPDATA%\\antaios\\installation~%  %LOCALAPPDATA%\\antaios\\bin (and remove it from your user Path)~%  %LOCALAPPDATA%\\antaios\\data\\runtimes, active, recovery, generations, lisp-images, release-images~%  %LOCALAPPDATA%\\antaios\\cache~%  .antaios-images beside an extracted release~%Keep %LOCALAPPDATA%\\antaios\\data (conversations, memories, agendas, image commits),~%%LOCALAPPDATA%\\antaios\\state (settings, credentials, mutation history), and %APPDATA%\\antaios.~%"))
 
 (defun launcher-parse (arguments)
   "Return the LAUNCHER-REQUEST for ARGUMENTS, exiting on a malformed update or uninstall."
@@ -271,7 +271,7 @@ of deleting them, as the Windows update path also hands off to the user."
   (and (null (uiop:getenvp "NO_COLOR"))
        (interactive-stream-p *error-output*)
        t)
-  "Whether launcher messages use the Autolith interface palette.")
+  "Whether launcher messages use the Antaios interface palette.")
 
 (defun launcher-style (code text)
   "Return TEXT wrapped in SGR CODE when styling is enabled."
@@ -303,20 +303,20 @@ of deleting them, as the Windows update path also hands off to the user."
 
 (defun launcher-context (source-root)
   "Return the LAUNCHER-CONTEXT for SOURCE-ROOT and the current environment."
-  (let* ((data-root (autolith-application-root :data))
-         (state-root (autolith-application-root :state))
+  (let* ((data-root (antaios-application-root :data))
+         (state-root (antaios-application-root :state))
          (recovery-core
            (launcher-environment-pathname
-            "AUTOLITH_RECOVERY_CORE"
-            (merge-pathnames "recovery/autolith-recovery.core" data-root)))
+            "ANTAIOS_RECOVERY_CORE"
+            (merge-pathnames "recovery/antaios-recovery.core" data-root)))
          (active-core
            (launcher-environment-pathname
-            "AUTOLITH_ACTIVE_CORE"
-            (merge-pathnames "active/autolith-active.core" data-root)))
+            "ANTAIOS_ACTIVE_CORE"
+            (merge-pathnames "active/antaios-active.core" data-root)))
          (process-id (sb-posix:getpid)))
     (make-launcher-context
      :source-root source-root
-     :sbcl (or (uiop:getenvp "AUTOLITH_SBCL")
+     :sbcl (or (uiop:getenvp "ANTAIOS_SBCL")
                (uiop:native-namestring sb-ext:*runtime-pathname*))
      :data-root data-root
      :state-root state-root
@@ -406,7 +406,7 @@ of deleting them, as the Windows update path also hands off to the user."
          (launcher-manifest-header-p (launcher-context-active-manifest context)
                                      "(:ACTIVE-IMAGE :VERSION 1")
          (zerop (launcher-run (launcher-core-command
-                               context core "--autolith-internal-active-image-probe")
+                               context core "--antaios-internal-active-image-probe")
                               :output nil :error-output nil)))))
 
 (defun launcher-refresh-runtime (context)
@@ -422,7 +422,7 @@ of deleting them, as the Windows update path also hands off to the user."
                (uiop:absolute-pathname-p (uiop:parse-native-namestring recorded))
                (probe-file recorded))
       (setf (launcher-context-sbcl context) recorded)
-      (autolith-script-setenv "AUTOLITH_SBCL" recorded)))
+      (antaios-script-setenv "ANTAIOS_SBCL" recorded)))
   nil)
 
 (defun launcher-bootstrap (context)
@@ -435,21 +435,21 @@ of deleting them, as the Windows update path also hands off to the user."
                                     (launcher-context-source-root context)))))))
     (cond
       ((not (zerop status))
-       (launcher-note "~A" (launcher-style "31;1" (format nil "Autolith bootstrap failed with status ~D." status)))
+       (launcher-note "~A" (launcher-style "31" (format nil "Antaios bootstrap failed with status ~D." status)))
        64)
       (t
        (launcher-refresh-runtime context)
        (if (launcher-active-image-valid-p context)
            0
            (progn
-             (launcher-note "~A" (launcher-style "31;1" "Autolith bootstrap completed without a usable fast startup image."))
+             (launcher-note "~A" (launcher-style "31" "Antaios bootstrap completed without a usable fast startup image."))
              64))))))
 
 (defun launcher-offer-bootstrap (context)
   "Ask whether to bootstrap now; return :ready, :declined, or :failed."
   (loop
     (format *error-output* "~A fast startup image is missing or stale. Run ~A now? [Y/n] "
-            (launcher-style "35;1" "Autolith")
+            (launcher-style "35" "Antaios")
             (launcher-style "2" (format nil "\"~A\"" (launcher-bootstrap-command-name
                                                      (launcher-context-source-root context)))))
     (finish-output *error-output*)
@@ -464,14 +464,14 @@ of deleting them, as the Windows update path also hands off to the user."
 
 (defun launcher-run-active (context request)
   "Run the session for REQUEST and return its exit status."
-  (autolith-script-setenv "AUTOLITH_SOURCE_ROOT"
+  (antaios-script-setenv "ANTAIOS_SOURCE_ROOT"
                           (uiop:native-namestring (launcher-context-source-root context)))
   (let ((arguments (launcher-request-arguments request)))
     (flet ((run-core ()
              (launcher-run (apply #'launcher-core-command context
                                   (launcher-context-active-core context) arguments)))
            (run-source ()
-             (launcher-run (apply #'launcher-script-command context "bin/autolith-active"
+             (launcher-run (apply #'launcher-script-command context "bin/antaios-active"
                                   arguments))))
       (cond
         ((launcher-request-from-source-p request)
@@ -484,7 +484,7 @@ of deleting them, as the Windows update path also hands off to the user."
            (:ready (run-core))
            (:failed 64)
            (:declined
-            (launcher-note "~A" (launcher-style "2" "Loading Autolith from source."))
+            (launcher-note "~A" (launcher-style "2" "Loading Antaios from source."))
             (run-source))))
         (t
          (run-source))))))
@@ -508,7 +508,7 @@ of deleting them, as the Windows update path also hands off to the user."
                          (eq extra end)
                          (consp record)
                          (listp (rest record))
-                         (eq (first record) :autolith-restart))
+                         (eq (first record) :antaios-restart))
                 (let ((identifier (getf (rest record) :identifier)))
                   (when (and (stringp identifier)
                              (plusp (length identifier))
@@ -517,7 +517,7 @@ of deleting them, as the Windows update path also hands off to the user."
                                          (char= character #\-)))
                                     identifier))
                     (merge-pathnames
-                     (format nil "generations/~A/autolith.core" identifier)
+                     (format nil "generations/~A/antaios.core" identifier)
                      (launcher-context-data-root context)))))))
         (error () nil)))))
 
@@ -569,12 +569,12 @@ boot therefore leaves the generation identity available to recovery."
     (ensure-directories-exist pointer)
     (when (probe-file pointer)
       (delete-file pointer)))
-  (autolith-script-setenv "AUTOLITH_CRASH_POINTER"
+  (antaios-script-setenv "ANTAIOS_CRASH_POINTER"
                           (uiop:native-namestring (launcher-context-crash-pointer context)))
-  (autolith-script-setenv "AUTOLITH_RECOVERY_SESSION_POINTER"
+  (antaios-script-setenv "ANTAIOS_RECOVERY_SESSION_POINTER"
                           (uiop:native-namestring
                            (launcher-context-recovery-session-pointer context)))
-  (autolith-script-setenv "AUTOLITH_RESTART_POINTER"
+  (antaios-script-setenv "ANTAIOS_RESTART_POINTER"
                           (uiop:native-namestring
                            (launcher-context-restart-pointer context)))
   nil)

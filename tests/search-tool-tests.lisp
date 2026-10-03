@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Native Search Tests --
 
@@ -53,9 +53,9 @@
      "query constraints prepend as fff path filters")
   (let* ((default-configuration
            (configuration-create
-            :source-root (asdf:system-source-directory :autolith)
-            :working-directory (asdf:system-source-directory :autolith)))
-         (configured-library (uiop:getenv "AUTOLITH_FFF_LIBRARY"))
+            :source-root (asdf:system-source-directory :antaios)
+            :working-directory (asdf:system-source-directory :antaios)))
+         (configured-library (uiop:getenv "ANTAIOS_FFF_LIBRARY"))
          (library
            (if (non-empty-string-p configured-library)
                (pathname configured-library)
@@ -63,10 +63,10 @@
                                         *fff-library-file-name*)
                                 (config :data-root
                                  default-configuration))))
-         (previous-library (uiop:getenv "AUTOLITH_FFF_LIBRARY"))
+         (previous-library (uiop:getenv "ANTAIOS_FFF_LIBRARY"))
          (workspace-root (uiop:ensure-directory-pathname
                           (merge-pathnames
-                           (format nil "autolith-search-tests-~A/"
+                           (format nil "antaios-search-tests-~A/"
                                    (make-identifier))
                            (uiop:temporary-directory))))
          (configuration nil)
@@ -84,14 +84,14 @@
               (test-assert
                (search--installed-manifest-valid-p library)
                "bootstrap installs a manifest matching the pinned fff source"))
-           (platform-setenv "AUTOLITH_FFF_LIBRARY" (namestring library))
+           (platform-setenv "ANTAIOS_FFF_LIBRARY" (namestring library))
            (ensure-directories-exist workspace-root)
            (search-tests--write-file
             (merge-pathnames "src/model-selection.lisp" workspace-root)
-            (format nil "first context line~%AUTOLITH_FFF_PRIMARY~%last context line~%"))
+            (format nil "first context line~%ANTAIOS_FFF_PRIMARY~%last context line~%"))
            (search-tests--write-file
             (merge-pathnames "docs/search-guide.org" workspace-root)
-            (format nil "AUTOLITH_FFF_SECONDARY~%"))
+            (format nil "ANTAIOS_FFF_SECONDARY~%"))
            (setf configuration (search-tests--configuration workspace-root)
                  registry (make-default-tool-registry))
             (let* ((conversation
@@ -152,7 +152,7 @@
                              "search.glob filters indexed relative paths"))
               (let ((result (search-tests--call registry context
                                                 "search" "content"
-                                                "query" "AUTOLITH_FFF_PRIMARY"
+                                                "query" "ANTAIOS_FFF_PRIMARY"
                                                 "context" 1)))
                 (test-assert (tool-result-success-p result)
                              "search.content completes through the content index")
@@ -169,8 +169,8 @@
                       (search-tests--call
                        registry context
                        "search" "content"
-                       "patterns" #("AUTOLITH_FFF_PRIMARY"
-                                    "AUTOLITH_FFF_SECONDARY")
+                       "patterns" #("ANTAIOS_FFF_PRIMARY"
+                                    "ANTAIOS_FFF_SECONDARY")
                        "constraints" "*.lisp")))
                 (test-assert (tool-result-success-p result)
                              "search.content searches literal alternatives in one pass")
@@ -182,12 +182,12 @@
                 (let ((kept
                         (search-tests--call registry context
                                             "search" "content"
-                                            "query" "AUTOLITH_FFF_PRIMARY"
+                                            "query" "ANTAIOS_FFF_PRIMARY"
                                             "constraints" "*.lisp"))
                       (dropped
                         (search-tests--call registry context
                                             "search" "content"
-                                            "query" "AUTOLITH_FFF_SECONDARY"
+                                            "query" "ANTAIOS_FFF_SECONDARY"
                                             "constraints" "*.lisp")))
                   (test-assert (and (tool-result-success-p kept)
                                     (search "src/model-selection.lisp"
@@ -206,15 +206,15 @@
                            (list "missing selector" nil
                                  "exactly one of query or patterns")
                            (list "both selectors"
-                                 (list "query" "AUTOLITH_FFF_PRIMARY"
-                                       "patterns" #("AUTOLITH_FFF_SECONDARY"))
+                                 (list "query" "ANTAIOS_FFF_PRIMARY"
+                                       "patterns" #("ANTAIOS_FFF_SECONDARY"))
                                  "exactly one of query or patterns")
                            (list "empty patterns" (list "patterns" #())
                                  "non-empty literal strings")
                            (list "invalid patterns" (list "patterns" #(42))
                                  "non-empty literal strings")
                            (list "mode with patterns"
-                                 (list "patterns" #("AUTOLITH_FFF_PRIMARY")
+                                 (list "patterns" #("ANTAIOS_FFF_PRIMARY")
                                        "mode" "plain")
                                  "mode applies only")))
                 (destructuring-bind (label arguments expected) case
@@ -232,11 +232,11 @@
                (search-tests--write-file
                 (merge-pathnames "src/model-selection.lisp" workspace-root)
                 (format nil
-                        "first context line~%AUTOLITH_FFF_WATCHED~%last context line~%"))
+                        "first context line~%ANTAIOS_FFF_WATCHED~%last context line~%"))
                (sleep 0.5)
                (let ((result (search-tests--call registry context
                                                  "search" "content"
-                                                 "query" "AUTOLITH_FFF_WATCHED")))
+                                                 "query" "ANTAIOS_FFF_WATCHED")))
                  (test-assert
                   (and (tool-result-success-p result)
                        (search "src/model-selection.lisp"
@@ -288,8 +288,8 @@
       (when registry
         (ignore-errors (tool-registry-close-runtime-state registry)))
       (if previous-library
-          (platform-setenv "AUTOLITH_FFF_LIBRARY" previous-library)
-          (platform-unsetenv "AUTOLITH_FFF_LIBRARY"))
+          (platform-setenv "ANTAIOS_FFF_LIBRARY" previous-library)
+          (platform-unsetenv "ANTAIOS_FFF_LIBRARY"))
       (platform-delete-directory-tree *platform* workspace-root
                                       :validate t
                                       :if-does-not-exist ':ignore)
@@ -305,7 +305,7 @@
 (defun test-search-worker-source-root ()
   "Locate the helper script through the configured source root, not the build tree."
   (with-test-configuration (configuration root)
-    (let ((source-root (asdf:system-source-directory :autolith))
+    (let ((source-root (asdf:system-source-directory :antaios))
           (setting (configuration-setting configuration :source-root)))
       (configuration-set configuration setting source-root :source ':override)
       (test-assert (typep (search-worker-create :configuration configuration) 'worker)
@@ -316,6 +316,6 @@
            (progn (search-worker-create :configuration configuration) nil)
          (search-error (condition)
            (equal (search-error-pathname condition)
-                  (merge-pathnames "bin/autolith-search-worker" root))))
+                  (merge-pathnames "bin/antaios-search-worker" root))))
        "a source root without the helper script signals a search error naming it")))
   nil)

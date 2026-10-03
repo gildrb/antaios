@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Gemini Installed-App OAuth Conditions --
 
@@ -19,9 +19,9 @@
 
 ;;;; -- Gemini Credential Management --
 
-(defclass gemini-credential-source (autolith-credential-source)
+(defclass gemini-credential-source (antaios-credential-source)
   ()
-  (:documentation "Autolith's private Gemini OAuth credential source."))
+  (:documentation "Antaios's private Gemini OAuth credential source."))
 
 (defclass gemini-credential-manager (credential-manager)
   ()
@@ -39,7 +39,7 @@
 
 (-> configuration-gemini-auth-path (configuration) pathname)
 (defun configuration-gemini-auth-path (configuration)
-  "Return Autolith's private Gemini OAuth credential pathname."
+  "Return Antaios's private Gemini OAuth credential pathname."
   (merge-pathnames "gemini-auth.sexp" (config :state-root configuration)))
 
 (-> gemini-credential-manager-create (configuration) gemini-credential-manager)
@@ -93,7 +93,7 @@
                  :bounded-string-function #'bounded-string
                  :display-function #'gemini-oauth--display-login :label "Gemini"
                  :success-response "Gemini authentication succeeded. You may close this tab."
-                 :failure-response "Gemini authentication failed. Return to Autolith."))
+                 :failure-response "Gemini authentication failed. Return to Antaios."))
 
 
 (-> gemini-oauth-create-pkce () (values string string))

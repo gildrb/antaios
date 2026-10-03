@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Request-Local Context --
 (defparameter *context-delivery-diagnostic-limit* 32
@@ -8,7 +8,7 @@
   "The approximate request-token budget shared by advisory contributions.")
 
 (defvar *user-init-loading-p* nil
-  "True only while Autolith loads executable filesystem configuration.")
+  "True only while Antaios loads executable filesystem configuration.")
 
 (defvar *extension-registration-source* ':runtime
   "The source attributed to extension registrations in the current load context.")
@@ -27,7 +27,7 @@
   "Conversation identifiers with diagnostics, newest delivery first.")
 
 (defvar *extension-registry-transaction-lock*
-  (make-recursive-lock "Autolith extension registry transaction")
+  (make-recursive-lock "Antaios extension registry transaction")
   "The lock publishing MCP, context, and command registry generations.")
 
 (defmacro with-extension-registry-transaction (&body body)
@@ -35,11 +35,11 @@
   `(with-recursive-lock-held (*extension-registry-transaction-lock*)
      ,@body))
 
-(defvar *context-lock* (make-lock "Autolith request-local context")
+(defvar *context-lock* (make-lock "Antaios request-local context")
   "The lock protecting registrations, delivery state, and diagnostics.")
 
 (defvar *context-contributor-invocation-lock*
-  (make-lock "Autolith context contributor invocation")
+  (make-lock "Antaios context contributor invocation")
   "The lock serializing user-extensible contributor function calls.")
 
 (defvar *context-request-contributions* nil
@@ -216,7 +216,7 @@
 (defun make-context-contribution
     (&key identifier instruction evidence (priority 0) (lifetime ':while-relevant)
        (class ':advice) deduplication-key supersedes conflict-group)
-  "Construct generic request context using Autolith configuration diagnostics."
+  "Construct generic request context using Antaios configuration diagnostics."
   (handler-case
       (cl-llm-provider-api:make-context-contribution
        :identifier identifier :instruction instruction :evidence evidence

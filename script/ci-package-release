@@ -91,7 +91,7 @@ output_directory=${1:-dist/}
 
 cd "$source_root"
 if [[ $(uname -s) == OpenBSD && ${HOME:-} == /root ]]; then
-  export HOME=/tmp/autolith-home
+  export HOME=/tmp/antaios-home
   mkdir -p "$HOME"
 fi
 export PATH="$HOME/bin:/usr/local/bin:/usr/pkg/bin:$PATH"
@@ -102,13 +102,13 @@ static_musl=false
 if [[ $(uname -s) == Linux ]] && command -v ldd >/dev/null 2>&1 &&
    grep -iq musl <<< "$(ldd /bin/sh 2>&1 || true)"; then
   static_musl=true
-  export AUTOLITH_STATIC_MUSL=1
-  export AUTOLITH_BUILD_STATIC_NATIVE=1
+  export ANTAIOS_STATIC_MUSL=1
+  export ANTAIOS_BUILD_STATIC_NATIVE=1
 fi
 
 runtime_version=$(tr -d '[:space:]' < sbcl.version)
 data_home=$(xdg_base_directory "${XDG_DATA_HOME:-}" "$HOME/.local/share")
-runtime_root=$data_home/autolith/runtimes/$runtime_version
+runtime_root=$data_home/antaios/runtimes/$runtime_version
 runtime_sbcl=$runtime_root/installation/bin/sbcl
 runtime_static_archive=$runtime_root/static-build/libsbcl.a
 runtime_builder=$runtime_root/static-build/installation/bin/sbcl
@@ -146,8 +146,8 @@ if [[ ! -f $HOME/quicklisp/setup.lisp ]]; then
   trap - EXIT HUP INT TERM
 fi
 
-printf 'Bootstrapping Autolith dependencies.\n'
-AUTOLITH_SBCL=$bootstrap_sbcl ./script/bootstrap
+printf 'Bootstrapping Antaios dependencies.\n'
+ANTAIOS_SBCL=$bootstrap_sbcl ./script/bootstrap
 if [[ $static_musl == true ]]; then
   printf 'Linking the static musl runtime and native helper.\n'
   ./script/build-static-release-runtime "$runtime_root/installation"

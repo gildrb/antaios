@@ -1,16 +1,16 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Device Authentication Test Support --
 
 (defvar *device-authentication-test-saved-credentials* nil
   "The credentials observed by the recording test store.")
 
-(defclass recording-autolith-credential-source (autolith-credential-source)
+(defclass recording-antaios-credential-source (antaios-credential-source)
   ()
-  (:documentation "An Autolith credential source that records rather than writes test data."))
+  (:documentation "An Antaios credential source that records rather than writes test data."))
 
 (defmethod credential-source-save
-    ((source recording-autolith-credential-source)
+    ((source recording-antaios-credential-source)
      (credentials oauth-credentials))
   "Record CREDENTIALS without touching SOURCE's pathname."
   (declare (ignore source))

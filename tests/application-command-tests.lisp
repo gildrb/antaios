@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Application Command Protocol Tests --
 
@@ -654,13 +654,13 @@
          (root (test-configuration-root configuration))
          (application (make-instance 'application
                                      :configuration configuration))
-         (previous-fast-mode (uiop:getenv "AUTOLITH_CODEX_FAST_MODE"))
+         (previous-fast-mode (uiop:getenv "ANTAIOS_CODEX_FAST_MODE"))
          (presented nil)
          (installed nil)
          (published-count 0))
     (unwind-protect
          (progn
-           (platform-unsetenv "AUTOLITH_CODEX_FAST_MODE")
+           (platform-unsetenv "ANTAIOS_CODEX_FAST_MODE")
            (test-call-with-function-replacements
             (list
              (list
@@ -750,10 +750,10 @@
                  (configuration-error ()
                    t))
                "/fast rejects unsupported modes")
-              (platform-setenv "AUTOLITH_CODEX_FAST_MODE" "off")
+              (platform-setenv "ANTAIOS_CODEX_FAST_MODE" "off")
               (application--builtin-fast-command application "status")
               (test-assert
-               (search "AUTOLITH_CODEX_FAST_MODE controls it" (first presented))
+               (search "ANTAIOS_CODEX_FAST_MODE controls it" (first presented))
                "/fast status reports the process environment override")
               (test-assert
                (handler-case
@@ -769,8 +769,8 @@
                     (= published-count 2))
                "invalid or environment-controlled /fast input has no side effects")))))
       (if previous-fast-mode
-          (platform-setenv "AUTOLITH_CODEX_FAST_MODE" previous-fast-mode)
-          (platform-unsetenv "AUTOLITH_CODEX_FAST_MODE"))
+          (platform-setenv "ANTAIOS_CODEX_FAST_MODE" previous-fast-mode)
+          (platform-unsetenv "ANTAIOS_CODEX_FAST_MODE"))
       (platform-delete-directory-tree *platform* root
                                       :validate t
                                       :if-does-not-exist ':ignore)))
@@ -1221,21 +1221,21 @@
              (eq (application--builtin-settings-command application) ':continue)
              "(settings) completes through the canonical command")
             (test-assert
-             (and (search "cache-miss-notices-p = off (default)" (first presented))
+             (and (search "cache-miss-notices-p = on (default)" (first presented))
                   (search "transcript" (first presented))
                   (not (search "provider-endpoint" (first presented))))
              "the listing shows visible settings with values and sources")
-            (application--builtin-settings-command application "cache-miss-notices-p" "on")
+            (application--builtin-settings-command application "cache-miss-notices-p" "off")
             (test-assert
-             (and (application-cache-miss-notices-p application)
-                  (search "Cache miss notices is now on and saved" (first presented)))
+             (and (not (application-cache-miss-notices-p application))
+                  (search "Cache miss notices is now off and saved" (first presented)))
              "a named setting changes through the command")
             (test-assert
              (eq (configuration-setting-source configuration :cache-miss-notices-p) ':session)
              "an interactive change records the session source")
             (application--builtin-settings-command application "cache-miss-notices-p")
             (test-assert
-             (search "Cache miss notices is on (this session)" (first presented))
+             (search "Cache miss notices is off (this session)" (first presented))
              "a named setting without a value is described")
             (test-assert
              (handler-case

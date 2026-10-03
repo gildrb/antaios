@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Windows Shell Sandbox --
 
@@ -110,9 +110,9 @@
     (with-test-configuration (configuration root)
       (declare (ignore configuration))
       (let* ((source (merge-pathnames "script/check-windows-sandbox.ps1"
-                                      (asdf:system-source-directory :autolith)))
+                                      (asdf:system-source-directory :antaios)))
              (fixture (merge-pathnames "profile-helper-tests.ps1" root))
-             (powershell (or (uiop:getenv "AUTOLITH_PWSH") "pwsh")))
+             (powershell (or (uiop:getenv "ANTAIOS_PWSH") "pwsh")))
         (with-open-file (stream fixture :direction ':output :if-exists ':supersede)
           (write-string (windows-sandbox-tests--profile-helper-script source) stream))
           (multiple-value-bind (output diagnostics status)

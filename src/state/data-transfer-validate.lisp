@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Archive Validation --
 
@@ -182,7 +182,7 @@
 (-> data-transfer--input-basename (string &key (:owner string) (:files list) (:pathname t)) string)
 (defun data-transfer--input-basename (name &key owner files pathname)
   "Resolve a queued-image archive token to a validated included basename."
-  (let ((prefix "/__autolith_transfer_input__/"))
+  (let ((prefix "/__antaios_transfer_input__/"))
     (unless (and (stringp name) (uiop:string-prefix-p prefix name))
       (data-transfer--fail pathname ':invalid "Pending input refers outside the archive."))
     (let ((basename (subseq name (length prefix))))
@@ -253,7 +253,7 @@
                       :allow-other-keys nil
                       :fields
                       (cons (list :indicator ':format :required t
-                                  :validate (lambda (value) (eq value ':autolith-data)))
+                                  :validate (lambda (value) (eq value ':antaios-data)))
                             (mapcar (lambda (key) (list :indicator key :required t))
                                     '(:workspace :workspaces :sessions :children :memories
                                       :papercuts :agendas :plans :files :states))))

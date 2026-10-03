@@ -1,13 +1,13 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Configuration Access --
 
 ;; The setting protocol, the configuration object, and CONFIG come from
-;; setinka. Autolith defines its setting kinds and settings below, persists
+;; setinka. Antaios defines its setting kinds and settings below, persists
 ;; durable values through the preferences store, and keeps its constructors,
 ;; which name validation deferral after the provider registry it waits for.
 
-;;;; -- Setting Kinds Specific to Autolith --
+;;;; -- Setting Kinds Specific to Antaios --
 
 (defclass working-directory-setting (pathname-setting)
   ()
@@ -84,7 +84,7 @@ exist yet, and is only put in directory form."
   (when (and (eq value ':unix)
              (not (platform-supports-p *platform* ':local-sockets)))
     (setting-reject setting value
-                    "AUTOLITH_MANAGEMENT_REPL_TRANSPORT=unix needs filesystem sockets, which this platform lacks; use tcp."))
+                    "ANTAIOS_MANAGEMENT_REPL_TRANSPORT=unix needs filesystem sockets, which this platform lacks; use tcp."))
   nil)
 
 
@@ -93,12 +93,12 @@ exist yet, and is only put in directory form."
 (define-setting :source-root (directory-setting)
   :label "Source root"
   :group :paths
-  :documentation "The tracked Autolith source root."
-  :environment "AUTOLITH_SOURCE_ROOT"
+  :documentation "The tracked Antaios source root."
+  :environment "ANTAIOS_SOURCE_ROOT"
   :visible-p nil
   :default (lambda (configuration)
              (declare (ignore configuration))
-             (asdf:system-source-directory :autolith)))
+             (asdf:system-source-directory :antaios)))
 
 (define-setting :working-directory (working-directory-setting)
   :label "Working directory"
@@ -111,7 +111,7 @@ exist yet, and is only put in directory form."
 (define-setting :config-root (directory-setting)
   :label "Config root"
   :group :paths
-  :documentation "The root for user-editable Autolith configuration."
+  :documentation "The root for user-editable Antaios configuration."
   :visible-p nil
   :default (lambda (configuration)
              (declare (ignore configuration))
@@ -122,7 +122,7 @@ exist yet, and is only put in directory form."
   :group :paths
   :documentation "The optional site-managed configuration root."
   :scope :process
-  :environment "AUTOLITH_SITE_CONFIG_ROOT"
+  :environment "ANTAIOS_SITE_CONFIG_ROOT"
   :default nil)
 
 (define-setting :data-root (directory-setting)
@@ -137,11 +137,11 @@ exist yet, and is only put in directory form."
 (define-setting :active-image-core (absolute-file-setting)
   :label "Active image core"
   :group :paths
-  :documentation "The preloaded active image that starts fresh Autolith processes."
-  :environment "AUTOLITH_ACTIVE_CORE"
+  :documentation "The preloaded active image that starts fresh Antaios processes."
+  :environment "ANTAIOS_ACTIVE_CORE"
   :visible-p nil
   :default (lambda (configuration)
-             (merge-pathnames "active/autolith-active.core"
+             (merge-pathnames "active/antaios-active.core"
                               (config :data-root configuration))))
 
 (define-setting :state-root (directory-setting)
@@ -190,7 +190,7 @@ exist yet, and is only put in directory form."
   :documentation "The provider model identifier."
   :type 'non-empty-string
   :scope :durable
-  :environment "AUTOLITH_MODEL"
+  :environment "ANTAIOS_MODEL"
   :deferrable-p t
   :options (lambda (configuration)
              (declare (ignore configuration))
@@ -206,7 +206,7 @@ exist yet, and is only put in directory form."
   :documentation "The user-visible reasoning effort."
   :type 'non-empty-string
   :scope :durable
-  :environment "AUTOLITH_REASONING_EFFORT"
+  :environment "ANTAIOS_REASONING_EFFORT"
   :deferrable-p t
   :depends-on '(:model)
   :options (lambda (configuration)
@@ -221,14 +221,14 @@ exist yet, and is only put in directory form."
   :group :model
   :documentation "Whether Codex requests opt in to the Fast service tier, which is faster and counts more heavily against plan usage."
   :scope :durable
-  :environment "AUTOLITH_CODEX_FAST_MODE")
+  :environment "ANTAIOS_CODEX_FAST_MODE")
 
 (define-setting :web-search-mode (web-search-mode-setting)
   :label "Web search"
   :group :model
   :documentation "The provider web search mode."
   :type 'non-empty-string
-  :environment "AUTOLITH_WEB_SEARCH"
+  :environment "ANTAIOS_WEB_SEARCH"
   :options (lambda (configuration)
              (declare (ignore configuration))
              (copy-list *supported-web-search-modes*))
@@ -248,7 +248,7 @@ exist yet, and is only put in directory form."
   :documentation "The context window percentage that triggers compaction."
   :minimum 1
   :maximum 95
-  :environment "AUTOLITH_COMPACTION_THRESHOLD"
+  :environment "ANTAIOS_COMPACTION_THRESHOLD"
   :default (lambda (configuration)
              (declare (ignore configuration))
              *default-compaction-threshold-percent*))
@@ -285,13 +285,15 @@ exist yet, and is only put in directory form."
   :label "Cache miss notices"
   :group :transcript
   :documentation "Whether requests that re-read uncached context are reported."
-  :scope :durable)
+  :scope :durable
+  :default t)
 
 (define-setting :simple-technical-english-p (boolean-setting)
   :label "Simple Technical English"
   :group :behavior
   :documentation "Whether natural-language replies use Simple Technical English."
-  :scope :durable)
+  :scope :durable
+  :default t)
 
 (define-setting :session-title-generation-p (boolean-setting)
   :label "Generated session titles"
@@ -310,23 +312,24 @@ exist yet, and is only put in directory form."
   :label "Fullscreen"
   :group :terminal
   :documentation "Whether interactive sessions use the fullscreen terminal UI."
-  :scope :durable)
+  :scope :durable
+  :default t)
 
 (define-setting :terminal-theme (choice-setting)
   :label "Theme"
   :group :terminal
-  :documentation "The presentation theme: autolith, or almighty for yellow on blue."
+  :documentation "The presentation theme: antaios, or almighty for yellow on blue."
   :scope :durable
-  :type '(member :autolith :almighty)
-  :options '(:autolith :almighty)
-  :default ':autolith)
+  :type '(member :antaios :almighty)
+  :options '(:antaios :almighty)
+  :default ':antaios)
 
 (define-setting :boot-screen-linger-p (boolean-setting)
   :label "Boot screen waits for Space"
   :group :terminal
   :documentation "Whether the fullscreen boot screen waits for Space before opening the listener."
   :scope :durable
-  :environment "AUTOLITH_BOOT_LINGER"
+  :environment "ANTAIOS_BOOT_LINGER"
   :default t)
 
 (define-setting :boot-screen-tip-seconds (integer-setting)
@@ -336,7 +339,7 @@ exist yet, and is only put in directory form."
   :scope :durable
   :minimum 1
   :maximum 3600
-  :environment "AUTOLITH_BOOT_TIP_SECONDS"
+  :environment "ANTAIOS_BOOT_TIP_SECONDS"
   :default 10)
 
 (define-setting :permission-mode (choice-setting)
@@ -356,13 +359,13 @@ exist yet, and is only put in directory form."
   :label "Management REPL"
   :group :management
   :documentation "Whether the authenticated active-image management endpoint starts."
-  :environment "AUTOLITH_MANAGEMENT_REPL")
+  :environment "ANTAIOS_MANAGEMENT_REPL")
 
 (define-setting :management-repl-transport (management-transport-setting)
   :label "Management transport"
   :group :management
   :documentation "The management endpoint transport."
-  :environment "AUTOLITH_MANAGEMENT_REPL_TRANSPORT"
+  :environment "ANTAIOS_MANAGEMENT_REPL_TRANSPORT"
   :default (lambda (configuration)
              (declare (ignore configuration))
              (if (platform-supports-p *platform* ':local-sockets) ':unix ':tcp)))
@@ -371,7 +374,7 @@ exist yet, and is only put in directory form."
   :label "Management socket"
   :group :management
   :documentation "The private Unix management socket pathname."
-  :environment "AUTOLITH_MANAGEMENT_REPL_UNIX_SOCKET"
+  :environment "ANTAIOS_MANAGEMENT_REPL_UNIX_SOCKET"
   :default (lambda (configuration)
              (merge-pathnames "management/repl.sock" (config :state-root configuration))))
 
@@ -380,7 +383,7 @@ exist yet, and is only put in directory form."
   :group :management
   :documentation "The IPv4 loopback management listener address."
   :type 'non-empty-string
-  :environment "AUTOLITH_MANAGEMENT_REPL_TCP_ADDRESS"
+  :environment "ANTAIOS_MANAGEMENT_REPL_TCP_ADDRESS"
   :default "127.0.0.1")
 
 (define-setting :management-repl-tcp-port (integer-setting)
@@ -389,14 +392,14 @@ exist yet, and is only put in directory form."
   :documentation "The management TCP listener port."
   :minimum 1
   :maximum 65535
-  :environment "AUTOLITH_MANAGEMENT_REPL_TCP_PORT"
+  :environment "ANTAIOS_MANAGEMENT_REPL_TCP_PORT"
   :default 4141)
 
 (define-setting :management-repl-token-file-path (absolute-file-setting)
   :label "Management token file"
   :group :management
   :documentation "The external owner-only authentication token file pathname."
-  :environment "AUTOLITH_MANAGEMENT_REPL_TOKEN_FILE"
+  :environment "ANTAIOS_MANAGEMENT_REPL_TOKEN_FILE"
   :default (lambda (configuration)
              (merge-pathnames "management-repl.token" (config :config-root configuration))))
 
@@ -405,7 +408,7 @@ exist yet, and is only put in directory form."
   :group :management
   :documentation "The management request deadline in seconds."
   :minimum 1
-  :environment "AUTOLITH_MANAGEMENT_REPL_TIMEOUT"
+  :environment "ANTAIOS_MANAGEMENT_REPL_TIMEOUT"
   :default 10)
 
 (define-setting :management-repl-maximum-frame-size (integer-setting)
@@ -413,7 +416,7 @@ exist yet, and is only put in directory form."
   :group :management
   :documentation "The maximum management wire frame size in octets."
   :minimum 128
-  :environment "AUTOLITH_MANAGEMENT_REPL_MAX_FRAME"
+  :environment "ANTAIOS_MANAGEMENT_REPL_MAX_FRAME"
   :default 1048576)
 
 (define-setting :management-repl-maximum-source-size (integer-setting)
@@ -421,7 +424,7 @@ exist yet, and is only put in directory form."
   :group :management
   :documentation "The maximum evaluation source size in UTF-8 octets."
   :minimum 1
-  :environment "AUTOLITH_MANAGEMENT_REPL_MAX_SOURCE"
+  :environment "ANTAIOS_MANAGEMENT_REPL_MAX_SOURCE"
   :default 262144)
 
 (define-setting :management-repl-maximum-output-size (integer-setting)
@@ -429,7 +432,7 @@ exist yet, and is only put in directory form."
   :group :management
   :documentation "The maximum captured output and value text size."
   :minimum 1
-  :environment "AUTOLITH_MANAGEMENT_REPL_MAX_OUTPUT"
+  :environment "ANTAIOS_MANAGEMENT_REPL_MAX_OUTPUT"
   :default 262144)
 
 (define-setting :management-repl-queue-capacity (integer-setting)
@@ -437,7 +440,7 @@ exist yet, and is only put in directory form."
   :group :management
   :documentation "The maximum queued management evaluations."
   :minimum 1
-  :environment "AUTOLITH_MANAGEMENT_REPL_QUEUE_CAPACITY"
+  :environment "ANTAIOS_MANAGEMENT_REPL_QUEUE_CAPACITY"
   :default 8)
 
 (define-setting :management-repl-maximum-clients (integer-setting)
@@ -445,7 +448,7 @@ exist yet, and is only put in directory form."
   :group :management
   :documentation "The maximum accepted management clients, including authentication."
   :minimum 1
-  :environment "AUTOLITH_MANAGEMENT_REPL_MAX_CLIENTS"
+  :environment "ANTAIOS_MANAGEMENT_REPL_MAX_CLIENTS"
   :default 8)
 
 (define-setting :management-repl-authentication-timeout (integer-setting)
@@ -453,7 +456,7 @@ exist yet, and is only put in directory form."
   :group :management
   :documentation "The absolute authentication deadline in seconds."
   :minimum 1
-  :environment "AUTOLITH_MANAGEMENT_REPL_AUTH_TIMEOUT"
+  :environment "ANTAIOS_MANAGEMENT_REPL_AUTH_TIMEOUT"
   :default 10)
 
 
@@ -679,7 +682,7 @@ registered providers. DURABLE-P NIL skips the preferences file."
 
 (-> configuration-project-adaptation-offers-path (configuration) pathname)
 (defun configuration-project-adaptation-offers-path (configuration)
-  "Return the atomic per-project AUTOLITH.org offer-state pathname."
+  "Return the atomic per-project ANTAIOS.org offer-state pathname."
   (merge-pathnames "project-adaptation-offers.sexp"
                    (config :state-root configuration)))
 
@@ -732,32 +735,32 @@ registered providers. DURABLE-P NIL skips the preferences file."
 
 (-> configuration-auth-path (configuration) pathname)
 (defun configuration-auth-path (configuration)
-  "Return Autolith's private provider credential pathname."
+  "Return Antaios's private provider credential pathname."
   (merge-pathnames "auth.sexp" (config :state-root configuration)))
 
 (-> configuration-grok-auth-path (configuration) pathname)
 (defun configuration-grok-auth-path (configuration)
-  "Return Autolith's private Grok OAuth credential pathname."
+  "Return Antaios's private Grok OAuth credential pathname."
   (merge-pathnames "grok-auth.sexp" (config :state-root configuration)))
 
 (-> configuration-nous-auth-path (configuration) pathname)
 (defun configuration-nous-auth-path (configuration)
-  "Return Autolith's private Nous OAuth credential pathname."
+  "Return Antaios's private Nous OAuth credential pathname."
   (merge-pathnames "nous-auth.sexp" (config :state-root configuration)))
 
 (-> configuration-api-keys-path (configuration) pathname)
 (defun configuration-api-keys-path (configuration)
-  "Return Autolith's private OpenAI-compatible API-key pathname."
+  "Return Antaios's private OpenAI-compatible API-key pathname."
   (merge-pathnames "api-keys.sexp" (config :state-root configuration)))
 
 (-> configuration-fireworks-auth-path (configuration) pathname)
 (defun configuration-fireworks-auth-path (configuration)
-  "Return Autolith's private Fireworks API key credential pathname."
+  "Return Antaios's private Fireworks API key credential pathname."
   (merge-pathnames "fireworks-auth.sexp" (config :state-root configuration)))
 
 (-> configuration-opencode-auth-path (configuration) pathname)
 (defun configuration-opencode-auth-path (configuration)
-  "Return Autolith's private OpenCode API key credential pathname."
+  "Return Antaios's private OpenCode API key credential pathname."
   (merge-pathnames "opencode-auth.sexp" (config :state-root configuration)))
 
 (-> configuration-provider-model-cache-path (configuration) pathname)

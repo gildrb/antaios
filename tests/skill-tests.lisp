@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Skill Test Support --
 
@@ -26,7 +26,7 @@
         (*print-circle* nil)
         (*print-readably* nil))
     (format nil
-            "(:autolith-skill~% :version ~S~% :name ~S~% :description ~S~% :instructions ~S)~%"
+            "(:antaios-skill~% :version ~S~% :name ~S~% :description ~S~% :instructions ~S)~%"
             version
             name
             description
@@ -86,7 +86,7 @@
   (let* ((site-root
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-skill-site-tests-~A/" (make-identifier))
+             (format nil "antaios-skill-site-tests-~A/" (make-identifier))
              (uiop:temporary-directory))))
          (base-configuration
            (progn
@@ -107,7 +107,7 @@
              (configuration-copy
               base-configuration :working-directory
               working-directory)))
-         (project-skills (merge-pathnames ".autolith/skills/" project))
+         (project-skills (merge-pathnames ".antaios/skills/" project))
           (user-skills
             (merge-pathnames
              "skills/"
@@ -124,11 +124,11 @@
               "only the effective Git root supplies project-local skills")
              (test-assert
               (equal (second roots) user-skills)
-              "the XDG Autolith skill root follows the project root")
+              "the XDG Antaios skill root follows the project root")
              (test-assert
               (equal (third roots)
                      (merge-pathnames ".agents/skills/" (user-homedir-pathname)))
-              "the shared ~/.agents/skills root follows the Autolith user root")
+              "the shared ~/.agents/skills root follows the Antaios user root")
              (test-assert
               (equal
                (fourth roots)
@@ -224,7 +224,7 @@
                           (config :cache-root configuration))
                    (string= (skill-metadata-read standard)
                             "Standard instructions."))
-              "Autolith discovers and reads standard Skills through cl-skills")
+              "Antaios discovers and reads standard Skills through cl-skills")
              (multiple-value-bind (rendered included omitted)
                  (skill-catalog-render catalog :character-budget 1500)
                (test-assert
@@ -232,7 +232,7 @@
                 "the rendered catalog obeys its exact character budget")
                (test-assert
                 (search "call `skill.load`" rendered)
-                "Autolith adapts the provider-neutral catalog to skill.load")
+                "Antaios adapts the provider-neutral catalog to skill.load")
                (test-assert
                 (= (+ included omitted)
                    (length (skill-catalog-skills catalog)))
@@ -265,7 +265,7 @@
   (let* ((base-configuration (test-configuration))
          (root (test-configuration-root base-configuration))
          (project (merge-pathnames "project/" root))
-         (skill-root (merge-pathnames ".autolith/skills/" project))
+         (skill-root (merge-pathnames ".antaios/skills/" project))
          (configuration
            (progn
              (ensure-directories-exist
@@ -453,7 +453,7 @@
   (let* ((base-configuration (test-configuration))
          (root (test-configuration-root base-configuration))
          (project (merge-pathnames "project/" root))
-         (skills (merge-pathnames ".autolith/skills/" project))
+         (skills (merge-pathnames ".antaios/skills/" project))
          (configuration
            (progn
              (ensure-directories-exist
@@ -464,7 +464,7 @@
          (conversation
            (conversation-create configuration
                                 :identifier "skill-thread-isolation"))
-         (barrier-lock (make-lock "Autolith Skill selection isolation"))
+         (barrier-lock (make-lock "Antaios Skill selection isolation"))
          (barrier (make-condition-variable))
          (child-ready-p nil)
          (release-child-p nil)
@@ -518,7 +518,7 @@
                            (with-lock-held (barrier-lock)
                              (setf child-ready-p t)
                              (condition-notify barrier)))))
-                     :name "Autolith child Skill selection isolation"))
+                     :name "Antaios child Skill selection isolation"))
               (with-lock-held (barrier-lock)
                 (loop until child-ready-p
                       do
@@ -561,7 +561,7 @@
   (let* ((base-configuration (test-configuration))
          (root (test-configuration-root base-configuration))
          (project (merge-pathnames "project/" root))
-         (skills (merge-pathnames ".autolith/skills/" project))
+         (skills (merge-pathnames ".antaios/skills/" project))
          (lower-skills
            (merge-pathnames
             "skills/"

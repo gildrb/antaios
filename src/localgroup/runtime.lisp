@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Application Session State --
 
@@ -226,7 +226,7 @@ conversation transaction can roll back before releasing either lease."
                   (idle-p ':idle) (t ':starting))))
       (list :localgroup-status :version *daemon-protocol-version* :session-id
             (conversation-identifier conversation) :pid (current-process-id)
-            :autolith-version *autolith-version* :state state :idle-p (not (null idle-p))
+            :antaios-version *antaios-version* :state state :idle-p (not (null idle-p))
             :waiting-for-input-p (not (null waiting-for-input-p)) :paused-p
             (not (null paused-p)) :handoff-p (not (null handoff-p)) :cwd
             (namestring (config :working-directory configuration)) :conversation-id
@@ -273,7 +273,7 @@ conversation transaction can roll back before releasing either lease."
           (application-ui (localgroup-session-application session)))))
     (unless (typep terminal 'localgroup-terminal)
       (error 'localgroup-error :message
-             "This Autolith session has no attachable terminal relay." :operation
+             "This Antaios session has no attachable terminal relay." :operation
              ':attach :session-id (image-daemon:daemon-runtime-identifier session)))
     terminal))
 
@@ -599,7 +599,7 @@ already disconnected costs nothing."
            (when (and (not restart-p) (localgroup--attach-expected-p startup-values))
              (setf (localgroup-session-attach-watchdog-thread session)
                    (make-thread (lambda () (localgroup--attach-watchdog session))
-                                :name "Autolith localgroup attach watchdog")))
+                                :name "Antaios localgroup attach watchdog")))
            (unless restart-p (localgroup-handoff-finish-startup application))
            session)
       (unless completed-p
@@ -607,7 +607,7 @@ already disconnected costs nothing."
         (when session (image-daemon:daemon-runtime-stop session))))))
 
 (defun localgroup--handle-request (session request &key socket stream)
-  "Dispatch authenticated requests according to Autolith's command and attachment policy."
+  "Dispatch authenticated requests according to Antaios's command and attachment policy."
   (if (eq (localgroup--request-field request :operation) ':attach)
       (localgroup--serve-attachment session socket stream request)
       (daemon-write-packet stream (localgroup--dispatch-request session request))))

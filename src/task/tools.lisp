@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Task Provider Tools --
 
@@ -1112,7 +1112,7 @@ Only the current primary conversation's artifact root is searched."
                  (handler-case
                      (make-thread
                       (lambda () (job-run-inline job))
-                      :name (format nil "Autolith job.wait ~A" identifier))
+                      :name (format nil "Antaios job.wait ~A" identifier))
                    (error ()
                      nil)))
                (multiple-value-bind (snapshot terminal-p)

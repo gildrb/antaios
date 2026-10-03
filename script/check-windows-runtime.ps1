@@ -5,10 +5,10 @@ Set-StrictMode -Version Latest
 $runtime = Join-Path $RuntimeDirectory 'sbcl.exe'
 $core = Join-Path $RuntimeDirectory 'unicode-test.core'
 $previousHome = $env:SBCL_HOME
-$previousCore = $env:AUTOLITH_RUNTIME_TEST_CORE
+$previousCore = $env:ANTAIOS_RUNTIME_TEST_CORE
 try {
   $env:SBCL_HOME = $RuntimeDirectory
-  $env:AUTOLITH_RUNTIME_TEST_CORE = $core
+  $env:ANTAIOS_RUNTIME_TEST_CORE = $core
   $save = @'
 (progn
   (assert (= 65001 (sb-alien:alien-funcall
@@ -17,12 +17,12 @@ try {
   (assert (probe-file sb-ext:*runtime-pathname*))
   (assert (probe-file (sb-int:sbcl-homedir-pathname)))
   (sb-ext:save-lisp-and-die
-   (uiop:getenv "AUTOLITH_RUNTIME_TEST_CORE")
+   (uiop:getenv "ANTAIOS_RUNTIME_TEST_CORE")
    :executable nil
    :toplevel (lambda ()
                (assert (probe-file sb-ext:*core-pathname*))
                (assert (equal (uiop:parse-native-namestring
-                               (uiop:getenv "AUTOLITH_RUNTIME_TEST_CORE"))
+                               (uiop:getenv "ANTAIOS_RUNTIME_TEST_CORE"))
                               sb-ext:*core-pathname*))
                (format t "Unicode runtime and core round-trip passed.~%")
                (sb-ext:exit :code 0))))
@@ -33,6 +33,6 @@ try {
   if ($LASTEXITCODE -ne 0) { throw 'Unicode core reload failed.' }
 } finally {
   $env:SBCL_HOME = $previousHome
-  $env:AUTOLITH_RUNTIME_TEST_CORE = $previousCore
+  $env:ANTAIOS_RUNTIME_TEST_CORE = $previousCore
   if (Test-Path -LiteralPath $core) { Remove-Item -Force -LiteralPath $core }
 }

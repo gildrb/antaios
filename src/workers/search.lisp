@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- clifff Worker Adapter --
 
@@ -11,14 +11,14 @@ source directory serves, which inside a saved image names the tree the image
 was built from and may no longer exist."
   (if configuration
       (config :source-root configuration)
-      (asdf:system-source-directory :autolith)))
+      (asdf:system-source-directory :antaios)))
 
 (-> search-worker-create (&key (:configuration (option configuration))) worker)
 (defun search-worker-create (&key configuration)
-  "Create Autolith's lazy supervised clifff helper below CONFIGURATION's source root."
+  "Create Antaios's lazy supervised clifff helper below CONFIGURATION's source root."
   (let* ((source-root (search-worker--source-root configuration))
-         (script (merge-pathnames "bin/autolith-search-worker" source-root))
-         (sbcl-command (or (uiop:getenv "AUTOLITH_SBCL") "sbcl")))
+         (script (merge-pathnames "bin/antaios-search-worker" source-root))
+         (sbcl-command (or (uiop:getenv "ANTAIOS_SBCL") "sbcl")))
     (unless (probe-file script)
       (error 'search-error
              :message (format nil "The private fff helper is missing at ~A."

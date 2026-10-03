@@ -1,8 +1,8 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Fatal Control Path --
 
-(define-condition fatal-control-path-error (autolith-error)
+(define-condition fatal-control-path-error (antaios-error)
   ((cause
     :initarg :cause
     :reader fatal-control-path-error-cause
@@ -29,14 +29,14 @@
 (-> application-crash-condition-report (serious-condition) string)
 (defun application-crash-condition-report (condition)
   "Return an allowlisted, secret-free report for crash CONDITION."
-  (if (typep condition 'autolith-error)
-      (autolith-error-message condition)
+  (if (typep condition 'antaios-error)
+      (antaios-error-message condition)
       (format nil "Unexpected condition of type ~S." (type-of condition))))
 
 (-> application-publish-crash-pointer (application pathname) null)
 (defun application-publish-crash-pointer (application capsule-pathname)
   "Publish CAPSULE-PATHNAME to this launcher's private pointer, when configured."
-  (let ((pointer-value (uiop:getenv "AUTOLITH_CRASH_POINTER")))
+  (let ((pointer-value (uiop:getenv "ANTAIOS_CRASH_POINTER")))
     (when (non-empty-string-p pointer-value)
       (let ((configuration (application-configuration application))
             (pointer-pathname (pathname pointer-value)))
@@ -195,8 +195,8 @@
 (defun application--recovery-crash-capsule-pathname (configuration)
   "Return this recovered launcher's contained crash capsule, when available."
   (handler-case
-      (let ((recovered (uiop:getenv "AUTOLITH_RECOVERED"))
-            (pointer-value (uiop:getenv "AUTOLITH_CRASH_POINTER")))
+      (let ((recovered (uiop:getenv "ANTAIOS_RECOVERED"))
+            (pointer-value (uiop:getenv "ANTAIOS_CRASH_POINTER")))
         (when (and (non-empty-string-p recovered)
                    (non-empty-string-p pointer-value))
           (let* ((pointer-pathname (pathname pointer-value))
@@ -257,7 +257,7 @@
   (block nil
     (handler-case
         (let ((pointer-value
-                (uiop:getenv "AUTOLITH_RECOVERY_SESSION_POINTER")))
+                (uiop:getenv "ANTAIOS_RECOVERY_SESSION_POINTER")))
           (unless (non-empty-string-p pointer-value)
             (return (values nil nil nil)))
           (let* ((pointer-pathname (pathname pointer-value))
@@ -331,16 +331,16 @@
     (values (option string) (option integer) (option integer)))
 (defun application-recovery-state (configuration)
   "Return trustworthy conversation and cursor state for recovered startup."
-  (let ((crash-pointer (uiop:getenv "AUTOLITH_CRASH_POINTER")))
-    (if (and (non-empty-string-p (uiop:getenv "AUTOLITH_RECOVERED"))
+  (let ((crash-pointer (uiop:getenv "ANTAIOS_CRASH_POINTER")))
+    (if (and (non-empty-string-p (uiop:getenv "ANTAIOS_RECOVERED"))
              (non-empty-string-p crash-pointer)
              (null (application--recovery-crash-capsule-record configuration)))
         (application--recovery-session-state configuration)
         (values (application--recovery-conversation-id)
                 (application--recovery-sequence
-                 "AUTOLITH_RECOVERY_RENDERED_SEQUENCE")
+                 "ANTAIOS_RECOVERY_RENDERED_SEQUENCE")
                 (application--recovery-sequence
-                 "AUTOLITH_RECOVERY_HISTORY_FLOOR_SEQUENCE")))))
+                 "ANTAIOS_RECOVERY_HISTORY_FLOOR_SEQUENCE")))))
 
 (-> application-recovery-diagnosis-prompt
     (configuration)
@@ -355,7 +355,7 @@
              (commit (getf properties :git-commit)))
         (format
          nil
-         "Autolith recovered this conversation after its active process ~
+         "Antaios recovered this conversation after its active process ~
           crashed. Diagnose the likely cause from the bounded crash context ~
           below and the recent conversation history. This is a diagnosis-only ~
            turn. Only bounded read-only diagnostic tool rounds are available ~

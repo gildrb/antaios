@@ -1,15 +1,26 @@
-#+TITLE: Autolith Release Service
+#+TITLE: Antaios Release Service
 #+STARTUP: content
 
 * Command notation
 
-When release documentation or release notes name an Autolith application
+When release documentation or release notes name an Antaios application
 command, prefer its canonical parenthesized Common Lisp form, such as
 =(update)= or =(info)=, over slash compatibility forms such as =/update=.
 Use slash syntax only when documenting slash-specific parsing or compatibility
 behavior.
 
 * Components
+
+Antaios operates no public release service. An operator who hosts one names
+its public host in =ANTAIOS_RELEASE_HOST= for Caddy, and packaged clients name
+the service in =ANTAIOS_RELEASE_BASE_URL=. Without that variable the installer
+refuses to run, packaged releases skip availability checks, and =(update)=
+points at Nix or a source checkout instead. Install from a hosted service with:
+
+#+BEGIN_SRC sh
+curl -fsSL "https://$ANTAIOS_RELEASE_HOST/antaios" |
+  ANTAIOS_RELEASE_BASE_URL="https://$ANTAIOS_RELEASE_HOST/releases" sh
+#+END_SRC
 
 The release service has three independent long-running processes:
 
@@ -40,7 +51,7 @@ Windows package CI and tagged releases use the same cached-bootstrap action.
 The default-branch caches contain locked Lisp dependencies, the pinned runtime,
 ASDF compiled files, and the FFF and ColorLisp native libraries. Dependency and
 runtime pins determine the Lisp cache key; native source pins and compiler
-versions determine the native cache keys. Each run rebuilds the Autolith images
+versions determine the native cache keys. Each run rebuilds the Antaios images
 from the checked-out source. Caches are saved after bootstrap, before package
 validation or the full test suite. Tagged releases can reuse the default-branch
 caches. For a manual package-only verification, dispatch =Windows package= with
@@ -50,10 +61,10 @@ The installer, service entrypoints, and initial bootstrap remain shell because
 they must run before a Lisp image is available or replace the current Unix
 process.
 
-The HTTP process runs as the unprivileged =autolith-release= user. It can read
+The HTTP process runs as the unprivileged =antaios-release= user. It can read
 the selected checkout and published artifacts but cannot write them.
 The updater runs as root because it owns deployments and controls s6 services,
-but it performs bootstrap, checks, and candidate probes as =autolith-release=.
+but it performs bootstrap, checks, and candidate probes as =antaios-release=.
 
 The builder and updater hold the same process-shared host-operation lock. An
 update therefore waits for an in-flight publication to finish before changing
@@ -67,14 +78,14 @@ later.
 * Filesystem layout
 
 #+BEGIN_SRC text
-/srv/autolith-release-server/current                 atomic deployment symlink
-/srv/autolith-release-server/previous                last known-good symlink
-/srv/autolith-release-server/deployments/TAG/        root-owned exact tag
-/srv/autolith-release-server/source/                 first-update bootstrap only
-/srv/autolith-release-server/public/                 published archives
-/var/lib/autolith-release-server/home/               service runtime and cache
-/var/lib/autolith-release-server/builder/            builder cache and shared lock
-/var/lib/autolith-release-server/updater/            private update transaction
+/srv/antaios-release-server/current                 atomic deployment symlink
+/srv/antaios-release-server/previous                last known-good symlink
+/srv/antaios-release-server/deployments/TAG/        root-owned exact tag
+/srv/antaios-release-server/source/                 first-update bootstrap only
+/srv/antaios-release-server/public/                 published archives
+/var/lib/antaios-release-server/home/               service runtime and cache
+/var/lib/antaios-release-server/builder/            builder cache and shared lock
+/var/lib/antaios-release-server/updater/            private update transaction
 #+END_SRC
 
 The builder fetches only missing GitHub assets. A failed fetch remains private
@@ -90,14 +101,14 @@ older deployments only when they remain clean exact lightweight tags.
 Create the service account and roots:
 
 #+BEGIN_SRC sh
-useradd --system --home-dir /var/lib/autolith-release-server/home \
-  --shell /usr/bin/nologin autolith-release
-install -d -m 0755 /srv/autolith-release-server/public
-install -d -m 0755 /srv/autolith-release-server/deployments
-install -d -m 0700 /var/lib/autolith-release-server/builder
-install -d -m 0700 /var/lib/autolith-release-server/updater
-install -d -o autolith-release -g autolith-release -m 0700 \
-  /var/lib/autolith-release-server/home
+useradd --system --home-dir /var/lib/antaios-release-server/home \
+  --shell /usr/bin/nologin antaios-release
+install -d -m 0755 /srv/antaios-release-server/public
+install -d -m 0755 /srv/antaios-release-server/deployments
+install -d -m 0700 /var/lib/antaios-release-server/builder
+install -d -m 0700 /var/lib/antaios-release-server/updater
+install -d -o antaios-release -g antaios-release -m 0700 \
+  /var/lib/antaios-release-server/home
 #+END_SRC
 
 Select an explicit lightweight release tag and record its exact remote commit.
@@ -106,24 +117,24 @@ between discovery and checkout.
 
 #+BEGIN_SRC sh
 tag=v0.16.1
-repository=https://github.com/luciusmagn/autolith.git
+repository=https://github.com/gildrb/theseus.git
 commit=$(git ls-remote --tags --refs "$repository" "refs/tags/$tag" |
   awk 'NR == 1 { print $1 }')
 test "${#commit}" -eq 40
 git clone --depth 1 --branch "$tag" --single-branch "$repository" \
-  "/srv/autolith-release-server/deployments/$tag"
-test "$(git -C "/srv/autolith-release-server/deployments/$tag" \
+  "/srv/antaios-release-server/deployments/$tag"
+test "$(git -C "/srv/antaios-release-server/deployments/$tag" \
   cat-file -t "refs/tags/$tag")" = commit
-test "$(git -C "/srv/autolith-release-server/deployments/$tag" rev-parse HEAD)" \
+test "$(git -C "/srv/antaios-release-server/deployments/$tag" rev-parse HEAD)" \
   = "$commit"
-ln -s "deployments/$tag" /srv/autolith-release-server/current
+ln -s "deployments/$tag" /srv/antaios-release-server/current
 #+END_SRC
 
 Install Quicklisp into the service home, then bootstrap the selected deployment
 as the service account at its final pathname.
 
 #+BEGIN_SRC sh
-export HOME=/var/lib/autolith-release-server/home
+export HOME=/var/lib/antaios-release-server/home
 export XDG_DATA_HOME=$HOME/.local/share
 export XDG_STATE_HOME=$HOME/.local/state
 export XDG_CACHE_HOME=$HOME/.cache
@@ -132,13 +143,13 @@ curl --fail --location --show-error --retry 3 \
   https://beta.quicklisp.org/quicklisp.lisp
 sbcl --noinform --non-interactive --load /tmp/quicklisp.lisp \
   --eval '(quicklisp-quickstart:install)'
-deployment="/srv/autolith-release-server/deployments/$tag"
-chown -R autolith-release:autolith-release "$HOME"
-chown -R autolith-release:autolith-release "$deployment"
+deployment="/srv/antaios-release-server/deployments/$tag"
+chown -R antaios-release:antaios-release "$HOME"
+chown -R antaios-release:antaios-release "$deployment"
 (cd "$deployment" &&
-  s6-setuidgid autolith-release "$deployment/script/bootstrap")
+  s6-setuidgid antaios-release "$deployment/script/bootstrap")
 (cd "$deployment" &&
-  s6-setuidgid autolith-release "$deployment/script/check")
+  s6-setuidgid antaios-release "$deployment/script/check")
 chown -R root:root "$deployment"
 chmod -R go-w "$deployment"
 #+END_SRC
@@ -146,8 +157,9 @@ chmod -R go-w "$deployment"
 Copy all three tracked service directories from =server/deployment/s6/= into
 =/etc/s6/sv/=, add them to the active s6-rc bundle, and reload the compiled
 database. Replace the public Caddy site with
-=server/deployment/caddy.caddyfile=, validate the complete Caddy configuration,
-then reload Caddy.
+=server/deployment/caddy.caddyfile=, export =ANTAIOS_RELEASE_HOST= to Caddy
+with the service's public host name, validate the complete Caddy
+configuration, then reload Caddy.
 
 * One-time migration from the fixed checkout
 
@@ -156,29 +168,29 @@ Release 0.16.1 is the first release that can update the host itself. An existing
 0.16.1 tag so the updater is already polling when the tag appears.
 
 First, quiesce the old builder and wait for its supervised process to stop. Do
-not proceed while an Autolith release container remains active:
+not proceed while an Antaios release container remains active:
 
 #+BEGIN_SRC sh
-s6-svc -wd -T 600000 -d /run/service/autolith-release-builder
-docker ps --filter ancestor=autolith-release-builder:ubuntu-22.04
+s6-svc -wd -T 600000 -d /run/service/antaios-release-builder
+docker ps --filter ancestor=antaios-release-builder:ubuntu-22.04
 #+END_SRC
 
 Require the existing fixed checkout to be clean. Never reset or discard it.
 Fetch the final pushed 0.16.1 commit into that checkout, detach at the explicit
-commit, then bootstrap it as =autolith-release=. This checkout is only the
+commit, then bootstrap it as =antaios-release=. This checkout is only the
 first-update runner.
 
 #+BEGIN_SRC sh
-source=/srv/autolith-release-server/source
+source=/srv/antaios-release-server/source
 test -z "$(git -C "$source" status --porcelain)"
 git -C "$source" fetch origin
 commit=REPLACE_WITH_FINAL_PUSHED_0_16_1_COMMIT
 git -C "$source" checkout --detach "$commit"
-chown -R autolith-release:autolith-release \
-  /var/lib/autolith-release-server/home
-chown -R autolith-release:autolith-release "$source"
-(cd "$source" && s6-setuidgid autolith-release "$source/script/bootstrap")
-(cd "$source" && s6-setuidgid autolith-release "$source/script/check")
+chown -R antaios-release:antaios-release \
+  /var/lib/antaios-release-server/home
+chown -R antaios-release:antaios-release "$source"
+(cd "$source" && s6-setuidgid antaios-release "$source/script/bootstrap")
+(cd "$source" && s6-setuidgid antaios-release "$source/script/check")
 chown -R root:root "$source"
 chmod -R go-w "$source"
 #+END_SRC
@@ -191,13 +203,13 @@ request down again, wait for it, and verify that no release container exists.
 The 0.16.1 updater will start the builder only after successful promotion.
 
 #+BEGIN_SRC sh
-s6-svc -wd -T 600000 -d /run/service/autolith-release-builder
-docker ps --filter ancestor=autolith-release-builder:ubuntu-22.04
+s6-svc -wd -T 600000 -d /run/service/antaios-release-builder
+docker ps --filter ancestor=antaios-release-builder:ubuntu-22.04
 #+END_SRC
 
 The updater run script detects that the selected 0.16.0 deployment has no
 updater and temporarily executes
-=/srv/autolith-release-server/source/server/run update=. Once 0.16.1 is tagged,
+=/srv/antaios-release-server/source/server/run update=. Once 0.16.1 is tagged,
 it prepares and selects 0.16.1, cycles the server and builder, and exits. s6
 then restarts it from =current=, so every later update is autonomous.
 
@@ -206,37 +218,37 @@ then restarts it from =current=, so every later update is autonomous.
 Run one foreground scan and build with:
 
 #+BEGIN_SRC sh
-HOME=/var/lib/autolith-release-server/home \
-XDG_DATA_HOME=/var/lib/autolith-release-server/home/.local/share \
-XDG_STATE_HOME=/var/lib/autolith-release-server/home/.local/state \
-XDG_CACHE_HOME=/var/lib/autolith-release-server/home/.cache \
-AUTOLITH_RELEASE_SOURCE_ROOT=/srv/autolith-release-server/current \
-AUTOLITH_RELEASE_STATE_ROOT=/var/lib/autolith-release-server/builder \
-AUTOLITH_RELEASE_PUBLIC_ROOT=/srv/autolith-release-server/public \
-  /srv/autolith-release-server/current/server/run build-once
+HOME=/var/lib/antaios-release-server/home \
+XDG_DATA_HOME=/var/lib/antaios-release-server/home/.local/share \
+XDG_STATE_HOME=/var/lib/antaios-release-server/home/.local/state \
+XDG_CACHE_HOME=/var/lib/antaios-release-server/home/.cache \
+ANTAIOS_RELEASE_SOURCE_ROOT=/srv/antaios-release-server/current \
+ANTAIOS_RELEASE_STATE_ROOT=/var/lib/antaios-release-server/builder \
+ANTAIOS_RELEASE_PUBLIC_ROOT=/srv/antaios-release-server/public \
+  /srv/antaios-release-server/current/server/run build-once
 #+END_SRC
 
 Run one foreground host update scan with:
 
 #+BEGIN_SRC sh
-HOME=/var/lib/autolith-release-server/home \
-XDG_DATA_HOME=/var/lib/autolith-release-server/home/.local/share \
-XDG_STATE_HOME=/var/lib/autolith-release-server/home/.local/state \
-XDG_CACHE_HOME=/var/lib/autolith-release-server/home/.cache \
-AUTOLITH_RELEASE_SOURCE_ROOT=/srv/autolith-release-server/current \
-AUTOLITH_RELEASE_SELECTION_PATH=/srv/autolith-release-server/current \
-AUTOLITH_RELEASE_DEPLOYMENTS_ROOT=/srv/autolith-release-server/deployments \
-AUTOLITH_RELEASE_UPDATER_STATE_ROOT=/var/lib/autolith-release-server/updater \
-AUTOLITH_RELEASE_STATE_ROOT=/var/lib/autolith-release-server/builder \
-  /srv/autolith-release-server/current/server/run update-once
+HOME=/var/lib/antaios-release-server/home \
+XDG_DATA_HOME=/var/lib/antaios-release-server/home/.local/share \
+XDG_STATE_HOME=/var/lib/antaios-release-server/home/.local/state \
+XDG_CACHE_HOME=/var/lib/antaios-release-server/home/.cache \
+ANTAIOS_RELEASE_SOURCE_ROOT=/srv/antaios-release-server/current \
+ANTAIOS_RELEASE_SELECTION_PATH=/srv/antaios-release-server/current \
+ANTAIOS_RELEASE_DEPLOYMENTS_ROOT=/srv/antaios-release-server/deployments \
+ANTAIOS_RELEASE_UPDATER_STATE_ROOT=/var/lib/antaios-release-server/updater \
+ANTAIOS_RELEASE_STATE_ROOT=/var/lib/antaios-release-server/builder \
+  /srv/antaios-release-server/current/server/run update-once
 #+END_SRC
 
 Verify the public boundary after deployment:
 
 #+BEGIN_SRC sh
-curl -fsS https://sh.lambda-symbolics.com/health
-curl -fsSIL https://sh.lambda-symbolics.com/releases/latest
-curl -fsSL https://sh.lambda-symbolics.com/autolith | sh -n
+curl -fsS "https://$ANTAIOS_RELEASE_HOST/health"
+curl -fsSIL "https://$ANTAIOS_RELEASE_HOST/releases/latest"
+curl -fsSL "https://$ANTAIOS_RELEASE_HOST/antaios" | sh -n
 #+END_SRC
 
 An empty publication root publishes only the newest remote tag, and only after
@@ -271,5 +283,6 @@ Installed clients use the =latest= redirect only for bounded availability
 requests and again after an attended update choice. The background request
 updates private cached metadata but cannot install anything. After the terminal
 interface exits cleanly for an accepted update, the selected release launcher
-uses its own bundled installer to fetch the archive and checksum from this
-service, verify them, atomically select the release, and restart.
+uses its own bundled installer to fetch the archive and checksum from the
+service named by =ANTAIOS_RELEASE_BASE_URL=, verify them, atomically select
+the release, and restart.

@@ -1,9 +1,9 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Product Terminal Adapter --
 
 (defclass localgroup-terminal (terminal image-daemon:relay) ()
-  (:documentation "An image-daemon relay integrated with Autolith terminal state."))
+  (:documentation "An image-daemon relay integrated with Antaios terminal state."))
 
 (defun localgroup-terminal-create (&optional direct-terminal)
   "Create a relay terminal initially owned by DIRECT-TERMINAL when supplied."

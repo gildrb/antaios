@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- RFC 8628 Conditions --
 
@@ -6,7 +6,7 @@
     (cl-rfc8628:device-authentication-error authentication-error)
   ()
   (:documentation
-   "A device authentication failure joined to Autolith's condition hierarchy."))
+   "A device authentication failure joined to Antaios's condition hierarchy."))
 
 
 
@@ -145,7 +145,7 @@
   "Display the ChatGPT verification URL and one-time code."
   (declare (ignore client))
   (format stream
-          "~&Sign in with ChatGPT:~%  Open: ~A~%  Code: ~A~%~%The code expires in 15 minutes. Continue only if you started this login in Autolith.~%"
+          "~&Sign in with ChatGPT:~%  Open: ~A~%  Code: ~A~%~%The code expires in 15 minutes. Continue only if you started this login in Antaios.~%"
           (device-authorization-verification-url authorization)
           (device-authorization-user-code authorization))
   (finish-output stream)

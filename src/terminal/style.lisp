@@ -1,14 +1,10 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Semantic Terminal Styles --
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter *terminal-style-names*
     '(:plain :brand
-      :brand-gradient-1 :brand-gradient-2 :brand-gradient-3
-      :brand-gradient-4 :brand-gradient-5 :brand-gradient-6
-      :recovery-gradient-1 :recovery-gradient-2 :recovery-gradient-3
-      :recovery-gradient-4 :recovery-gradient-5 :recovery-gradient-6
       :user :tool :success :failure :notice :dim :hint :selected
       :strong :emphasis :code :code-copy :lisp-prompt :plan-active :timestamp-time
       :agent-spinner :agent-name :child-name :agent-role :agent-tool
@@ -26,16 +22,6 @@
   "A semantic terminal style resolved to color and emphasis by the renderer."
   `(member ,@*terminal-style-names*))
 
-(defparameter *terminal-brand-gradient-names*
-  '(:brand-gradient-1 :brand-gradient-2 :brand-gradient-3
-    :brand-gradient-4 :brand-gradient-5 :brand-gradient-6)
-  "The startup mark's row styles, top to bottom.")
-
-(defparameter *terminal-recovery-gradient-names*
-  '(:recovery-gradient-1 :recovery-gradient-2 :recovery-gradient-3
-    :recovery-gradient-4 :recovery-gradient-5 :recovery-gradient-6)
-  "The recovery startup mark's row styles, top to bottom.")
-
 (-> terminal--style-table (list) list)
 (defun terminal--style-table (specifications)
   "Return an alist of style names to Colorist styles from SPECIFICATIONS.
@@ -44,51 +30,42 @@ Each specification is (NAME MAKE-STYLE-ARGUMENTS)."
   (loop for (name arguments) in specifications
         collect (cons name (apply #'make-style arguments))))
 
-(-> terminal--recovery-gradient-styles () list)
-(defun terminal--recovery-gradient-styles ()
-  "Return the red indexed ramp every theme uses after recovery starts Autolith."
-  (loop for name in *terminal-recovery-gradient-names*
-        for index in '(224 217 210 203 197 196)
-        collect (cons name (make-style
-                            :foreground (indexed-color index :fallback ':red)
-                            :bold t))))
-
-(-> terminal-style-table-autolith () list)
-(defun terminal-style-table-autolith ()
+(-> terminal-style-table-antaios () list)
+(defun terminal-style-table-antaios ()
   "Return the default style table.
 
-General interface styles use the basic ANSI palette so Autolith follows the
-terminal's own theme. Only the startup mark, promoted child name, and status
-background opt into indexed colors."
+General interface styles use the basic ANSI palette so Antaios follows the
+terminal's own theme. Only the promoted child name and status background opt
+into indexed colors. No style renders bold."
   (append
    (terminal--style-table
     '((:plain ())
-      (:brand (:foreground :magenta :bold t))
-      (:user (:foreground :cyan :bold t))
-      (:tool (:foreground :yellow :bold t))
+      (:brand (:foreground :magenta))
+      (:user (:foreground :cyan))
+      (:tool (:foreground :yellow))
       (:success (:foreground :green))
-      (:failure (:foreground :red :bold t))
+      (:failure (:foreground :red))
       (:notice (:foreground :yellow))
       (:dim (:faint t))
       (:hint (:faint t :italic t))
       (:selected (:reverse t))
-      (:strong (:bold t))
+      (:strong ())
       (:emphasis (:italic t))
       (:code (:foreground :cyan))
       (:code-copy (:faint t :underline t))
-      (:lisp-prompt (:foreground :red :bold t))
-      (:plan-active (:foreground :cyan :bold t))
+      (:lisp-prompt (:foreground :red))
+      (:plan-active (:foreground :cyan))
       (:timestamp-time (:foreground :cyan))
-      (:agent-spinner (:foreground :bright-green :bold t))
-      (:agent-name (:foreground :bright-cyan :bold t))
+      (:agent-spinner (:foreground :bright-green))
+      (:agent-name (:foreground :bright-cyan))
       (:agent-role (:foreground :bright-magenta))
       (:agent-tool (:foreground :bright-yellow))
-      (:command-spinner (:foreground :bright-green :bold t))
-      (:command-id (:foreground :bright-cyan :bold t))
+      (:command-spinner (:foreground :bright-green))
+      (:command-id (:foreground :bright-cyan))
       (:command-tool (:foreground :bright-yellow))
       (:legend-plain (:foreground :bright-white))
       (:legend-dim (:foreground :white))
-      (:legend-accent (:foreground :bright-magenta :bold t))
+      (:legend-accent (:foreground :bright-magenta))
       (:syntax-comment (:faint t))
       (:syntax-keyword (:foreground :magenta))
       (:syntax-string (:foreground :green))
@@ -97,34 +74,26 @@ background opt into indexed colors."
       (:syntax-type (:foreground :cyan))
       (:syntax-function (:foreground :blue))
       (:syntax-property (:foreground :cyan))
-      (:syntax-heading (:foreground :magenta :bold t))
+      (:syntax-heading (:foreground :magenta))
       (:syntax-link (:foreground :cyan :underline t))))
    (list
     (cons ':child-name
           (make-style
            :foreground (indexed-color 78 :fallback ':green))))
-   (loop for name in *terminal-brand-gradient-names*
-         for index in '(193 157 121 85 84 83)
-         collect (cons name (make-style
-                             :foreground (indexed-color index :fallback ':green)
-                             :bold t)))
-   (terminal--recovery-gradient-styles)
-   (loop for (name foreground arguments) in
-         '((:status-plain :bright-white ())
-           (:status-dim :white ())
-           (:status-accent :bright-magenta (:bold t))
-           (:status-model :bright-cyan (:bold t))
-           (:status-effort :bright-red (:bold t))
-           (:status-branch :bright-green (:bold t))
-           (:compaction-label :bright-yellow (:bold t))
-           (:compaction-track :white ())
-           (:compaction-head :bright-yellow (:bold t)))
+   (loop for (name foreground) in
+         '((:status-plain :bright-white)
+           (:status-dim :white)
+           (:status-accent :bright-magenta)
+           (:status-model :bright-cyan)
+           (:status-effort :bright-red)
+           (:status-branch :bright-green)
+           (:compaction-label :bright-yellow)
+           (:compaction-track :white)
+           (:compaction-head :bright-yellow))
          collect (cons name
-                       (apply #'make-style
-                              :foreground foreground
-                              :background
-                              (indexed-color 236 :fallback ':black)
-                              arguments)))))
+                       (make-style
+                        :foreground foreground
+                        :background (indexed-color 236 :fallback ':black))))))
 
 (defparameter *almighty-palette*
   '((:ink . "#eff6ff")
@@ -139,10 +108,6 @@ background opt into indexed colors."
     (:canvas-darker . "#162456"))
   "Micah's Almighty Lisp palette from almightylisp.com: near-white ink, yellow
 accent, and cyan secondary on a blue canvas.")
-
-(defparameter *almighty-gradient*
-  '("#fefce8" "#fef9c2" "#fff085" "#fce04d" "#f6c91f" "#ebb300")
-  "Yellow shades from light to deep for the Almighty startup mark.")
 
 (-> almighty-color (keyword) color)
 (defun almighty-color (name)
@@ -168,33 +133,33 @@ secondary, and quiet text the soft blue."
     (append
      (terminal--style-table
       `((:plain ())
-        (:brand (:foreground ,accent :bold t))
-        (:user (:foreground ,secondary :bold t))
-        (:tool (:foreground ,accent :bold t))
+        (:brand (:foreground ,accent))
+        (:user (:foreground ,secondary))
+        (:tool (:foreground ,accent))
         (:success (:foreground ,safe))
-        (:failure (:foreground ,danger :bold t))
+        (:failure (:foreground ,danger))
         (:notice (:foreground ,accent))
         (:dim (:foreground ,soft))
         (:hint (:foreground ,soft :italic t))
         (:selected (:reverse t))
-        (:strong (:foreground ,accent :bold t))
+        (:strong (:foreground ,accent))
         (:emphasis (:italic t))
         (:code (:foreground ,secondary))
         (:code-copy (:foreground ,soft :underline t))
-        (:lisp-prompt (:foreground ,accent :bold t))
-        (:plan-active (:foreground ,secondary :bold t))
+        (:lisp-prompt (:foreground ,accent))
+        (:plan-active (:foreground ,secondary))
         (:timestamp-time (:foreground ,soft))
-        (:agent-spinner (:foreground ,accent :bold t))
-        (:agent-name (:foreground ,secondary :bold t))
+        (:agent-spinner (:foreground ,accent))
+        (:agent-name (:foreground ,secondary))
         (:agent-role (:foreground ,soft))
         (:agent-tool (:foreground ,accent))
-        (:command-spinner (:foreground ,accent :bold t))
-        (:command-id (:foreground ,secondary :bold t))
+        (:command-spinner (:foreground ,accent))
+        (:command-id (:foreground ,secondary))
         (:command-tool (:foreground ,accent))
-        (:child-name (:foreground ,safe :bold t))
+        (:child-name (:foreground ,safe))
         (:legend-plain (:foreground ,ink))
         (:legend-dim (:foreground ,soft))
-        (:legend-accent (:foreground ,accent :bold t))
+        (:legend-accent (:foreground ,accent))
         (:syntax-comment (:foreground ,soft))
         (:syntax-keyword (:foreground ,accent))
         (:syntax-string (:foreground ,secondary))
@@ -203,27 +168,21 @@ secondary, and quiet text the soft blue."
         (:syntax-type (:foreground ,secondary))
         (:syntax-function (:foreground ,accent-light))
         (:syntax-property (:foreground ,secondary))
-        (:syntax-heading (:foreground ,accent :bold t))
+        (:syntax-heading (:foreground ,accent))
         (:syntax-link (:foreground ,secondary :underline t))))
-     (loop for name in *terminal-brand-gradient-names*
-           for hex in *almighty-gradient*
-           collect (cons name (make-style :foreground (hex-color hex) :bold t)))
-     (terminal--recovery-gradient-styles)
-     (loop for (name foreground arguments) in
-           `((:status-plain ,ink ())
-             (:status-dim ,soft ())
-             (:status-accent ,accent (:bold t))
-             (:status-model ,secondary (:bold t))
-             (:status-effort ,danger (:bold t))
-             (:status-branch ,safe (:bold t))
-             (:compaction-label ,accent (:bold t))
-             (:compaction-track ,soft ())
-             (:compaction-head ,accent (:bold t)))
+     (loop for (name foreground) in
+           `((:status-plain ,ink)
+             (:status-dim ,soft)
+             (:status-accent ,accent)
+             (:status-model ,secondary)
+             (:status-effort ,danger)
+             (:status-branch ,safe)
+             (:compaction-label ,accent)
+             (:compaction-track ,soft)
+             (:compaction-head ,accent))
            collect (cons name
-                         (apply #'make-style
-                                :foreground foreground
-                                :background canvas-darker
-                                arguments))))))
+                         (make-style :foreground foreground
+                                     :background canvas-darker))))))
 
 
 ;;;; -- Themes --
@@ -236,14 +195,14 @@ secondary, and quiet text the soft blue."
 
 FOREGROUND and BACKGROUND are 24-bit colors imposed on the terminal while the
 fullscreen viewport is active, or NIL to leave the terminal's own defaults."
-  (name        ':autolith :type keyword :read-only t)
+  (name        ':antaios :type keyword :read-only t)
   (style-table nil :type list :read-only t)
   (foreground  nil :type (option color) :read-only t)
   (background  nil :type (option color) :read-only t))
 
 (defparameter *terminal-themes*
-  (list (make-terminal-theme :name ':autolith
-                             :style-table (terminal-style-table-autolith))
+  (list (make-terminal-theme :name ':antaios
+                             :style-table (terminal-style-table-antaios))
         (make-terminal-theme :name ':almighty
                              :style-table (terminal-style-table-almighty)
                              :foreground (almighty-color ':ink)
@@ -254,7 +213,7 @@ fullscreen viewport is active, or NIL to leave the terminal's own defaults."
   "The installed presentation theme.")
 
 (defparameter *terminal-style-table* (terminal-theme-style-table *terminal-theme*)
-  "Colorist style objects for Autolith's semantic styles, from the installed theme.")
+  "Colorist style objects for Antaios's semantic styles, from the installed theme.")
 
 (-> terminal-theme-find (keyword) terminal-theme)
 (defun terminal-theme-find (name)
@@ -327,7 +286,7 @@ which only theme colors carrying RGB values make use of."
     (option string))
 (defun terminal-style-sequence
     (style &optional (indexed-color-p (terminal-environment-indexed-color-p)))
-  "Return STYLE's trusted control, using INDEXED-COLOR-P for brand gradients and theme colors."
+  "Return STYLE's trusted control, using INDEXED-COLOR-P for theme colors."
   (let ((sequence
           (sgr-sequence (rest (assoc style *terminal-style-table*))
                         :level (terminal-style--level indexed-color-p))))

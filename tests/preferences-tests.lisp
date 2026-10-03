@@ -1,13 +1,13 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Durable Settings Tests --
 
 (-> preferences-tests--without-model-environment (function) t)
 (defun preferences-tests--without-model-environment (function)
   "Call FUNCTION while model, effort, and Fast mode overrides are absent."
-  (with-test-environment (("AUTOLITH_MODEL" nil)
-                          ("AUTOLITH_REASONING_EFFORT" nil)
-                          ("AUTOLITH_CODEX_FAST_MODE" nil))
+  (with-test-environment (("ANTAIOS_MODEL" nil)
+                          ("ANTAIOS_REASONING_EFFORT" nil)
+                          ("ANTAIOS_CODEX_FAST_MODE" nil))
     (funcall function)))
 
 (-> preferences-tests--create (configuration &rest t) configuration)
@@ -58,9 +58,9 @@ Source precedence, source recording, and value rejection belong to setinka."
           "global preferences live under the state root")
          (let ((created (preferences-tests--create configuration)))
            (dolist (case '((:reasoning-traces-p nil) (:compact-view-p t)
-                           (:turn-timestamps-p nil) (:cache-miss-notices-p nil)
-                           (:simple-technical-english-p nil)
-                           (:session-title-generation-p t) (:fullscreen-p nil)
+                           (:turn-timestamps-p nil) (:cache-miss-notices-p t)
+                           (:simple-technical-english-p t)
+                           (:session-title-generation-p t) (:fullscreen-p t)
                            (:codex-fast-mode-p nil) (:permission-mode nil)))
              (destructuring-bind (name expected) case
                (test-assert (eq (config name created) expected)
@@ -90,13 +90,13 @@ Source precedence, source recording, and value rejection belong to setinka."
             (handler-case (progn (setf (config :permission-mode created) ':sandboxed) nil)
               (setting-invalid () t))
             "session-only permission modes cannot be saved"))
-         (with-test-environment (("AUTOLITH_MODEL" "gpt-5.6-terra")
-                                 ("AUTOLITH_CODEX_FAST_MODE" "on"))
+         (with-test-environment (("ANTAIOS_MODEL" "gpt-5.6-terra")
+                                 ("ANTAIOS_CODEX_FAST_MODE" "on"))
            (let ((created (preferences-tests--create configuration)))
              (test-assert (string= (config :model created) "gpt-5.6-terra")
-                          "AUTOLITH_MODEL supplies the model")
+                          "ANTAIOS_MODEL supplies the model")
              (test-assert (config :codex-fast-mode-p created)
-                          "AUTOLITH_CODEX_FAST_MODE supplies Codex Fast mode")))
+                          "ANTAIOS_CODEX_FAST_MODE supplies Codex Fast mode")))
          (snapshot-write pathname
                          '(:preferences :version 8
                            :model "gpt-5.6-typo" :reasoning-effort "bogus"
@@ -114,10 +114,12 @@ Source precedence, source recording, and value rejection belong to setinka."
                                (eq (getf plist :turn-timestamps-p) t))
                           "storing one value keeps unknown and unrelated keys"))
            (snapshot-write pathname '(:preferences :version 8 :cache-miss-notices-p t))
-           (setf (config :fullscreen-p created) t)
-           (let ((plist (preferences-tests--file-plist configuration)))
+           (setf (config :fullscreen-p created) nil)
+           (let* ((plist (preferences-tests--file-plist configuration))
+                  (fullscreen (member :fullscreen-p plist)))
              (test-assert (and (eq (getf plist :cache-miss-notices-p) t)
-                               (eq (getf plist :fullscreen-p) t)
+                               fullscreen
+                               (null (second fullscreen))
                                (null (member :turn-timestamps-p plist)))
                           "storing merges into the file as another process left it")))
           (dolist (version '(1 2 3 4 5 6 7 9))

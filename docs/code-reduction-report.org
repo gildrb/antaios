@@ -1,4 +1,4 @@
-#+TITLE: Autolith Code Reduction Audit
+#+TITLE: Antaios Code Reduction Audit
 #+STARTUP: content
 
 Audited at master =37c2f80= in a detached checkout, with 141 source files /
@@ -123,7 +123,7 @@ have moved down when its library was extracted.
 ** 2.1 The provider engine belongs in cl-llm-provider-api
 
 The library today is 887 lines of generics plus RLM budgets/views/
-objects. The engine that makes those generics usable stayed in Autolith:
+objects. The engine that makes those generics usable stayed in Antaios:
 
 - SSE decoding with bounded lines/events and the inactivity deadline
   (=src/provider/client.lisp=, =sse-read-line= family).
@@ -138,7 +138,7 @@ objects. The engine that makes those generics usable stayed in Autolith:
 - The thin JSON layer (=src/core/json.lisp=, 94) and bounded
   character reads (=src/core/streams.lisp=, 193) these depend on.
 
-None of this is Autolith-specific; all of it is what a second consumer
+None of this is Antaios-specific; all of it is what a second consumer
 of cl-llm-provider-api would immediately need. Moving it relocates
 roughly 2,000-2,500 lines and makes the library honest — right now it
 exports a protocol nobody could implement a client with.
@@ -175,11 +175,11 @@ past bugs were in exactly these validators).
 implement: authenticated loopback control endpoints with token files,
 terminal attach/relay with resize and take-over, detached process
 handoff with supervised launch, and status/tell/kill CLI. Aside from a
-handful of application hooks, nothing is Autolith-specific — this is
+handful of application hooks, nothing is Antaios-specific — this is
 "tmux for a Lisp image" and is precisely the kind of extraction that
 worked for sbcl-generations and sbcl-workers. Suggested shape:
 =lambda-symbolics/cl-sessiond= with an application-facing protocol of
-a dozen generics; Autolith keeps its hooks.
+a dozen generics; Antaios keeps its hooks.
 
 ** 3.2 The conversation transcript store (~3,300 lines, longer term)
 
@@ -187,7 +187,7 @@ a dozen generics; Autolith keeps its hooks.
 transcripts of Responses-style items with leases, family-private item
 filtering, compaction records, and picker metadata. As
 cl-llm-provider-api grows consumers, a portable transcript store
-(=cl-transcript=) is the natural companion; the Autolith-specific
+(=cl-transcript=) is the natural companion; the Antaios-specific
 parts (picker previews, working-seconds) are a minority. Flagged as
 direction, not a this-quarter extraction — it is entangled with
 application/runtime today.

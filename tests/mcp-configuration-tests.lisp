@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Native Configuration Tests --
 
@@ -115,7 +115,7 @@
   (let* ((site-root
            (uiop:ensure-directory-pathname
             (merge-pathnames
-             (format nil "autolith-site-tests-~A/" (make-identifier))
+             (format nil "antaios-site-tests-~A/" (make-identifier))
              (uiop:temporary-directory))))
          (configuration
            (progn
@@ -177,7 +177,7 @@
                                          nil)
                                      (serious-condition (cause)
                                        cause))))
-                           :name "Autolith MCP nonregular configuration test")))
+                           :name "Antaios MCP nonregular configuration test")))
                     (loop repeat 100
                           while (thread-alive-p thread)
                           do (sleep 0.01))
@@ -252,7 +252,7 @@
                   :arguments (\"--quiet\")
                   :directory :workspace
                   :environment
-                  ((\"MCP_TOKEN\" :environment \"AUTOLITH_TEST_TOKEN\")))
+                  ((\"MCP_TOKEN\" :environment \"ANTAIOS_TEST_TOKEN\")))
                  :required-p t
                  :startup-timeout-seconds 3
                  :tool-timeout-seconds 9
@@ -264,7 +264,7 @@
                   :url \"https://example.test/mcp\"
                   :headers
                   ((\"Authorization\" :environment
-                    \"AUTOLITH_TEST_AUTHORIZATION\"))
+                    \"ANTAIOS_TEST_AUTHORIZATION\"))
                   :connect-timeout-seconds 4)
                  :approval :read-only
                  :trusted-read-only-tools (\"lookup\"))))")
@@ -314,7 +314,7 @@
                 (mcp-environment-binding-source
                  (first
                   (mcp-http-configuration-header-bindings http)))
-                "AUTOLITH_TEST_AUTHORIZATION"))
+                "ANTAIOS_TEST_AUTHORIZATION"))
               "HTTP credentials are retained only as environment names")
            (test-assert
               (and
@@ -365,7 +365,7 @@
             "duplicate native MCP keys are rejected")
            (let ((name
                    (format nil
-                           "AUTOLITH-MCP-UNKNOWN-~A"
+                           "ANTAIOS-MCP-UNKNOWN-~A"
                            (string-upcase (make-identifier)))))
              (test-assert
               (null (find-symbol name "KEYWORD"))
@@ -380,20 +380,20 @@
               "rejected MCP keyword tokens do not pollute KEYWORD"))
            (let ((name
                    (format nil
-                           "AUTOLITH-MCP-QUALIFIED-~A"
+                           "ANTAIOS-MCP-QUALIFIED-~A"
                            (string-upcase (make-identifier)))))
              (test-assert
-              (null (find-symbol name "AUTOLITH"))
+              (null (find-symbol name "ANTAIOS"))
               "the novel qualified MCP symbol starts absent")
              (test-assert
               (test-mcp-configuration--signals-p
                configuration
                (format nil
-                       "(:version 1 :servers () AUTOLITH::~A t)"
+                       "(:version 1 :servers () ANTAIOS::~A t)"
                        name))
               "package-qualified native MCP symbols fail closed")
              (test-assert
-              (null (find-symbol name "AUTOLITH"))
+              (null (find-symbol name "ANTAIOS"))
               "rejected MCP forms do not pollute existing packages"))
            (test-assert
             (test-mcp-configuration--signals-p
@@ -590,7 +590,7 @@
                      (list
                       (format nil "MCP_TEST_~D" index)
                       :environment
-                      (format nil "AUTOLITH_TEST_~D" index))))))
+                      (format nil "ANTAIOS_TEST_~D" index))))))
             "MCP standard-input environment binding counts are bounded")
            (test-assert
             (test-mcp-configuration--server-signals-p
@@ -606,7 +606,7 @@
                   (1+ *mcp-environment-name-maximum-characters*)
                   :initial-element #\E)
                  :environment
-                 "AUTOLITH_TEST")))))
+                 "ANTAIOS_TEST")))))
             "MCP environment variable names are bounded")
            (test-assert
             (test-mcp-configuration--server-signals-p
@@ -617,9 +617,9 @@
                       below (1+ *mcp-http-maximum-header-bindings*)
                     collect
                     (list
-                     (format nil "X-Autolith-Test-~D" index)
+                     (format nil "X-Antaios-Test-~D" index)
                      :environment
-                     (format nil "AUTOLITH_TEST_~D" index)))))
+                     (format nil "ANTAIOS_TEST_~D" index)))))
             "MCP Streamable HTTP header binding counts are bounded")
            (test-assert
             (test-mcp-configuration--server-signals-p
@@ -632,14 +632,14 @@
                  (1+ *mcp-http-header-name-maximum-characters*)
                  :initial-element #\X)
                 :environment
-                "AUTOLITH_TEST"))))
+                "ANTAIOS_TEST"))))
             "MCP Streamable HTTP header names are bounded")
            (test-assert
             (test-mcp-configuration--server-signals-p
              (test-mcp-configuration--http-server-form
               "https://example.test/mcp"
               :headers
-              '(("lAsT-EvEnT-Id" :environment "AUTOLITH_TEST"))))
+              '(("lAsT-EvEnT-Id" :environment "ANTAIOS_TEST"))))
             "MCP transport-owned HTTP headers are reserved case-insensitively")
            (test-assert
             (not
@@ -732,7 +732,7 @@
               (test-mcp-configuration--server-signals-p
                (test-mcp-configuration--http-server-form url))
               (format nil "unsafe or malformed MCP URL ~S is rejected" url)))
-           (let* ((sentinel "AUTOLITH-URL-CREDENTIAL-SENTINEL")
+           (let* ((sentinel "ANTAIOS-URL-CREDENTIAL-SENTINEL")
                   (condition
                     (handler-case
                         (progn

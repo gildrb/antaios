@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Reusable Fixture Tests --
 
@@ -150,7 +150,7 @@
 (-> test-environment-fixture-restoration () null)
 (defun test-environment-fixture-restoration ()
   "Test nested environment fixtures restore absent, empty, and nonempty values."
-  (let* ((name (format nil "AUTOLITH_FIXTURE_~A" (make-identifier)))
+  (let* ((name (format nil "ANTAIOS_FIXTURE_~A" (make-identifier)))
          (original (uiop:getenv name)))
     (unless (test-fixture-available-p *platform* ':empty-environment-values)
       (test-withheld ':empty-environment-values
@@ -190,7 +190,7 @@
 (-> test-environment-fixture-evaluation () null)
 (defun test-environment-fixture-evaluation ()
   "Test binding expressions run once and invalid setup cannot leak earlier edits."
-  (let ((name (format nil "AUTOLITH_FIXTURE_~A" (make-identifier)))
+  (let ((name (format nil "ANTAIOS_FIXTURE_~A" (make-identifier)))
         (name-count 0)
         (value-count 0))
     (with-test-environment ((name "outer"))

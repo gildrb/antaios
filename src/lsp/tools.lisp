@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Language Server Tools --
 
@@ -217,8 +217,8 @@ an authorized file elsewhere, as an editor opening that file would search."
 (-> lsp-register-tools (tool-registry) tool-registry)
 (defun lsp-register-tools (registry)
   "Register one lazy LSP manager and its small read-only tool surface."
-  (let* ((manager (make-instance 'lsp-manager :client-name "Autolith"
-                                             :client-version *autolith-version*))
+  (let* ((manager (make-instance 'lsp-manager :client-name "Antaios"
+                                             :client-version *antaios-version*))
          (path (tool-string-property "Existing workspace source file; also selects the project for workspace-symbols."))
          (file-schema (tool-object-schema (json-object "path" path) '("path")))
          (empty-schema (tool-object-schema (json-object) nil)))

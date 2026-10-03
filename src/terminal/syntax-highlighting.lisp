@@ -1,10 +1,10 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Semantic Syntax Highlighting --
 
 (-> syntax--terminal-span (keyword string) cons)
 (defun syntax--terminal-span (role text)
-  "Return one Autolith terminal span for Colordiff ROLE and TEXT."
+  "Return one Antaios terminal span for Colordiff ROLE and TEXT."
   (terminal-span
    (case role
      (:context-gutter ':dim)

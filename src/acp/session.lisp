@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- ACP Runtime Ownership --
 
@@ -20,7 +20,7 @@
     :initform (make-hash-table :test #'equal) :reader acp-service-sessions
     :documentation "Live sessions keyed by canonical durable conversation ID.")
    (lock
-    :initform (make-lock "Autolith ACP service") :reader acp-service-lock
+    :initform (make-lock "Antaios ACP service") :reader acp-service-lock
     :documentation "The lock protecting session admission and process ownership.")
    (busy-owner
     :initform nil :accessor acp-service-busy-owner
@@ -28,7 +28,7 @@
    (closed-p
     :initform nil :accessor acp-service-closed-p :type boolean
     :documentation "Whether disconnect has stopped further session admission."))
-  (:documentation "A headless ACP endpoint over the existing Autolith agent runtime."))
+  (:documentation "A headless ACP endpoint over the existing Antaios agent runtime."))
 
 (defclass acp-session ()
   ((service
@@ -47,10 +47,10 @@
     :initform (make-hash-table :test #'equal) :reader acp-session-permissions
     :documentation "Exact editor-approved operations, scoped to this live session.")
    (lock
-    :initform (make-lock "Autolith ACP session") :reader acp-session-lock
+    :initform (make-lock "Antaios ACP session") :reader acp-session-lock
     :documentation "The lock protecting cancellation, ownership, and approvals.")
    (cleanup-lock
-    :initform (make-lock "Autolith ACP session cleanup") :reader acp-session-cleanup-lock
+    :initform (make-lock "Antaios ACP session cleanup") :reader acp-session-cleanup-lock
     :documentation "The lock serializing complete close attempts.")
    (closing-p
     :initform nil :accessor acp-session-closing-p :type boolean

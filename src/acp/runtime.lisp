@@ -1,11 +1,11 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- ACP Agent Methods --
 
 (defmethod agentcomms:agent-implementation ((service acp-service))
-  "Identify the loaded Autolith source version."
+  "Identify the loaded Antaios source version."
   (declare (ignore service))
-  (agentcomms:acp-implementation "autolith" *autolith-version*))
+  (agentcomms:acp-implementation "antaios" *antaios-version*))
 
 (defmethod agentcomms:agent-capabilities ((service acp-service))
   "Advertise durable loading, text context, HTTP MCP, and session cleanup."
@@ -329,7 +329,7 @@
 (defun acp-service-serve (service channel)
   "Own SERVICE and its channel through disconnect and resource cleanup."
   (unwind-protect
-       (agentcomms:acp-agent-serve service channel :name "Autolith ACP"
+       (agentcomms:acp-agent-serve service channel :name "Antaios ACP"
                                    :log-function #'agentcomms:acp-standard-error-log)
     (unwind-protect (acp-service-close service)
       (agentcomms:channel-close channel)))

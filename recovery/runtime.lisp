@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 (load (merge-pathnames "../script/roots.lisp" *load-truename*))
 
@@ -15,7 +15,7 @@
     :initarg :source-root
     :reader recovery-context-source-root
     :type pathname
-    :documentation "The stable Autolith source checkout containing Git history.")
+    :documentation "The stable Antaios source checkout containing Git history.")
    (generation-root
     :initarg :generation-root
     :reader recovery-context-generation-root
@@ -30,7 +30,7 @@
     :initarg :state-root
     :reader recovery-context-state-root
     :type pathname
-    :documentation "The Autolith state directory containing selection and journals.")
+    :documentation "The Antaios state directory containing selection and journals.")
    (current-pathname
     :initarg :current-pathname
     :reader recovery-context-current-pathname
@@ -66,7 +66,7 @@
 (defun recovery-generation-property (generation key)
   "Return GENERATION's manifest property KEY.
 
-The Autolith fields live in the manifest properties rather than in slots, because
+The Antaios fields live in the manifest properties rather than in slots, because
 the library that reads a generation owns only the fields every host shares."
   (getf (sbcl-generations:generation-metadata generation) key))
 
@@ -142,8 +142,8 @@ the library that reads a generation owns only the fields every host shares."
 (serapeum:-> recovery-context-create (pathname) recovery-context)
 (defun recovery-context-create (source-root)
   "Return recovery context rooted at SOURCE-ROOT and XDG user directories."
-  (let* ((data-root (autolith-application-root :data))
-         (state-root (autolith-application-root :state)))
+  (let* ((data-root (antaios-application-root :data))
+         (state-root (antaios-application-root :state)))
     (make-instance
      'recovery-context
      :source-root (uiop:ensure-directory-pathname source-root)
@@ -215,12 +215,12 @@ the library that reads a generation owns only the fields every host shares."
           (and (interactive-stream-p *error-output*)
                (null (uiop:getenv "NO_COLOR")))))
     (when styled-p
-      (format *error-output* "~C[1;31m" #\Escape))
+      (format *error-output* "~C[31m" #\Escape))
     (write-line "RECOVERY IMAGE" *error-output*)
     (when styled-p
       (format *error-output* "~C[0m" #\Escape))
     (format *error-output*
-            "This pristine image starts after active Autolith fails or when ~
+            "This pristine image starts after active Antaios fails or when ~
              recovery is requested.~%It inspects the failure and boots ~
              pristine committed source. Explicit generation selection and ~
              rollback can boot retained state. The damaged active core is ~
@@ -349,7 +349,7 @@ the library that reads a generation owns only the fields every host shares."
     null)
 (defun recovery-validate-manifest-properties
     (properties pathname &key expected-identifier)
-  "Re-check every Autolith field PROPERTIES must carry at PATHNAME.
+  "Re-check every Antaios field PROPERTIES must carry at PATHNAME.
 
 This image cannot trust its own state directory, because the active image that
 wrote it may be the thing that broke. Nothing is assumed from the fact that a
@@ -402,8 +402,8 @@ generation. Its validator carries this image's own stricter checks."
   (sbcl-generations:make-generation-store
    :root (recovery-context-generation-root context)
    :current-pathname (recovery-context-current-pathname context)
-   :core-name "autolith.core"
-   :temporary-core-name ".autolith.core.tmp"
+   :core-name "antaios.core"
+   :temporary-core-name ".antaios.core.tmp"
    :manifest-version 3
    :accepted-manifest-versions '(1 2 3)
    :manifest-validator
@@ -591,9 +591,9 @@ generation. Its validator carries this image's own stricter checks."
 (serapeum:-> recovery-clear-reconnection-environment () null)
 (defun recovery-clear-reconnection-environment ()
   "Remove retained crash reconnection metadata from the recovery environment."
-  (sb-posix:unsetenv "AUTOLITH_RECOVERY_CONVERSATION_ID")
-  (sb-posix:unsetenv "AUTOLITH_RECOVERY_RENDERED_SEQUENCE")
-  (sb-posix:unsetenv "AUTOLITH_RECOVERY_HISTORY_FLOOR_SEQUENCE")
+  (sb-posix:unsetenv "ANTAIOS_RECOVERY_CONVERSATION_ID")
+  (sb-posix:unsetenv "ANTAIOS_RECOVERY_RENDERED_SEQUENCE")
+  (sb-posix:unsetenv "ANTAIOS_RECOVERY_HISTORY_FLOOR_SEQUENCE")
   nil)
 
 (serapeum:-> recovery-conversation-identifier-display (string) string)
@@ -776,15 +776,15 @@ generation. Its validator carries this image's own stricter checks."
     (conversation-id rendered-sequence &key history-floor-sequence)
   "Publish validated canonical recovery metadata for a child process."
   (when (recovery-identifier-p conversation-id)
-    (sb-posix:setenv "AUTOLITH_RECOVERY_CONVERSATION_ID" conversation-id 1))
+    (sb-posix:setenv "ANTAIOS_RECOVERY_CONVERSATION_ID" conversation-id 1))
   (when (and (integerp rendered-sequence)
              (not (minusp rendered-sequence)))
-    (sb-posix:setenv "AUTOLITH_RECOVERY_RENDERED_SEQUENCE"
+    (sb-posix:setenv "ANTAIOS_RECOVERY_RENDERED_SEQUENCE"
                      (write-to-string rendered-sequence)
                      1))
   (when (and (integerp history-floor-sequence)
              (plusp history-floor-sequence))
-    (sb-posix:setenv "AUTOLITH_RECOVERY_HISTORY_FLOOR_SEQUENCE"
+    (sb-posix:setenv "ANTAIOS_RECOVERY_HISTORY_FLOOR_SEQUENCE"
                      (write-to-string history-floor-sequence)
                      1))
   nil)
@@ -801,7 +801,7 @@ generation. Its validator carries this image's own stricter checks."
                                             (recovery-context-state-root context))))
           (unless (and (uiop:subpathp capsule-pathname crash-root)
                        (probe-file capsule-pathname))
-            (error "The crash capsule is absent or outside private Autolith state."))
+            (error "The crash capsule is absent or outside private Antaios state."))
           (let* ((record (recovery-read-form capsule-pathname))
                  (properties (and (listp record) (rest record)))
                  (conversation-id (and properties
@@ -846,7 +846,7 @@ generation. Its validator carries this image's own stricter checks."
     (or null string))
 (defun recovery-read-crash-pointer (context)
   "Return the contained capsule named by this launcher's current pointer."
-  (let ((pointer-value (uiop:getenv "AUTOLITH_CRASH_POINTER")))
+  (let ((pointer-value (uiop:getenv "ANTAIOS_CRASH_POINTER")))
     (when (and (stringp pointer-value) (plusp (length pointer-value)))
       (let* ((pointer-pathname (pathname pointer-value))
              (pointer-root (merge-pathnames "crash-pointers/"
@@ -854,7 +854,7 @@ generation. Its validator carries this image's own stricter checks."
              (crash-root (merge-pathnames "crashes/"
                                           (recovery-context-state-root context))))
         (unless (uiop:subpathp pointer-pathname pointer-root)
-          (error "The crash pointer is outside private Autolith state."))
+          (error "The crash pointer is outside private Antaios state."))
         (when (probe-file pointer-pathname)
           (with-open-file (stream pointer-pathname
                                   :direction ':input
@@ -878,14 +878,14 @@ generation. Its validator carries this image's own stricter checks."
 (defun recovery-read-session-pointer (context)
   "Return this launcher's validated recovery-session record, when published."
   (let ((pointer-value
-          (uiop:getenv "AUTOLITH_RECOVERY_SESSION_POINTER")))
+          (uiop:getenv "ANTAIOS_RECOVERY_SESSION_POINTER")))
     (when (and (stringp pointer-value) (plusp (length pointer-value)))
       (let* ((pointer-pathname (pathname pointer-value))
              (pointer-root
                (merge-pathnames "recovery-session-pointers/"
                                 (recovery-context-state-root context))))
         (unless (uiop:subpathp pointer-pathname pointer-root)
-          (error "The recovery-session pointer is outside private Autolith state."))
+          (error "The recovery-session pointer is outside private Antaios state."))
         (when (probe-file pointer-pathname)
           (let* ((record (recovery-read-form pointer-pathname))
                  (properties (and (recovery-proper-list-p record)
@@ -990,7 +990,7 @@ generation. Its validator carries this image's own stricter checks."
   "Report bounded crash context and publish safe reconnection metadata."
   (recovery-clear-reconnection-environment)
   (when status
-    (format *error-output* "Active Autolith exited with status ~A.~%"
+    (format *error-output* "Active Antaios exited with status ~A.~%"
             (recovery-sanitize-text status)))
   (let ((reported-capsule (recovery-report-crash-capsule context capsule)))
     (unless reported-capsule
@@ -1108,7 +1108,7 @@ generation. Its validator carries this image's own stricter checks."
 (serapeum:-> recovery-project-setup (recovery-context) (or null pathname))
 (defun recovery-project-setup (context)
   "Return the usable locked dependency setup for recovery children, if any."
-  (let ((override (uiop:getenv "AUTOLITH_PROJECT_SETUP"))
+  (let ((override (uiop:getenv "ANTAIOS_PROJECT_SETUP"))
         (source-setup
           (merge-pathnames ".qlot/setup.lisp"
                            (recovery-context-source-root context))))
@@ -1125,14 +1125,14 @@ generation. Its validator carries this image's own stricter checks."
     null)
 (defun recovery-prepare-source-environment (context source-root)
   "Point recovered children at SOURCE-ROOT and the original dependency store."
-  (sb-posix:setenv "AUTOLITH_SOURCE_ROOT" (namestring source-root) 1)
-  (sb-posix:setenv "AUTOLITH_RECOVERED" "1" 1)
+  (sb-posix:setenv "ANTAIOS_SOURCE_ROOT" (namestring source-root) 1)
+  (sb-posix:setenv "ANTAIOS_RECOVERED" "1" 1)
   (let ((project-setup (recovery-project-setup context)))
     (if project-setup
-        (sb-posix:setenv "AUTOLITH_PROJECT_SETUP"
+        (sb-posix:setenv "ANTAIOS_PROJECT_SETUP"
                         (namestring project-setup)
                         1)
-        (sb-posix:unsetenv "AUTOLITH_PROJECT_SETUP")))
+        (sb-posix:unsetenv "ANTAIOS_PROJECT_SETUP")))
   nil)
 
 (serapeum:-> recovery-boot-generation
@@ -1145,7 +1145,7 @@ generation. Its validator carries this image's own stricter checks."
            (recovery-sanitize-text
             (recovery-generation-identifier generation))))
   (let* ((worktree (recovery-source-worktree context generation))
-         (sbcl-command (or (uiop:getenv "AUTOLITH_SBCL") "sbcl")))
+         (sbcl-command (or (uiop:getenv "ANTAIOS_SBCL") "sbcl")))
     (recovery-prepare-source-environment context worktree)
     (let ((process
             (uiop:launch-program
@@ -1171,11 +1171,11 @@ generation. Its validator carries this image's own stricter checks."
   (let* ((commit (recovery-source-commit context))
          (identifier (format nil "source-~A" commit))
          (checkout (recovery-source-checkout context commit identifier))
-         (launcher (merge-pathnames "bin/autolith-active" checkout))
-         (sbcl-command (or (uiop:getenv "AUTOLITH_SBCL") "sbcl"))
+         (launcher (merge-pathnames "bin/antaios-active" checkout))
+         (sbcl-command (or (uiop:getenv "ANTAIOS_SBCL") "sbcl"))
          (terminal-state (recovery-terminal-state-capture)))
     (unless (probe-file launcher)
-      (error "The clean source checkout lacks bin/autolith-active."))
+      (error "The clean source checkout lacks bin/antaios-active."))
     (format *error-output*
             "Starting clean committed source ~A.~%"
             (recovery-sanitize-text commit))
@@ -1428,7 +1428,7 @@ generation. Its validator carries this image's own stricter checks."
                   (recovery-sanitize-text condition))
           (uiop:quit 1)))
     (abort ()
-      :report "Exit the pristine Autolith recovery image."
+      :report "Exit the pristine Antaios recovery image."
       (uiop:quit 1)))
   nil)
 

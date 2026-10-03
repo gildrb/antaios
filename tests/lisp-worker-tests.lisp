@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 ;;;; -- Subsystem Tests --
 
@@ -30,16 +30,16 @@
 (-> test--write-lisp-worker-audit-system (pathname keyword) pathname)
 (defun test--write-lisp-worker-audit-system (directory marker)
   "Write a source-audit ASDF system beneath DIRECTORY using MARKER."
-  (let ((asd (merge-pathnames "autolith-worker-source-audit.asd" directory)))
+  (let ((asd (merge-pathnames "antaios-worker-source-audit.asd" directory)))
     (test--write-lisp-worker-text
      asd
      (format nil
-             "(asdf:defsystem #:autolith-worker-source-audit~%  :serial t~%  :components ((:file \"source\"))~%  :perform (asdf:test-op (operation component)~%             (declare (ignore operation component))~%             (setf cl-user::*autolith-worker-source-audit-tested* '~S)))~%"
+             "(asdf:defsystem #:antaios-worker-source-audit~%  :serial t~%  :components ((:file \"source\"))~%  :perform (asdf:test-op (operation component)~%             (declare (ignore operation component))~%             (setf cl-user::*antaios-worker-source-audit-tested* '~S)))~%"
              marker))
     (test--write-lisp-worker-text
      (merge-pathnames "source.lisp" directory)
      (format nil
-             "(defparameter cl-user::*autolith-worker-source-audit-loaded* '~S)~%"
+             "(defparameter cl-user::*antaios-worker-source-audit-loaded* '~S)~%"
              marker))
     asd))
 
@@ -180,19 +180,19 @@
                          (getf (rest source) :output)
                          :test #'char-equal)
                  "implementation source includes the complete recorded form"))
-  (let ((previous-command (uiop:getenv "AUTOLITH_SBCL")))
+  (let ((previous-command (uiop:getenv "ANTAIOS_SBCL")))
     (unwind-protect
          (progn
-           (platform-setenv "AUTOLITH_SBCL" "/tmp/autolith-test-sbcl")
+           (platform-setenv "ANTAIOS_SBCL" "/tmp/antaios-test-sbcl")
            (test-assert (string= (lisp-worker-sbcl-command)
-                                 "/tmp/autolith-test-sbcl")
+                                 "/tmp/antaios-test-sbcl")
                         "the disposable worker honors the configured SBCL")
-           (platform-setenv "AUTOLITH_SBCL" "")
+           (platform-setenv "ANTAIOS_SBCL" "")
            (test-assert (string= (lisp-worker-sbcl-command) "sbcl")
                         "the disposable worker falls back to PATH"))
       (if previous-command
-          (platform-setenv "AUTOLITH_SBCL" previous-command)
-          (platform-unsetenv "AUTOLITH_SBCL"))))
+          (platform-setenv "ANTAIOS_SBCL" previous-command)
+          (platform-unsetenv "ANTAIOS_SBCL"))))
   (let* ((configuration (test-configuration))
          (root (test-configuration-root configuration))
          (worker (lisp-worker-create configuration)))
@@ -215,8 +215,8 @@
       (lisp-worker-stop worker)
       (platform-delete-directory-tree *platform* root :validate t :if-does-not-exist ':ignore)))
   (with-test-fixture (':posix-shell "the stable launcher exporting worker source")
-    (let* ((source-root (asdf:system-source-directory :autolith))
-           (launcher (merge-pathnames "bin/autolith" source-root))
+    (let* ((source-root (asdf:system-source-directory :antaios))
+           (launcher (merge-pathnames "bin/antaios" source-root))
            (output
              (with-input-from-string
                  (input
@@ -226,7 +226,7 @@
                (uiop:run-program
                 (append (list "env"
                               "-u"
-                              "AUTOLITH_SBCL_SOURCE_ROOT")
+                              "ANTAIOS_SBCL_SOURCE_ROOT")
                         (test-active-core-environment)
                         (list (namestring launcher)
                               "--worker"))
@@ -237,17 +237,17 @@
         (with-input-from-string (stream output)
           (let ((handshake (read stream t nil))
                 (response (read stream t nil)))
-            (test-assert (and (eq (first handshake) :autolith-worker)
+            (test-assert (and (eq (first handshake) :antaios-worker)
                               (eq (getf (rest response) :status) :ok)
                               (search "src/code/list.lisp"
                                       (getf (rest response) :output)))
                          "the stable launcher exports matching source to workers")))))
-    (let* ((source-root (asdf:system-source-directory :autolith))
-           (launcher (merge-pathnames "bin/autolith" source-root))
-           (runtime-source (uiop:getenv "AUTOLITH_SBCL_SOURCE_ROOT"))
+    (let* ((source-root (asdf:system-source-directory :antaios))
+           (launcher (merge-pathnames "bin/antaios" source-root))
+           (runtime-source (uiop:getenv "ANTAIOS_SBCL_SOURCE_ROOT"))
            (temporary-root
              (merge-pathnames
-              (format nil "autolith-inherited-source-~A/" (make-identifier))
+              (format nil "antaios-inherited-source-~A/" (make-identifier))
               (uiop:temporary-directory)))
            (data-home (merge-pathnames "data/" temporary-root))
            (state-home (merge-pathnames "state/" temporary-root)))
@@ -267,7 +267,7 @@
                         (append (list "env"
                                       (format nil "XDG_DATA_HOME=~A" data-home)
                                       (format nil "XDG_STATE_HOME=~A" state-home)
-                                      (format nil "AUTOLITH_SBCL_SOURCE_ROOT=~A"
+                                      (format nil "ANTAIOS_SBCL_SOURCE_ROOT=~A"
                                               runtime-source))
                                 (test-active-core-environment)
                                 (list (namestring launcher)
@@ -280,7 +280,7 @@
                    (let ((handshake (read stream t nil))
                          (response (read stream t nil)))
                      (test-assert
-                      (and (eq (first handshake) :autolith-worker)
+                      (and (eq (first handshake) :antaios-worker)
                            (eq (getf (rest response) :status) :ok)
                            (search "src/code/list.lisp"
                                    (getf (rest response) :output)))
@@ -639,19 +639,19 @@
                 (lisp-worker-request
                  alpha
                  :load-system
-                 (list :system ':autolith-worker-source-audit
+                 (list :system ':antaios-worker-source-audit
                        :asd-pathname (namestring old-asd)))
                 (test-assert
                  (equal
                   (worker-values
-                   alpha "cl-user::*autolith-worker-source-audit-loaded*")
+                   alpha "cl-user::*antaios-worker-source-audit-loaded*")
                   '(":OLD"))
                  "the exact-ASD fixture starts from its stale definition")
                 (let* ((*tool-execution-blocking-grace-seconds* 5)
                        (load-result
                          (run-completed-lisp
                           "load-system"
-                          "system" "autolith-worker-source-audit"
+                          "system" "antaios-worker-source-audit"
                           "asd" (namestring new-asd)
                           "repl" "alpha")))
                   (test-assert
@@ -659,19 +659,19 @@
                         (equal
                          (worker-values
                           alpha
-                          "cl-user::*autolith-worker-source-audit-loaded*")
+                          "cl-user::*antaios-worker-source-audit-loaded*")
                          '(":NEW")))
                    "lisp.load-system replaces stale registration from a canonical ASD file"))
                 (lisp-worker-request
                  alpha
                  :load-system
-                 (list :system ':autolith-worker-source-audit
+                 (list :system ':antaios-worker-source-audit
                        :asd-pathname (namestring old-asd)))
                 (let* ((*tool-execution-blocking-grace-seconds* 5)
                        (test-result
                          (run-completed-lisp
                           "run-tests"
-                          "system" "autolith-worker-source-audit"
+                          "system" "antaios-worker-source-audit"
                           "asd" (namestring new-asd)
                           "repl" "alpha")))
                   (test-assert
@@ -679,7 +679,7 @@
                         (equal
                          (worker-values
                           alpha
-                          "cl-user::*autolith-worker-source-audit-tested*")
+                          "cl-user::*antaios-worker-source-audit-tested*")
                          '(":NEW")))
                    "lisp.run-tests replaces stale registration from a canonical ASD file")))
               (let* ((read-result
@@ -1213,18 +1213,18 @@
 (defun test-lisp-worker-failure-diagnostics ()
   "Test a failed system load reports the compiler diagnostic that caused it."
   (with-test-configuration (configuration root)
-    (let ((asd (merge-pathnames "diagnostic-fixture/autolith-diagnostic-fixture.asd" root))
+    (let ((asd (merge-pathnames "diagnostic-fixture/antaios-diagnostic-fixture.asd" root))
           (worker (lisp-worker-create configuration :name "diagnostics")))
       (ensure-directories-exist asd)
       (with-open-file (stream asd :direction ':output :if-exists ':supersede)
-        (write-line "(asdf:defsystem #:autolith-diagnostic-fixture :components ((:file \"broken\")))" stream))
+        (write-line "(asdf:defsystem #:antaios-diagnostic-fixture :components ((:file \"broken\")))" stream))
       (with-open-file (stream (merge-pathnames "broken.lisp" asd)
                               :direction ':output :if-exists ':supersede)
-        (write-line "(defun autolith-diagnostic-fixture () (cl-user::list (uiop:autolith-not-external-symbol)))" stream))
+        (write-line "(defun antaios-diagnostic-fixture () (cl-user::list (uiop:antaios-not-external-symbol)))" stream))
       (unwind-protect
            (let ((result (worker-response-tool-result
                           (lisp-worker-request worker ':load-system
-                                               (list :system "autolith-diagnostic-fixture"
+                                               (list :system "antaios-diagnostic-fixture"
                                                      :asd-pathname (namestring asd))))))
              (test-assert (not (tool-result-success-p result))
                           "a system with a compile error fails to load")
@@ -1235,7 +1235,7 @@
                                          (search "Backtrace:" content
                                                  :start2 output-start)))))
                (test-assert (and output
-                                 (search "AUTOLITH-NOT-EXTERNAL-SYMBOL" (string-upcase output)))
+                                 (search "ANTAIOS-NOT-EXTERNAL-SYMBOL" (string-upcase output)))
                             "the failed load reports the compiler diagnostic, not only the condition")))
         (lisp-worker-stop worker))))
   nil)

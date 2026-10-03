@@ -1,4 +1,4 @@
-(in-package #:autolith)
+(in-package #:antaios)
 
 (define-condition test-mcp-fatal-condition (serious-condition)
   ()
@@ -42,7 +42,7 @@
     :accessor test-mcp-transport-detach-count
     :type (integer 0)
     :documentation "The number of inherited-resource detach operations."))
-  (:documentation "A deterministic in-memory MCP transport for Autolith tests."))
+  (:documentation "A deterministic in-memory MCP transport for Antaios tests."))
 
 (defmethod mcp-transport-open ((transport test-mcp-transport))
   "Open scripted TRANSPORT."
@@ -154,7 +154,7 @@
           "resources" (json-object "subscribe" (json-false))
           "prompts" (json-object "listChanged" (json-false)))
          "serverInfo"
-         (json-object "name" "autolith-test" "version" "1")
+         (json-object "name" "antaios-test" "version" "1")
          "instructions" "Use only the deterministic test fixture.")))
       ((string= method "tools/list")
        (test-mcp--rpc-result
@@ -319,7 +319,7 @@
          (client
            (make-mcp-client
             transport
-            :name "autolith-test"
+            :name "antaios-test"
             :version "1"))
          (runtime
            (make-instance
@@ -438,7 +438,7 @@
                     "Generation fixture received unexpected method ~S."
                     method)))))))
          (client
-           (make-mcp-client transport :name "autolith-test"))
+           (make-mcp-client transport :name "antaios-test"))
          (runtime
            (make-instance
             'mcp-server-runtime
@@ -588,7 +588,7 @@
                    ((:name \"mcp-reload-required-missing\"
                      :transport
                      (:type :stdio
-                      :command \"/autolith-tests/no-such-mcp-server\")
+                      :command \"/antaios-tests/no-such-mcp-server\")
                      :required-p t
                      :startup-timeout-seconds 1)))"
                 stream))
@@ -681,11 +681,11 @@
          (original-context-registrations (context--registry-snapshot))
          (original-command-registrations
            (application-command--registry-snapshot))
-         (barrier-lock (make-lock "Autolith MCP reload isolation barrier"))
+         (barrier-lock (make-lock "Antaios MCP reload isolation barrier"))
          (barrier (make-condition-variable))
          (reload-paused-p nil)
          (release-reload-p nil)
-         (state-lock (make-lock "Autolith MCP reload isolation state"))
+         (state-lock (make-lock "Antaios MCP reload isolation state"))
          (reload-failure nil)
          (reload-finished-p nil)
          (reader-result nil)
@@ -800,7 +800,7 @@
                                      cause)))
                            (with-lock-held (state-lock)
                              (setf reload-finished-p t)))
-                         :name "Autolith isolated MCP reload"))
+                         :name "Antaios isolated MCP reload"))
                   (with-lock-held (barrier-lock)
                     (loop until reload-paused-p
                           unless
@@ -820,7 +820,7 @@
                              (with-lock-held (state-lock)
                                (setf reader-result snapshot
                                      reader-finished-p t))))
-                         :name "Autolith MCP registry generation reader")
+                         :name "Antaios MCP registry generation reader")
                         writer-thread
                         (make-thread
                          (lambda ()
@@ -841,7 +841,7 @@
                               :source ':runtime))
                            (with-lock-held (state-lock)
                              (setf writer-finished-p t)))
-                         :name "Autolith MCP concurrent registry writer"))
+                         :name "Antaios MCP concurrent registry writer"))
                   (sleep 0.05)
                   (test-assert
                    (with-lock-held (state-lock)
@@ -1485,7 +1485,7 @@
          (root (test-configuration-root configuration))
          (environment-name
            (format nil
-                   "AUTOLITH_MCP_METADATA_~A"
+                   "ANTAIOS_MCP_METADATA_~A"
                    (remove #\- (string-upcase (make-identifier)))))
          (credential
            (format nil "mcp-unused-secret-~A" (make-identifier)))
@@ -1584,7 +1584,7 @@
              :client
              (make-mcp-client
               transport
-              :name "autolith-test"
+              :name "antaios-test"
               :version "1"))
             manager
             (make-instance
@@ -1764,7 +1764,7 @@
                :client
                (make-mcp-client
                 input-transport
-                :name "autolith-test"
+                :name "antaios-test"
                 :version "1")))
              (let ((failure
                      (handler-case
@@ -1778,7 +1778,7 @@
                  failure
                  (search
                   "oversized schema string"
-                  (autolith-error-message failure))
+                  (antaios-error-message failure))
                  (eq (mcp-server-runtime-state input-runtime) :failed)
                  (null (mcp-server-runtime-tools input-runtime)))
                 "MCP input schemas remain subject to structural bounds"))))
@@ -1812,7 +1812,7 @@
          (registrations (mcp--registry-snapshot))
          (environment-name
            (format nil
-                   "AUTOLITH_MCP_HTTP_ECHO_~A"
+                   "ANTAIOS_MCP_HTTP_ECHO_~A"
                    (remove #\- (string-upcase (make-identifier)))))
          (credential
            (format nil "mcp-http-secret-~A" (make-identifier)))
@@ -1879,7 +1879,7 @@
                                :format-arguments (list credential)))))
                         (error (condition)
                           (setf thread-failure condition))))
-                    :name "Autolith MCP HTTP credential echo")))
+                    :name "Antaios MCP HTTP credential echo")))
              (join-thread thread))
            (let ((retained
                    (format
@@ -1914,7 +1914,7 @@
          (root (test-configuration-root configuration))
          (environment-name
            (format nil
-                   "AUTOLITH_MCP_ECHO_~A"
+                   "ANTAIOS_MCP_ECHO_~A"
                    (remove #\- (string-upcase (make-identifier)))))
          (credential
            (format nil "mcp-secret-~A" (make-identifier)))
@@ -1952,7 +1952,7 @@
              :client
              (make-mcp-client
               transport
-              :name "autolith-test"
+              :name "antaios-test"
               :version "1"))
             manager
             (make-instance
@@ -2123,7 +2123,7 @@
                            (setf condition-text
                                  (format
                                   nil "~A~%~A"
-                                  (autolith-error-message condition)
+                                  (antaios-error-message condition)
                                   (mcp-server-startup-error-cause
                                    condition)))))))
                  (let ((status
@@ -2205,7 +2205,7 @@
               :environment
               (("SERVICE_TOKEN"
                 :environment
-                "AUTOLITH_MCP_INGRESS_TOKEN")))))
+                "ANTAIOS_MCP_INGRESS_TOKEN")))))
          (plain-server
            (mcp-server-configuration-create
             :name "plain-ingress"
@@ -2409,7 +2409,7 @@
 (-> test-mcp--rotating-stdio-server-form () string)
 (defun test-mcp--rotating-stdio-server-form ()
   "Return a standard-input MCP server that echoes its launch credential."
-  (let ((*package* (find-package '#:autolith)))
+  (let ((*package* (find-package '#:antaios)))
     (write-to-string
      `(let ((token (sb-ext:posix-getenv "SERVICE_TOKEN")))
         (labels ((request-identifier (line)
@@ -2495,7 +2495,7 @@
   (dolist (credential '("MCP" "A"))
     (let* ((environment-name
              (format nil
-                     "AUTOLITH_MCP_SHORT_~A"
+                     "ANTAIOS_MCP_SHORT_~A"
                      (remove #\- (string-upcase (make-identifier)))))
            (server
              (mcp-server-configuration-create
@@ -2534,7 +2534,7 @@
          (root (test-configuration-root configuration))
          (environment-name
            (format nil
-                   "AUTOLITH_MCP_ROTATION_~A"
+                   "ANTAIOS_MCP_ROTATION_~A"
                    (remove #\- (string-upcase (make-identifier)))))
          (credential-a
            (format nil "rotation-a-~A" (make-identifier)))
@@ -2798,7 +2798,7 @@
      :client
      (make-mcp-client
       transport
-      :name "autolith-test"
+      :name "antaios-test"
       :version "1"))))
 
 (-> test-mcp-server-scoped-tool-identifiers () null)
@@ -3065,7 +3065,7 @@
 (defun test-mcp-stdio-xdg-environment ()
   "Test inherited XDG bases are absolute while explicit bindings keep precedence."
   (let* ((xdg-name "XDG_DATA_HOME")
-         (source-name "AUTOLITH_MCP_TEST_XDG_SOURCE")
+         (source-name "ANTAIOS_MCP_TEST_XDG_SOURCE")
          (saved-xdg (uiop:getenv xdg-name))
          (saved-source (uiop:getenv source-name))
          (server
@@ -3281,8 +3281,8 @@
                      configuration conversation registry)))
              (mcp-tool-registry-register-manager registry manager)
              ;; A variable the test owns, since HOME is unset on Windows.
-             (with-test-environment (("AUTOLITH_MCP_TEST_LATE" "late-secret"))
-               (let* ((environment-name "AUTOLITH_MCP_TEST_LATE")
+             (with-test-environment (("ANTAIOS_MCP_TEST_LATE" "late-secret"))
+               (let* ((environment-name "ANTAIOS_MCP_TEST_LATE")
                       (server
                         (mcp-server-configuration-create
                          :name "late-environment"
@@ -3310,7 +3310,7 @@
                       (loop for index from 0
                             for name =
                               (format nil
-                                      "AUTOLITH_MCP_TEST_MISSING_~D"
+                                      "ANTAIOS_MCP_TEST_MISSING_~D"
                                       index)
                             unless (uiop:getenv name)
                               return name))
@@ -3343,7 +3343,7 @@
                 "an unavailable environment-backed secret fails explicitly"))
              (let* ((sentinel-name
                       (format nil
-                              "AUTOLITH_MCP_PARENT_SECRET_~A"
+                              "ANTAIOS_MCP_PARENT_SECRET_~A"
                               (remove
                                #\-
                                (string-upcase (make-identifier)))))
@@ -3368,7 +3368,7 @@
                                    server transport))))))
                         (test-assert
                          (and
-                          (member "AUTOLITH_MCP=1"
+                          (member "ANTAIOS_MCP=1"
                                   environment
                                   :test #'string=)
                           (not
@@ -3605,7 +3605,7 @@
                      (search
                       "server-declared failure"
                       (tool-result-content error-result)))
-                    "MCP isError becomes an Autolith tool failure"))
+                    "MCP isError becomes an Antaios tool failure"))
                  (let* ((image-result
                           (tool-execute
                            (test-mcp--tool-with-raw-name registry "image")
@@ -3913,7 +3913,7 @@
             :registration-source ':runtime
             :provider-namespace "mcp__resources_only"
             :client
-            (make-mcp-client transport :name "autolith-test"))))
+            (make-mcp-client transport :name "antaios-test"))))
     (unwind-protect
          (progn
            (mcp-server-runtime-connect runtime)
