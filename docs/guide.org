@@ -899,6 +899,12 @@ Register a OpenAI-compatible provider:
  :models-endpoint "https://api.example.com/v1/models")
 #+END_SRC
 
+Autolith stores the provider's key in its private store (=autolith auth
+my-provider=). For a local server that issues its own key file, pass
+=:api-key-file "/absolute/path/api-key"= instead: Autolith reads the file on
+every request, so a rotated key needs no re-authentication. A missing or empty
+file fails the request; the stored key is not used.
+
 List every model ID known to Autolith without authenticating or starting a session:
 
 #+BEGIN_SRC sh

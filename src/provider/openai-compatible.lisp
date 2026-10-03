@@ -60,25 +60,40 @@
   "Return the configured OpenAI-compatible conversation family."
   (openai-compatible-provider-family provider))
 
+(-> openai-compatible--credential-manager
+    (configuration &key
+                   (:name non-empty-string)
+                   (:api-key-file (option pathname)))
+    api-key-credential-manager)
+(defun openai-compatible--credential-manager (configuration &key name api-key-file)
+  "Return NAME's key manager: API-KEY-FILE when given, else the private store."
+  (if api-key-file
+      (file-api-key-credential-manager-create :provider-name name
+                                              :pathname      api-key-file)
+      (api-key-credential-manager-create
+       :provider-name name
+       :pathname      (configuration-api-keys-path configuration))))
+
 (-> openai-compatible-provider-create
     (configuration &key
                    (:name non-empty-string)
                    (:family keyword)
                    (:headers list)
                    (:reasoning-parameter (option string))
-                   (:stream-usage-p boolean))
+                   (:stream-usage-p boolean)
+                   (:api-key-file (option pathname)))
     openai-compatible-provider)
 (defun openai-compatible-provider-create
     (configuration &key name family headers reasoning-parameter
-                        (stream-usage-p t))
+                        (stream-usage-p t) api-key-file)
   "Create one OpenAI-compatible provider from registered endpoint metadata."
   (make-instance
    'openai-compatible-provider
    :configuration configuration
    :credential-manager
-   (api-key-credential-manager-create
-    :provider-name name
-    :pathname (configuration-api-keys-path configuration))
+   (openai-compatible--credential-manager configuration
+                                          :name         name
+                                          :api-key-file api-key-file)
    :session-id (make-identifier)
    :display-name name
    :family family
@@ -350,16 +365,19 @@ manager from PROVIDER-NAME."
      (:headers list)
      (:reasoning-parameter (option string))
      (:stream-usage-p boolean)
+     (:api-key-file (option string))
      (:source keyword))
     string)
 (defun register-openai-compatible-provider
     (&key name description family models models-endpoint endpoint
-      headers reasoning-parameter (stream-usage-p t)
+      headers reasoning-parameter (stream-usage-p t) api-key-file
       (source (provider--current-registration-source)))
   "Register an OpenAI-compatible Chat Completions provider.
 
 The provider resolves its bearer key from Autolith's private API-key store using
-NAME. MODELS contains optional static strings or model property lists accepted by
+NAME, or, when API-KEY-FILE names an absolute file, reads the key from that file
+on every request so an externally rotated key needs no re-authentication.
+MODELS contains optional static strings or model property lists accepted by
 REGISTER-PROVIDER. MODELS-ENDPOINT discovers additional model identifiers and
 advertised context windows. STREAM-USAGE-P controls whether streaming requests
 ask for a final usage chunk."
@@ -384,15 +402,23 @@ ask for a final usage chunk."
              (format nil
                      "Provider ~A has an invalid additional HTTP header ~S."
                      name header))))
-  (let* ((effective-family (or family (provider--family-keyword name)))
+  (let* ((key-pathname
+           (and api-key-file
+                (openai-compatible--api-key-pathname name api-key-file)))
+         (effective-family (or family (provider--family-keyword name)))
          (model-discovery
            (and models-endpoint
                 (lambda (configuration)
                   (openai-compatible--fetch-models
                    configuration
-                   :provider-name name
-                   :endpoint models-endpoint
-                   :headers headers)))))
+                   :provider-name      name
+                   :endpoint           models-endpoint
+                   :headers            headers
+                   :credential-manager
+                   (openai-compatible--credential-manager
+                    configuration
+                    :name         name
+                    :api-key-file key-pathname))))))
     (register-provider
      name
      :description description
@@ -412,8 +438,24 @@ ask for a final usage chunk."
         :family effective-family
         :headers headers
         :reasoning-parameter reasoning-parameter
-        :stream-usage-p stream-usage-p))
+        :stream-usage-p stream-usage-p
+        :api-key-file key-pathname))
      :source source)))
+
+(-> openai-compatible--api-key-pathname (non-empty-string string) pathname)
+(defun openai-compatible--api-key-pathname (name api-key-file)
+  "Return API-KEY-FILE as an absolute file pathname, signaling for provider NAME."
+  (let ((pathname (and (non-empty-string-p api-key-file)
+                       (ignore-errors
+                        (uiop:parse-native-namestring api-key-file)))))
+    (unless (and pathname
+                 (uiop:absolute-pathname-p pathname)
+                 (uiop:file-pathname-p pathname))
+      (error 'configuration-error
+             :message
+             (format nil "Provider ~A needs an absolute :api-key-file, not ~S."
+                     name api-key-file)))
+    pathname))
 
 
 (defmethod provider-request-object

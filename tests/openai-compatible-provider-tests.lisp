@@ -332,6 +332,90 @@
       (platform-delete-directory-tree *platform* root :validate t :if-does-not-exist ':ignore)))
   nil)
 
+(-> test-openai-compatible-provider-api-key-file () null)
+(defun test-openai-compatible-provider-api-key-file ()
+  "Test an :api-key-file key is read per request, follows rotation, and fails closed."
+  (let* ((registry-snapshot (provider--registry-snapshot))
+         (configuration     (test-configuration))
+         (root              (test-configuration-root configuration))
+         (key-file          (merge-pathnames "issuer/api-key" root))
+         (original-get      (symbol-function 'dexador:get))
+         (authorizations    nil))
+    (flet ((write-key (key)
+             "Replace the issuer-owned key file with KEY and a trailing newline."
+             (ensure-directories-exist key-file)
+             (with-open-file (stream key-file
+                                     :direction ':output
+                                     :if-exists ':supersede
+                                     :if-does-not-exist ':create
+                                     :external-format ':utf-8)
+               (format stream "~A~%" key)))
+
+           (refresh ()
+             "Refresh the file-keyed provider and return its discovery failures."
+             (provider-refresh-models configuration :provider-name "file-key-test")))
+      (unwind-protect
+           (progn
+             (test-assert
+              (handler-case
+                  (progn
+                    (register-openai-compatible-provider
+                     :name            "relative-key-test"
+                     :endpoint        "https://provider.invalid/v1/chat/completions"
+                     :models-endpoint "https://provider.invalid/v1/models"
+                     :api-key-file    "relative/api-key")
+                    nil)
+                (configuration-error ()
+                  t))
+              "a relative :api-key-file is a configuration error")
+             (register-openai-compatible-provider
+              :name            "file-key-test"
+              :endpoint        "https://provider.invalid/v1/chat/completions"
+              :models-endpoint "https://provider.invalid/v1/models"
+              :api-key-file    (uiop:native-namestring key-file))
+             (openai-compatible-provider-tests--save-key
+              configuration "file-key-test" "stale-stored-key")
+             (setf (symbol-function 'dexador:get)
+                   (lambda (url &rest arguments)
+                     (declare (ignore url))
+                     (push (rest (assoc "Authorization"
+                                        (getf arguments :headers)
+                                        :test #'string-equal))
+                           authorizations)
+                     (values "{\"data\":[{\"id\":\"file-key/model\"}]}" 200 nil nil)))
+             (write-key "issued-key-one")
+             (test-assert
+              (and (null (refresh))
+                   (equal (first authorizations) "Bearer issued-key-one"))
+              "the key file overrides the stored key and is trimmed")
+             (write-key "issued-key-two")
+             (test-assert
+              (and (null (refresh))
+                   (equal (first authorizations) "Bearer issued-key-two"))
+              "a rotated key file takes effect on the next request")
+             (delete-file key-file)
+             (test-assert
+              (and (refresh)
+                   (= (length authorizations) 2))
+              "a missing key file fails without falling back to the stored key")
+             (test-assert
+              (handler-case
+                  (progn
+                    (api-key-credential-manager-save-key
+                     (openai-compatible--credential-manager
+                      configuration
+                      :name         "file-key-test"
+                      :api-key-file key-file)
+                     "entered-key")
+                    nil)
+                (authentication-error ()
+                  t))
+              "interactive authentication cannot overwrite the issuer's key file"))
+        (setf (symbol-function 'dexador:get) original-get)
+        (provider--registry-restore registry-snapshot)
+        (platform-delete-directory-tree *platform* root :validate t :if-does-not-exist ':ignore))))
+  nil)
+
 (-> test-openai-compatible-provider-model-cache-boundary () null)
 (defun test-openai-compatible-provider-model-cache-boundary ()
   "Test the model cache persists dynamic metadata without retired static entries."

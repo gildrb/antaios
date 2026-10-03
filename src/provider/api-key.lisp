@@ -441,6 +441,92 @@ never retains the resulting credential after this call."
                   source))))
 
 
+;;;; -- File API-Key Credential Sources --
+
+(defclass file-api-key-credential-source (api-key-credential-source)
+  ()
+  (:documentation
+   "A read-only source that reads one provider API key from a file on each request.
+
+The file belongs to whoever issues the key, so a rotated key takes effect without
+re-entering it in Autolith's private store."))
+
+(defmethod credential-source-load ((source file-api-key-credential-source))
+  "Load SOURCE's API key from its file into request scope.
+
+Signal CREDENTIALS-UNAVAILABLE when the file is absent or empty, and
+AUTHENTICATION-ERROR when it cannot be read."
+  (let* ((pathname (credential-source-pathname source))
+         (key
+           (handler-case
+               (and (probe-file pathname)
+                    (string-trim '(#\Space #\Tab #\Newline #\Return)
+                                 (uiop:read-file-string
+                                  pathname :external-format ':utf-8)))
+             (error (cause)
+               (error 'authentication-error
+                      :message
+                      (format nil "Could not read the ~A API-key file ~A: ~A"
+                              (credential-source-label source)
+                              (uiop:native-namestring pathname)
+                              cause))))))
+    (unless (non-empty-string-p key)
+      (error 'credentials-unavailable
+             :message
+             (format nil "The ~A API-key file ~A is missing or empty."
+                     (credential-source-label source)
+                     (uiop:native-namestring pathname))
+             :searched-paths (list pathname)))
+    (make-instance 'oauth-credentials
+                   :access-token key
+                   :refresh-token nil
+                   :id-token nil
+                   :account-id
+                   (format nil "api-key/~A"
+                           (api-key--canonical-provider-name
+                            (api-key-credential-source-provider-name source)))
+                   :expires-at nil
+                   :source-path pathname)))
+
+(defmethod credential-source-save ((source file-api-key-credential-source)
+                                   (credentials oauth-credentials))
+  "Reject writes: the key file is owned by the key issuer, not by Autolith."
+  (declare (ignore credentials))
+  (error 'authentication-error
+         :message
+         (format nil "~A reads its API key from ~A; update that file instead."
+                 (credential-source-label source)
+                 (uiop:native-namestring (credential-source-pathname source)))))
+
+(defclass file-api-key-credential-manager (api-key-credential-manager)
+  ()
+  (:documentation
+   "An API-key manager whose only source is one externally maintained key file."))
+
+(defmethod credential-manager-login-hint ((manager file-api-key-credential-manager))
+  "Point at the key file rather than at interactive authentication."
+  (format nil "update ~A"
+          (uiop:native-namestring
+           (credential-source-pathname
+            (credential-manager-primary-source manager)))))
+
+(-> file-api-key-credential-manager-create
+    (&key
+     (:provider-name non-empty-string)
+     (:pathname pathname))
+    file-api-key-credential-manager)
+(defun file-api-key-credential-manager-create (&key provider-name pathname)
+  "Create a manager reading PROVIDER-NAME's API key from the file PATHNAME."
+  (let ((source
+          (make-instance
+           'file-api-key-credential-source
+           :pathname pathname
+           :provider-name provider-name)))
+    (make-instance 'file-api-key-credential-manager
+                   :primary-source source
+                   :bootstrap-source source)))
+
+
 ;;;; -- Static API-Key Credential Manager --
 
 (defclass static-api-key-credential-manager (api-key-credential-manager)
