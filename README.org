@@ -25,7 +25,7 @@ Antaios supports the following platforms
 Adding more platform support is always welcome!
 
 Antaios questions and issues can be discussed on the
-[[https://github.com/gildrb/theseus/issues][GitHub issue tracker]].
+[[https://github.com/gildrb/antaios/issues][GitHub issue tracker]].
 
 * Sections
 
@@ -43,7 +43,7 @@ complete runtime. Windows runs from a source checkout through
 =script\bootstrap.ps1= and =bin\antaios.cmd=; see the guide.
 
 #+BEGIN_SRC sh
-nix run github:gildrb/theseus
+nix run github:gildrb/antaios
 #+END_SRC
 
 To build from a source checkout instead, follow the

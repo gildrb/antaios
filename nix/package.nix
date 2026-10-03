@@ -847,7 +847,7 @@ pkgs.writeShellApplication {
 
   meta = {
     description = "A live, self-modifying Common Lisp agent";
-    homepage = "https://github.com/gildrb/theseus";
+    homepage = "https://github.com/gildrb/antaios";
     license = lib.licenses.mit;
     mainProgram = "antaios";
     platforms = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];

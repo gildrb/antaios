@@ -98,7 +98,7 @@
                     provider credentials conversation)))
              (test-assert
               (and (string= (rest (assoc "HTTP-Referer" headers :test #'string=))
-                            "https://github.com/gildrb/theseus")
+                            "https://github.com/gildrb/antaios")
                    (string= (rest (assoc "X-OpenRouter-Title" headers
                                          :test #'string=))
                             "Antaios"))

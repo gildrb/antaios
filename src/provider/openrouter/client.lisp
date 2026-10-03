@@ -6,7 +6,7 @@
   "The namespace distinguishing OpenRouter models from other providers.")
 
 (defparameter *openrouter-request-headers*
-  '(("HTTP-Referer" . "https://github.com/gildrb/theseus")
+  '(("HTTP-Referer" . "https://github.com/gildrb/antaios")
     ("X-OpenRouter-Title" . "Antaios"))
   "The non-secret OpenRouter attribution headers sent with provider requests.")
 

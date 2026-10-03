@@ -130,7 +130,7 @@ no text in bold in any theme; emphasis is carried by color.
 Nix is the simplest way to install Antaios:
 
 #+BEGIN_SRC sh
-nix run github:gildrb/theseus
+nix run github:gildrb/antaios
 #+END_SRC
 
 The first launch builds Lisp images Antaios needs to launch.

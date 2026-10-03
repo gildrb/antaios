@@ -130,7 +130,7 @@ release_update()
 
   if [[ -z $requested_tag ]]; then
     if [[ -z $release_latest_url ]]; then
-      printf 'Antaios has no default release service. Set ANTAIOS_RELEASE_BASE_URL to a release service you trust, or update through Nix (nix run github:gildrb/theseus) or a source checkout. Keeping %s installed.\n' \
+      printf 'Antaios has no default release service. Set ANTAIOS_RELEASE_BASE_URL to a release service you trust, or update through Nix (nix run github:gildrb/antaios) or a source checkout. Keeping %s installed.\n' \
         "$release_version" >&2
       return 1
     fi

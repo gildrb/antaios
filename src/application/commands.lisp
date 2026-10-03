@@ -2514,7 +2514,7 @@ the settings page and the slash commands behave identically."
          ((not (update-check-configured-p))
           (application-present
            application
-           "Antaios has no default release service. Set ANTAIOS_RELEASE_BASE_URL to a release service you trust, or update through Nix (nix run github:gildrb/theseus) or a source checkout. The installed release is unchanged."))
+           "Antaios has no default release service. Set ANTAIOS_RELEASE_BASE_URL to a release service you trust, or update through Nix (nix run github:gildrb/antaios) or a source checkout. The installed release is unchanged."))
          ((update-state-refresh configuration :force-p t)
           (let* ((state (update-state-load configuration))
                  (latest-tag (update-state-latest-tag state))

@@ -6,7 +6,7 @@
   "The default delay between remote release-tag checks.")
 
 (defparameter *release-builder-default-repository*
-  "https://github.com/gildrb/theseus.git"
+  "https://github.com/gildrb/antaios.git"
   "The public source repository inspected for release tags.")
 
 (defparameter *release-builder-container-image*

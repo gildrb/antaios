@@ -568,16 +568,16 @@
             "builder source validation reads the declared ASDF version"))
         (release-server-tests--delete-tree root)))
     (test-assert
-     (search "gildrb/theseus" *release-builder-default-repository*)
+     (search "gildrb/antaios" *release-builder-default-repository*)
      "the builder default repository is the live GitHub origin")
-    (dolist (case '(("https://github.com/gildrb/theseus.git"
-                     "gildrb" "theseus")
-                    ("https://github.com/gildrb/theseus/"
-                     "gildrb" "theseus")
-                    ("git@github.com:gildrb/theseus.git"
-                     "gildrb" "theseus")
-                    ("ssh://git@github.com/gildrb/theseus.git"
-                     "gildrb" "theseus")))
+    (dolist (case '(("https://github.com/gildrb/antaios.git"
+                     "gildrb" "antaios")
+                    ("https://github.com/gildrb/antaios/"
+                     "gildrb" "antaios")
+                    ("git@github.com:gildrb/antaios.git"
+                     "gildrb" "antaios")
+                    ("ssh://git@github.com/gildrb/antaios.git"
+                     "gildrb" "antaios")))
       (destructuring-bind (url owner repo) case
         (multiple-value-bind (parsed-owner parsed-repo)
             (release-builder--github-repository url)
@@ -609,7 +609,7 @@
               :source-root source-root
               :state-root state-root
               :public-root public-root
-              :repository "https://github.com/gildrb/theseus.git"
+              :repository "https://github.com/gildrb/antaios.git"
               :poll-seconds 30))
            (tag "v0.32.2")
            (source-tag
@@ -714,7 +714,7 @@
                          directory)))
                      *release-server-platform-ids*)
                     (find-if (lambda (url)
-                               (search "gildrb/theseus" url))
+                               (search "gildrb/antaios" url))
                              fetched))
                    "the builder fetches every recognized GitHub platform asset")))
               (let* ((waiting-tag

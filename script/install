@@ -163,7 +163,7 @@ done
 
 [ -n "$home" ] || fail "HOME is not set."
 [ -n "$release_base_url" ] ||
-  fail "ANTAIOS_RELEASE_BASE_URL must name the release service to install from; Antaios has no default one. Nix (nix run github:gildrb/theseus) and source checkouts need no release service."
+  fail "ANTAIOS_RELEASE_BASE_URL must name the release service to install from; Antaios has no default one. Nix (nix run github:gildrb/antaios) and source checkouts need no release service."
 platform=
 detected_libc=
 os=$(uname -s)
